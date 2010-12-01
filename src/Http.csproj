@@ -8,8 +8,8 @@
     <ProjectGuid>{F00527A1-ABBA-4620-B8E2-257DDBEEEE0B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Http</RootNamespace>
-    <AssemblyName>Http</AssemblyName>
+    <RootNamespace>Owin</RootNamespace>
+    <AssemblyName>Owin</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
