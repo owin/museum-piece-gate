@@ -54,4 +54,13 @@ namespace Http
         /// <see href="http://msdn.microsoft.com/en-us/library/system.io.stream.endread.aspx"/>
         int EndReadBody(IAsyncResult result);
     }
+    
+    public interface IRequest4
+    {
+        string Method { get; }
+        string Uri { get; }
+        IDictionary<string, IEnumerable<string>> Headers { get; }
+        IDictionary<string, object> Items { get; }
+        async Task<int> ReadBody(byte[] buffer, int offset, int count);
+    }
 }

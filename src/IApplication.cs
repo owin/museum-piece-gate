@@ -23,5 +23,10 @@ namespace Http
         /// <returns>The <see cref="IResponse"/>.</returns>
         IResponse EndInvoke(IAsyncResult result);
     }
+    
+    public interface IApplication4
+    {
+        async Task<IResponse> Invoke(IRequest4 request)
+    }
 
 }
