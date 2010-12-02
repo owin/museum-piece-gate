@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Http
+namespace Owin
 {
     /// <summary>
     /// An HTTP application.

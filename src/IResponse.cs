@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Http
+namespace Owin
 {
     /// <summary>
     /// The HTTP response provides the status, headers, and body from an <see cref="IApplication"/>.
