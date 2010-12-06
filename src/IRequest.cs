@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Http
+namespace Owin
 {
     /// <summary>
     /// The HTTP request provides the requested method, uri, headers, application items, and input body.

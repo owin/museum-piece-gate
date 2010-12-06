@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Http
+namespace Owin
 {
     /// <summary>
     /// The HTTP response provides the status, headers, and body from an <see cref="IApplication"/>.
@@ -30,14 +30,14 @@ namespace Http
         IDictionary<string, IEnumerable<string>> Headers { get; }
 
         /// <summary>
-        /// Gets the body <see cref="IEnumerable"/>.
+        /// Gets the body <see cref="IEnumerable&lt;object&gt;"/>.
         /// </summary>
-        /// <returns>The response as an <see cref="IEnumerable"/>.</returns>
+        /// <returns>The response as an <see cref="IEnumerable&lt;object&gt;"/>.</returns>
         /// <remarks>
-        /// The <see cref="IEnumerable"/> is not guaranteed to be hot.
+        /// The <see cref="IEnumerable&lt;object&gt;"/> is not guaranteed to be hot.
         /// This method should be considered safe to generate either a cold or hot enumerable
         /// so that it _could_ be called more than once, though the expectation is only one call.
         /// </remarks>
-        IEnumerable GetBody();
+        IEnumerable<object> GetBody();
     }
 }
