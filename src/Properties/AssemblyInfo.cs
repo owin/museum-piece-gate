@@ -5,8 +5,8 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("OWIN")]
-[assembly: AssemblyDescription("Open Web Interface for .NET")]
+[assembly: AssemblyTitle("Open Web Interface for .NET")]
+[assembly: AssemblyDescription("A standard set of interfaces for developing common runtimes and frameworks for .NET web development.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("OWIN")]
