@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>IRequest - OWIN Documentation</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+    <link type="text/css" rel="stylesheet" href="../main.css"/>
+    <script type="text/javascript" src="../js/jquery-1.3.2.min.js"></script>
+    <script type="text/javascript" src="../js/jquery.scrollTo-min.js"></script>
+    <script type="text/javascript" src="../js/navigation.js"></script>
+  </head>
+  <body><div id="namespaces">
+	<h2 class="fixed">Namespaces</h2>
+	<div class="scroll">
+		<ul><li>
+          <a href="../../../../../Owin/index.htm" class="current">Owin</a>
+      </li>
+		</ul>
+	</div>
+</div><div id="types">
+  <h2 class="fixed">Types in Owin</h2>
+	<div class="scroll">
+		<ul><li>
+            <a href="../../../../../Owin/IApplication.htm">IApplication</a>
+        </li><li>
+            <a href="../../../../../Owin/IRequest.htm" class="current">IRequest</a>
+        </li><li>
+            <a href="../../../../../Owin/IResponse.htm">IResponse</a>
+        </li>
+		</ul>
+	</div>
+</div>
+    <div class="header">
+		<p class="class"><strong>Type</strong> IRequest</p>
+		<p><strong>Namespace</strong> Owin</p>
+	</div>
+    <div class="sub-header">
+			<div id="summary">The HTTP request provides the requested method, uri, headers, application items, and input body.
+			</div>
+
+
+			<h3 class="section">Methods</h3>
+			<ul><li><a href="../../../../../Owin/IRequest.htm#BeginReadBody">BeginReadBody</a></li><li><a href="../../../../../Owin/IRequest.htm#EndReadBody">EndReadBody</a></li>
+			</ul>
+
+			<h3 class="section">Properties</h3>
+			<ul><li><a href="../../../../../Owin/IRequest.htm#Headers">Headers</a></li><li><a href="../../../../../Owin/IRequest.htm#Items">Items</a></li><li><a href="../../../../../Owin/IRequest.htm#Method">Method</a></li><li><a href="../../../../../Owin/IRequest.htm#Uri">Uri</a></li>
+			</ul>
+
+	</div>
+
+
+	<h3 class="section">Public instance methods</h3>
+<div id="BeginReadBody" class="method">
+		<h4><span title="System.IAsyncResult">IAsyncResult</span> <strong>BeginReadBody</strong>(<span title="System.Byte[]">Byte[]</span> buffer, <span title="System.int">int</span> offset, <span title="System.int">int</span> count, <span title="System.AsyncCallback">AsyncCallback</span> callback, <span title="System.object">object</span> state)</h4>
+		<div class="content">Begins the asynchronous read from the request body.
+
+<div class="parameters">
+        <h5>Parameters</h5>
+
+          <h6><code><span title="System.Byte[]">Byte[]</span></code> buffer</h6><p class="comments">The buffer.</p>
+          <h6><code><span title="System.int">int</span></code> offset</h6><p class="comments">The offset.</p>
+          <h6><code><span title="System.int">int</span></code> count</h6><p class="comments">The count.</p>
+          <h6><code><span title="System.AsyncCallback">AsyncCallback</span></code> callback</h6><p class="comments">The callback.</p>
+          <h6><code><span title="System.object">object</span></code> state</h6><p class="comments">The state.</p>
+      </div>
+<div class="return">
+        <h5>Return</h5>
+        <h6><code><span title="System.IAsyncResult">IAsyncResult</span></code></h6>
+        <p>An IAsyncResult that represents the asynchronous read, which could still be pending.</p>
+      </div>
+
+		</div>
+	</div><div id="EndReadBody" class="method">
+		<h4><span title="System.int">int</span> <strong>EndReadBody</strong>(<span title="System.IAsyncResult">IAsyncResult</span> result)</h4>
+		<div class="content">Ends the asynchronous read from the request body.
+
+<div class="parameters">
+        <h5>Parameters</h5>
+
+          <h6><code><span title="System.IAsyncResult">IAsyncResult</span></code> result</h6><p class="comments">The result.</p>
+      </div>
+<div class="return">
+        <h5>Return</h5>
+        <h6><code><span title="System.int">int</span></code></h6>
+        <p>The number of bytes returned from the stream.</p>
+      </div>
+
+		</div>
+	</div>
+
+
+  <h3 class="section">Public properties</h3>
+<div id="Headers" class="method">
+    <h4><span title="System.Collections.Generic.IDictionary<string, IEnumerable<string>>">IDictionary&lt;string, IEnumerable&lt;string&gt;&gt;</span> <strong>Headers</strong> get; </h4>
+    <div class="content">Gets the headers.<blockquote class="remarks">
+  Each header key may have one or more values matching the HTTP spec.
+Example:
+GET / HTTP/1.0
+Accept: text/html;application/xml
+Generates a headers dictionary with key "Accept" containing string "text/html;application/xml"
+</blockquote>
+
+    </div>
+  </div><div id="Items" class="method">
+    <h4><span title="System.Collections.Generic.IDictionary<string, object>">IDictionary&lt;string, object&gt;</span> <strong>Items</strong> get; </h4>
+    <div class="content">Gets the application-specific items or settings.
+
+    </div>
+  </div><div id="Method" class="method">
+    <h4><span title="System.string">string</span> <strong>Method</strong> get; </h4>
+    <div class="content">Gets the request method.
+
+    </div>
+  </div><div id="Uri" class="method">
+    <h4><span title="System.string">string</span> <strong>Uri</strong> get; </h4>
+    <div class="content">Gets the requested uri.
+
+    </div>
+  </div>
+<div id="footer">
+  <p>Based on v1.0.3991.36602 of Open Web Interface for .NET (OWIN)</p>
+  <p>Generated by <a href="http://docu.jagregory.com">docu</a></p>
+</div>
+  </body>
+</html>
