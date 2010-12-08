@@ -1,6 +1,13 @@
 <html>
 <head>
+	<title>OWIN — Open Web Interface for .NET, v1.0 Draft </title>
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+	<style>
+	body
+	{
+		font-family: Helvetica, sans-serif;
+	}
+	</style>
 </head>
 <body>
 
@@ -12,8 +19,9 @@ This document defines a standard interface between .NET web servers and web appl
 
 ## Definition
 
-OWIN is neither framework nor server. It is an interface through which which servers and frameworks or applications can communicate with each other. OWIN is defined by three core interfaces: `IApplication`, `IRequest`, and `IResponse`. Broadly speaking, hosts provide application objects with request objects, and application objects provide response objects back to the server. In this document, an OWIN-compatible web server is referred to as a “host”, and an object implementing `IApplication` is referred to as an “application”. How an application is provided to a host is outside the scope of this specification.
+OWIN comprises three core interfaces: `IApplication`, `IRequest`, and `IResponse`. Broadly speaking, hosts provide application objects with request objects, and application objects provide response objects back to the server. In this document, an OWIN-compatible web server is referred to as a “host”, and an object implementing `IApplication` is referred to as an “application”. How an application is provided to a host is outside the scope of this specification.
 
+<a name="IApplication"></a>
 ### IApplication
 
     public interface IApplication
@@ -24,6 +32,7 @@ OWIN is neither framework nor server. It is an interface through which which ser
 
 Applications generate responses to requests received by a host by implementing the `IApplication` interface, which defines single asynchronous operation returning IResponse. The asynchronous operation uses the IAsyncResult pattern (see: [MSDN Asynchronous Programming Overview](http://msdn.microsoft.com/en-us/library/ms228963.aspx)). Applications should always generate a response. 
 
+<a name="IRequest"></a>
 ### IRequest
 
     public interface IRequest
@@ -44,7 +53,7 @@ The `Uri` property is the HTTP request URI string of the request, relative to th
 
 The `Headers` property is a dictionary whose items correspond to HTTP headers in the request. Keys are lower-cased header names without `':'` or whitespace. Values are `IEnumerable<string>` sequences containing the corresponding header value strings, without newlines. If a header appears in a request multiple times, the sequence value for that key will contain a number of elements corresponding to the number of times the header appears in the request, with each element being a value of a single header.
 
-The methods `BeginReadBody` and `EndReadBody` provide an asynchronous operation which reads body data of the request into a destination buffer. The `EndReadBody` method returns the number of bytes read. Hosts must signal the end of the request body by returning 0 from `EndReadBody`.
+The methods `BeginReadBody` and `EndReadBody` define an asynchronous operation which reads body data of the request into a destination buffer. The `EndReadBody` method returns the number of bytes read. Hosts must signal the end of the request body by returning 0 from `EndReadBody`.
 
 The `Items` property is a bag in which the host, application, or user can store arbitrary data associated with the request. Hosts should provide the following keys in `Items`:
 
@@ -53,6 +62,7 @@ The `Items` property is a bag in which the host, application, or user can store 
 - `owin.UrlScheme` – `"http"` or `"https"`
 - `owin.RemoteEndPoint` — A `System.Net.IPEndPoint` representing the connected client.
 
+<a name="IResponse"></a>
 ### IResponse
 
     public interface IResponse
@@ -64,7 +74,7 @@ The `Items` property is a bag in which the host, application, or user can store 
 
 The `Status` property is a string containing the integer status of the response followed by a space and a reason phrase without a newline (e.g., `"200 OK"`). All characters in the status string provided by an application should be within the ASCII codepage.
 
-The `Headers` property is a dictionary representing the headers to be sent with the request. Keys must be header names without `':'` or whitespace. Values must be `IEnumerable<string>` sequences containing the corresponding header value strings, without newlines. If the sequence value for a header name contains multiple elements, the host should write a header line with that name once for each value in the sequence. All characters in header name and value strings should be within the ASCII codepage.
+The `Headers` property is a dictionary representing the headers to be sent with the request. Keys must be header names without `':'` or whitespace. Values must be `IEnumerable<string>` sequences containing the corresponding header value strings, without newlines. If the sequence value for a header name contains multiple elements, the host should write a header name-value line with that name once for each value in the sequence. All characters in header name and value strings should be within the ASCII codepage.
 
 The `GetBody` method returns an enumerable which represents the body data. Each element in the enumerable must be of one of the following types:
 
@@ -75,21 +85,18 @@ The `GetBody` method returns an enumerable which represents the body data. Each 
 
 [TODO] Async primitives?
 
-Hosts must write `string` objects to the underlying transport as UTF-8 data, both `byte[]` and `ArraySegment<byte>` as raw data. `FileInfo` must cause the host to write the named file to the underlying transport. After all of the items have been enumerated or if an error occurs during enumeration, the host must call `Dispose` on the enumerator.
+Hosts must write `string` objects to the underlying transport as UTF-8 data, and both `byte[]` and `ArraySegment<byte>` as raw data. `FileInfo` must cause the host to write the named file to the underlying transport (how relative file paths are resolved is outside the scope of this specification). After all of the items have been enumerated or if an error occurs during enumeration, the host must call `Dispose` on the enumerator.
 
 <a name="Paths"></a>
-### Paths
+## Paths
 
-Some hosts may have the ability to map application objects to some base path. For example, a host may have an application object configured to respond to requests beginning with `"/my-app"`, in which case it must set the value of `"owin.BasePath"` in `IRequest.Items` to `"/my-app"`. If this host received a request for `"/my-app/foo"`, the `Uri` property of the `IRequest` object provided to the application must be `"/foo"`. The value of `"owin.BasePath"` may be an empty string and must not end with a trailing slash; the value of the `URI` property must start with a slash.
+Some hosts may have the ability to map application objects to some base path. For example, a host may have an application object configured to respond to requests beginning with `"/my-app"`, in which case it must set the value of `"owin.BasePath"` in `IRequest.Items` to `"/my-app"`. If this host receives a request for `"/my-app/foo"`, the `Uri` property of the `IRequest` object provided to the application at `"/my-app"` must be `"/foo"`. The value of `"owin.BasePath"` may be an empty string and must not end with a trailing slash; the value of the `URI` property must start with a slash.
 
-### Error Handling
+<a name="ErrorHandling"></a>
+## Error Handling
 
-Hosts may throw exceptions in the following places:
-
-- The `IRequest.BeginReadBody` method
-- The `IRequest.EndReadBody` method
-
-Hosts may throw exceptions from either of these methods to indicate that the client has closed or dropped the connection. [TODO: Maybe these should never throw exceptions–the host should shield applications from that and instead just provide zero bytes?]
+<a name="ApplicationErrors"></a>
+### Application Errors
 
 Applications may throw exceptions in the following places:
 
@@ -99,12 +106,21 @@ Applications may throw exceptions in the following places:
 - The `GetEnumerator` method of the `IEnumerable<object>` returned by `IResponse.GetBody`
 - The `MoveNext` method of the enumerator returned by the `GetEnumerator` method of the `IEnumerable<object>` returned by `IResponse.GetBody`
 - The `Current` property of the enumerator returned by the `GetEnumerator` method of the `IEnumerable<object>` returned by `IResponse.GetBody`
+- [TODO] Async primitives?
 
 Host implementations should strive to write response data to the network as “late” as possible, so as to be able to handle as many errors from the application as possible and cleanly send the client a 500-level response. Generally, this means invoking the application and enumerating the first object from its response body, if any, before writing any header or body data to the network. If an error occurs before data is written to the network, the server should provide a 500-level response. If an error occurs enumerating subsequent items from the response body enumerable, the host may append a textual description of the error to the response data which it has already sent and close the connection.
 
 If an uncaught error occurs during the `Invoke` operation of an application, the application must invoke the `AsyncCallback` provided by the host and throw an exception from `EndInvoke`, effectively propagating the exception back to the host.
 
+<a name="HostErrors"></a>
+### Host Errors
 
+Hosts may throw exceptions in the following places:
+
+- The `IRequest.BeginReadBody` method
+- The `IRequest.EndReadBody` method
+
+An exception from either of these methods may indicates that the client has closed or dropped the connection, or another transport-layer error has occurred. The application should perform any post-mortem logic it needs to, and propagate the exception back to the host through one of the calls described in [Application Errors](#ApplicationErrors) [TODO: Maybe these should never throw exceptions–the host should shield applications from that and instead just provide zero bytes?]
 
 </body>
 </html>
