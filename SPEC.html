@@ -83,6 +83,8 @@ The <code>Items</code> property is a bag of data in which the server, applicatio
 <li><code>FileInfo</code></li>
 </ul>
 
+<p>[TODO] Async primitives?</p>
+
 <p>Hosts must write strings to the underlying transport as UTF-8 data, both <code>byte[]</code> and <code>ArraySegment&lt;byte&gt;</code> as raw data, and <code>FileInfo</code> must cause the host to write the named file to the underlying transport. After all of the items have been enumerated or if an error occurs during enumeration, the host must call <code>Dispose</code> on the enumerator.</p>
 
 <h3>Error Handling</h3>
@@ -94,7 +96,7 @@ The <code>Items</code> property is a bag of data in which the server, applicatio
 <li>The <code>IRequest.EndReadBody</code> method</li>
 </ul>
 
-<p>Hosts may throw exceptions from either of these methods to indicate that the client has closed or dropped the connection. [TODO: Maybe these should never throw exceptions? Maybe the host should shield applications from that and instead just provide zero bytes?]</p>
+<p>Hosts may throw exceptions from either of these methods to indicate that the client has closed or dropped the connection. [TODO: Maybe these should never throw exceptions–the host should shield applications from that and instead just provide zero bytes?]</p>
 
 <p>Applications may throw exceptions in the following places:</p>
 
