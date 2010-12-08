@@ -1,16 +1,3 @@
-<html>
-<head>
-	<title>OWIN — Open Web Interface for .NET, v1.0 Draft </title>
-	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-	<style>
-	body
-	{
-		font-family: Helvetica, sans-serif;
-	}
-	</style>
-</head>
-<body>
-
 # OWIN — Open Web Interface for .NET, v1.0 Draft 
 
 ## Overview
@@ -121,6 +108,3 @@ Hosts may throw exceptions in the following places:
 - The `IRequest.EndReadBody` method
 
 An exception from either of these methods may indicates that the client has closed or dropped the connection, or another transport-layer error has occurred. The application should perform any post-mortem logic it needs to, and propagate the exception back to the host through one of the calls described in [Application Errors](#ApplicationErrors) [TODO: Maybe these should never throw exceptions–the host should shield applications from that and instead just provide zero bytes?]
-
-</body>
-</html>
