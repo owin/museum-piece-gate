@@ -108,3 +108,15 @@ Hosts may throw exceptions in the following places:
 - The `IRequest.EndReadBody` method
 
 An exception from either of these methods may indicates that the client has closed or dropped the connection, or another transport-layer error has occurred. The application should perform any post-mortem logic it needs to, and propagate the exception back to the host through one of the calls described in [Application Errors](#ApplicationErrors) [TODO: Maybe these should never throw exceptions–the host should shield applications from that and instead just provide zero bytes?]
+
+## Get Involved
+
+You can follow and help out by following our [.NET HTTP Abstractions group](http://groups.google.com/group/net-http-abstractions). You can find the docs in the [Downloads](https://github.com/owin/owin/archives/master) section.
+
+[TODO: Create Getting Started page and link to it.]
+
+## Current Implementations
+
+1. [Kayak](http://kayakhttp.com/)
+1. [Frack] (https://github.com/panesofglass/frack)
+1. ... more to come!
