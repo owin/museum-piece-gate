@@ -118,5 +118,5 @@ You can follow and help out by following our [.NET HTTP Abstractions group](http
 ## Current Implementations
 
 1. [Kayak](http://kayakhttp.com/)
-1. [Frack] (https://github.com/panesofglass/frack)
+1. [Frack](https://github.com/panesofglass/frack)
 1. ... more to come!
