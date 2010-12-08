@@ -45,7 +45,7 @@ The `Headers` property is a dictionary whose items correspond to HTTP headers in
 
 The methods `BeginReadBody` and `EndReadBody` provides access to the body data of the request using the `IAsyncResult` asynchronous invocation pattern. Applications must provide a destination buffer and a callback which will be invoked by the host when the read operation completes. The `EndReadBody` method returns the number of bytes read. Hosts must signal the end of the request body by returning 0 from `EndReadBody`.
 
-<a name="IRequest.Items">
+<a name="IRequest.Items"></a>
 The `Items` property is a bag of data in which the server, application, or user can store arbitrary data associated with the request.
 
 Hosts must provide at minimum the following keys in `Items`:
