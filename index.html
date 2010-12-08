@@ -1,4 +1,4 @@
-<p><html>
+<html>
 <head>
     <title>OWIN — Open Web Interface for .NET, v1.0 Draft </title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
@@ -9,7 +9,7 @@
     }
     </style>
 </head>
-<body></p>
+<body>
 
 <h1>OWIN — Open Web Interface for .NET, v1.0 Draft</h1>
 
@@ -93,7 +93,11 @@
 <li><code>FileInfo</code></li>
 </ul>
 
-<p>[TODO] Async primitives?</p>
+<p><strong>Proposed:</strong></p>
+<ul>
+<li><code>Task&lt;T&gt;</code></li>
+<li><code>IObservable&lt;T&gt;</code></li>
+</ul>
 
 <p>Hosts must write <code>string</code> objects to the underlying transport as UTF-8 data, and both <code>byte[]</code> and <code>ArraySegment&lt;byte&gt;</code> as raw data. <code>FileInfo</code> must cause the host to write the named file to the underlying transport (how relative file paths are resolved is outside the scope of this specification). After all of the items have been enumerated or if an error occurs during enumeration, the host must call <code>Dispose</code> on the enumerator.</p>
 
@@ -140,5 +144,5 @@
 
 <p>An exception from either of these methods may indicates that the client has closed or dropped the connection, or another transport-layer error has occurred. The application should perform any post-mortem logic it needs to, and propagate the exception back to the host through one of the calls described in <a href="#ApplicationErrors">Application Errors</a> [TODO: Maybe these should never throw exceptions–the host should shield applications from that and instead just provide zero bytes?]</p>
 
-<p></body>
-</html></p>
+</body>
+</html>
