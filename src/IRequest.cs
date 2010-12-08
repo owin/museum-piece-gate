@@ -55,12 +55,12 @@ namespace Owin
         int EndReadBody(IAsyncResult result);
     }
     
-    public interface IRequest4
-    {
-        string Method { get; }
-        string Uri { get; }
-        IDictionary<string, IEnumerable<string>> Headers { get; }
-        IDictionary<string, object> Items { get; }
-        async Task<int> ReadBody(byte[] buffer, int offset, int count);
-    }
+    //public interface IRequest4
+    //{
+    //    string Method { get; }
+    //    string Uri { get; }
+    //    IDictionary<string, IEnumerable<string>> Headers { get; }
+    //    IDictionary<string, object> Items { get; }
+    //    async Task<int> ReadBody(byte[] buffer, int offset, int count);
+    //}
 }

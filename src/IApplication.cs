@@ -24,9 +24,9 @@ namespace Owin
         IResponse EndInvoke(IAsyncResult result);
     }
     
-    public interface IApplication4
-    {
-        async Task<IResponse> Invoke(IRequest4 request)
-    }
+    //public interface IApplication4
+    //{
+    //    async Task<IResponse> Invoke(IRequest4 request)
+    //}
 
 }
