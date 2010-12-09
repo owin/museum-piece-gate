@@ -97,7 +97,7 @@
 <a name="Paths"></a>
 <h2>Paths</h2>
 
-<p>Some hosts may have the ability to map application objects to some base path. For example, a host may have an application object configured to respond to requests beginning with <code>"/my-app"</code>, in which case it must set the value of <code>"owin.BasePath"</code> in <code>IRequest.Items</code> to <code>"/my-app"</code>. If this host receives a request for <code>"/my-app/foo"</code>, the <code>Uri</code> property of the <code>IRequest</code> object provided to the application at <code>"/my-app"</code> must be <code>"/foo"</code>. The value of <code>"owin.BasePath"</code> may be an empty string and must not end with a trailing slash; the value of the <code>URI</code> property must start with a slash.</p>
+<p>Some hosts may have the ability to map application objects to some base path. For example, a host may have an application object configured to respond to requests beginning with <code>"/my-app"</code>, in which case it must set the value of <code>"owin.BaseUri"</code> in <code>IRequest.Items</code> to <code>"/my-app"</code>. If this host receives a request for <code>"/my-app/foo"</code>, the <code>Uri</code> property of the <code>IRequest</code> object provided to the application at <code>"/my-app"</code> must be <code>"/foo"</code>. The value of <code>"owin.BaseUri"</code> may be an empty string and must not end with a trailing slash; the value of the <code>URI</code> property must start with a slash.</p>
 
 <a name="ErrorHandling"></a>
 <h2>Error Handling</h2>
