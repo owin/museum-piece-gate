@@ -12,7 +12,7 @@ You can follow and help out by joining the [.NET HTTP Abstractions](http://group
 
 ## Related projects
 
-1. [Kayak](http://kayakhttp.com/)
-1. [Frack](https://github.com/panesofglass/frack)
-1. [Knack](https://github.com/remi/knack)
-1. [Fix](https://github.com/markrendle/Fix)
+- [Kayak](http://kayakhttp.com/)
+- [Frack](https://github.com/panesofglass/frack)
+- [Knack](https://github.com/remi/knack)
+- [Fix](https://github.com/markrendle/Fix)
