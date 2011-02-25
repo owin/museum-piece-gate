@@ -1,4 +1,4 @@
-OWIN — Open Web Interface for .NET (http://owin.org/)
+OWIN - Open Web Interface for .NET (http://owin.org/)
 Copyright 2011 .NET HTTP Abstractions <scott@lazycoder.com>
 
 This product includes software developed at
