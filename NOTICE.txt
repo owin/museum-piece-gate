@@ -1,0 +1,8 @@
+OWIN — Open Web Interface for .NET
+Copyright 2011 .NET HTTP Abstractions <scott@lazycoder.com>
+
+This product includes software developed at
+The OWIN organization (http://owin.org/).
+
+[[The remainder of the NOTICE file is to be used for required third-party notices.]]
+
