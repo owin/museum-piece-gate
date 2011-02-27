@@ -84,13 +84,18 @@ namespace Gato.Tests
             next = (d, c) =>
             {
                 sb.Append(Encoding.ASCII.GetString(d.Array, d.Offset, d.Count));
-                ct = c;
-                return true;
+
+                if (c != null)
+                {
+                    ct = c;
+                    return true;
+                }
+                else return false;
             };
         }
 
         [Test]
-        public void PsCa()
+        public void PaCa()
         {
             AsynchronousConsumer();
             stream = new OutputStream(next, complete);
@@ -117,6 +122,23 @@ namespace Gato.Tests
             Assert.IsFalse(iasr2.CompletedSynchronously);
             Assert.AreSame(iasr2, latest);
 
+            stream.Dispose();
+
+            Assert.IsTrue(completed);
+            Assert.AreEqual("asdfjkl;lol", sb.ToString());
+        }
+
+        // XXX does this ever make sense? it is equivalent to the PsCs test.
+        [Test]
+        public void PsCa()
+        {
+            AsynchronousConsumer();
+
+            stream = new OutputStream(next, complete);
+
+            WriteString("asdf");
+            WriteString("jkl;");
+            WriteString("lol");
             stream.Dispose();
 
             Assert.IsTrue(completed);
