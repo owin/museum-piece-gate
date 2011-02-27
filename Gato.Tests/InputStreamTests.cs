@@ -43,20 +43,20 @@ namespace Gato.Tests
 
         Stream stream;
 
-        void CreateStream(Func<IObserver<Tuple<ArraySegment<byte>, Action>>, Action> observable)
+        void CreateStream(Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> input)
         {
-            stream = new ObservableInputStream(new Observable<Tuple<ArraySegment<byte>, Action>>(observable));
+            stream = new InputStream(input);
         }
 
         [Test]
         public void PsCs()
         {
-            CreateStream(o =>
+            CreateStream((next, fault, complete) =>
             {
-                o.OnNext(Tuple.Create(ArrSeg("asdf"), (Action)null));
-                o.OnNext(Tuple.Create(ArrSeg("jkl;"), (Action)null));
-                o.OnNext(Tuple.Create(ArrSeg("lol"), (Action)null));
-                o.OnCompleted();
+                next(ArrSeg("asdf"), (Action)null);
+                next(ArrSeg("jkl;"), (Action)null);
+                next(ArrSeg("lol"), (Action)null);
+                complete();
                 return () => { };
             });
 
@@ -69,12 +69,12 @@ namespace Gato.Tests
         [Test]
         public void PsCsException()
         {
-            CreateStream(o =>
+            CreateStream((next, fault, complete) =>
             {
-                o.OnNext(Tuple.Create(ArrSeg("asdf"), (Action)null));
-                o.OnNext(Tuple.Create(ArrSeg("jkl;"), (Action)null));
-                o.OnNext(Tuple.Create(ArrSeg("lol"), (Action)null));
-                o.OnError(new Exception("ack!"));
+                next(ArrSeg("asdf"), (Action)null);
+                next(ArrSeg("jkl;"), (Action)null);
+                next(ArrSeg("lol"), (Action)null);
+                fault(new Exception("ack!"));
                 return () => { };
             });
 
@@ -88,15 +88,12 @@ namespace Gato.Tests
         [Test]
         public void PaCs()
         {
-            CreateStream(o =>
+            CreateStream((next, fault, complete) =>
             {
-                o.OnNext(Tuple.Create(ArrSeg("asdf"), (Action)(() => {
-                    o.OnNext(Tuple.Create(ArrSeg("jkl;"), (Action)(() => {
-                        o.OnNext(Tuple.Create(ArrSeg("lol"), (Action)(() => {
-                            o.OnCompleted();
-                        })));
-                    })));
-                })));
+                next(ArrSeg("asdf"), () =>
+                    next(ArrSeg("jkl;"), () =>
+                        next(ArrSeg("lol"), () =>
+                            complete())));
                 return () => { };
             });
 
@@ -109,14 +106,12 @@ namespace Gato.Tests
         [Test]
         public void PaCsException()
         {
-            CreateStream(o => {
-                o.OnNext(Tuple.Create(ArrSeg("asdf"), (Action)(() => {
-                    o.OnNext(Tuple.Create(ArrSeg("jkl;"), (Action)(() => {
-                        o.OnNext(Tuple.Create(ArrSeg("lol"), (Action)(() => {
-                            o.OnError(new Exception("ack!"));
-                        })));
-                    })));
-                })));
+            CreateStream((next, fault, complete) =>
+            {
+                next(ArrSeg("asdf"), () =>
+                    next(ArrSeg("jkl;"), () =>
+                        next(ArrSeg("lol"), () =>
+                            fault(new Exception("ack!")))));
                 return () => { };
             });
 

@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gato", "Gato\Gato.csproj", "{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gato.Tests", "Gato.Tests\Gato.Tests.csproj", "{1BB1CEC7-EAAB-4B25-900B-4981DA873320}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BB1CEC7-EAAB-4B25-900B-4981DA873320}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BB1CEC7-EAAB-4B25-900B-4981DA873320}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BB1CEC7-EAAB-4B25-900B-4981DA873320}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BB1CEC7-EAAB-4B25-900B-4981DA873320}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
