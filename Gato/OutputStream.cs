@@ -34,7 +34,7 @@ namespace Gato
 
             asyncResult = new AsyncResult(callback, state);
 
-            if (next(new ArraySegment<byte>(buffer, offset, count), () => asyncResult.SetAsCompleted(null, false)))
+            if (!next(new ArraySegment<byte>(buffer, offset, count), () => asyncResult.SetAsCompleted(null, false)))
                 asyncResult.SetAsCompleted(null, true);
 
             return asyncResult;

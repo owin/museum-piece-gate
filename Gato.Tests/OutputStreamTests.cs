@@ -16,6 +16,8 @@ namespace Gato.Tests
         Func<ArraySegment<byte>, Action, bool> next;
         Action complete;
 
+        Action ct;
+
         [SetUp]
         public void SetUp()
         {
@@ -31,7 +33,7 @@ namespace Gato.Tests
             next = (d, c) =>
             {
                 sb.Append(Encoding.ASCII.GetString(d.Array, d.Offset, d.Count));
-                return true;
+                return false;
             };
         }
 
@@ -41,10 +43,10 @@ namespace Gato.Tests
             stream.Write(b, 0, b.Length);
         }
 
-        bool BeginWriteString(string str, Action<IAsyncResult> callback)
+        IAsyncResult BeginWriteString(string str, Action<IAsyncResult> callback)
         {
             var b = Encoding.ASCII.GetBytes(str);
-            return stream.BeginWrite(b, 0, b.Length, iasr => callback(iasr), null).CompletedSynchronously;
+            return stream.BeginWrite(b, 0, b.Length, iasr => callback(iasr), null);
         }
 
         [Test]
@@ -68,10 +70,53 @@ namespace Gato.Tests
             SynchronousConsumer();
             stream = new OutputStream(next, complete);
 
+            Assert.IsTrue(BeginWriteString("asdf", iasr => { stream.EndWrite(iasr); }).CompletedSynchronously);
+            Assert.IsTrue(BeginWriteString("jkl;", iasr => { stream.EndWrite(iasr); }).CompletedSynchronously);
+            Assert.IsTrue(BeginWriteString("lol", iasr => { stream.EndWrite(iasr); }).CompletedSynchronously);
+            stream.Dispose();
 
-            Assert.IsTrue(BeginWriteString("asdf", iasr => { stream.EndWrite(iasr); }));
-            Assert.IsTrue(BeginWriteString("jkl;", iasr => { stream.EndWrite(iasr); }));
-            Assert.IsTrue(BeginWriteString("lol", iasr => { stream.EndWrite(iasr); }));
+            Assert.IsTrue(completed);
+            Assert.AreEqual("asdfjkl;lol", sb.ToString());
+        }
+
+        void AsynchronousConsumer()
+        {
+            next = (d, c) =>
+            {
+                sb.Append(Encoding.ASCII.GetString(d.Array, d.Offset, d.Count));
+                ct = c;
+                return true;
+            };
+        }
+
+        [Test]
+        public void PsCa()
+        {
+            AsynchronousConsumer();
+            stream = new OutputStream(next, complete);
+
+            IAsyncResult latest = null;
+            var iasr0 = BeginWriteString("asdf", iasr => latest = iasr);
+
+            ct();
+
+            Assert.IsFalse(iasr0.CompletedSynchronously);
+            Assert.AreSame(iasr0, latest);
+
+            var iasr1 = BeginWriteString("jkl;", iasr => latest = iasr);
+
+            ct();
+
+            Assert.IsFalse(iasr1.CompletedSynchronously);
+            Assert.AreSame(iasr1, latest);
+
+            var iasr2 = BeginWriteString("lol", iasr => latest = iasr);
+
+            ct();
+
+            Assert.IsFalse(iasr2.CompletedSynchronously);
+            Assert.AreSame(iasr2, latest);
+
             stream.Dispose();
 
             Assert.IsTrue(completed);
