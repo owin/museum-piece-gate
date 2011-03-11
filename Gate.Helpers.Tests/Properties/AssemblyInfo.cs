@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Gate")]
+[assembly: AssemblyTitle("Gate.Helpers.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Gate")]
+[assembly: AssemblyProduct("Gate.Helpers.Tests")]
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("9b6b6a5b-7307-4d2c-8413-081e072eee44")]
+[assembly: Guid("5eaec6c6-f0c2-41d0-b723-a1c9a83274c1")]
 
 // Version information for an assembly consists of the following four values:
 //

@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</ProjectGuid>
+    <ProjectGuid>{85392B05-6564-472B-9A7B-58AFB721F2AE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Gate</RootNamespace>
-    <AssemblyName>Gate</AssemblyName>
+    <RootNamespace>Gate.Helpers</RootNamespace>
+    <AssemblyName>Gate.Helpers</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -40,14 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncResult.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="InputStream.cs" />
-    <Compile Include="OutputStream.cs" />
+    <Compile Include="Request.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
