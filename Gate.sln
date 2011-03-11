@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gato", "Gate\Gato.csproj", "{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate", "Gate\Gate.csproj", "{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gato.Tests", "Gate.Tests\Gato.Tests.csproj", "{1BB1CEC7-EAAB-4B25-900B-4981DA873320}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Tests", "Gate.Tests\Gate.Tests.csproj", "{1BB1CEC7-EAAB-4B25-900B-4981DA873320}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

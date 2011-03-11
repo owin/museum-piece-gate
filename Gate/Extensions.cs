@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Gato
+namespace Gate
 {
     public static class Extensions
     {
@@ -46,12 +46,12 @@ namespace Gato
         public static Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>
             GetRequestBody(this IDictionary<string, object> env)
         {
-            return env["gato.RequestBody"] as Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>;
+            return env["gate.RequestBody"] as Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>;
         }
 
         public static void SetRequestBody(this IDictionary<string, object> env, Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> value)
         {
-            env["gato.RequestBody"] = value;
+            env["gate.RequestBody"] = value;
         }
     }
 }

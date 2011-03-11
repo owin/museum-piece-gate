@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using Gato;
+using Gate;
 
-namespace Gato.Tests
+namespace Gate.Tests
 {
     [TestFixture]
     public class OutputStreamTests

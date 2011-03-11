@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace Gato
+namespace Gate
 {
     // shamelessly lifted from http://msdn.microsoft.com/en-us/magazine/cc163467.aspx
     internal class AsyncResult : IAsyncResult
