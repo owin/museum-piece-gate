@@ -52,13 +52,13 @@ namespace Gate.Tests
         public void PsCs()
         {
             CreateStream((next, fault, complete) =>
-            {
-                next(ArrSeg("asdf"), (Action)null);
-                next(ArrSeg("jkl;"), (Action)null);
-                next(ArrSeg("lol"), (Action)null);
-                complete();
-                return () => { };
-            });
+                             {
+                                 next(ArrSeg("asdf"), (Action) null);
+                                 next(ArrSeg("jkl;"), (Action) null);
+                                 next(ArrSeg("lol"), (Action) null);
+                                 complete();
+                                 return () => { };
+                             });
 
             Exception e = null;
             var result = SynchronousReadToEndOrException(ref e);
@@ -70,13 +70,13 @@ namespace Gate.Tests
         public void PsCsException()
         {
             CreateStream((next, fault, complete) =>
-            {
-                next(ArrSeg("asdf"), (Action)null);
-                next(ArrSeg("jkl;"), (Action)null);
-                next(ArrSeg("lol"), (Action)null);
-                fault(new Exception("ack!"));
-                return () => { };
-            });
+                             {
+                                 next(ArrSeg("asdf"), (Action) null);
+                                 next(ArrSeg("jkl;"), (Action) null);
+                                 next(ArrSeg("lol"), (Action) null);
+                                 fault(new Exception("ack!"));
+                                 return () => { };
+                             });
 
             Exception e = null;
             var result = SynchronousReadToEndOrException(ref e);
@@ -89,13 +89,13 @@ namespace Gate.Tests
         public void PaCs()
         {
             CreateStream((next, fault, complete) =>
-            {
-                next(ArrSeg("asdf"), () =>
-                    next(ArrSeg("jkl;"), () =>
-                        next(ArrSeg("lol"), () =>
-                            complete())));
-                return () => { };
-            });
+                             {
+                                 next(ArrSeg("asdf"), () =>
+                                                      next(ArrSeg("jkl;"), () =>
+                                                                           next(ArrSeg("lol"), () =>
+                                                                                               complete())));
+                                 return () => { };
+                             });
 
             Exception e = null;
             var result = SynchronousReadToEndOrException(ref e);
@@ -107,13 +107,14 @@ namespace Gate.Tests
         public void PaCsException()
         {
             CreateStream((next, fault, complete) =>
-            {
-                next(ArrSeg("asdf"), () =>
-                    next(ArrSeg("jkl;"), () =>
-                        next(ArrSeg("lol"), () =>
-                            fault(new Exception("ack!")))));
-                return () => { };
-            });
+                             {
+                                 next(ArrSeg("asdf"), () =>
+                                                      next(ArrSeg("jkl;"), () =>
+                                                                           next(ArrSeg("lol"), () =>
+                                                                                               fault(
+                                                                                                   new Exception("ack!")))));
+                                 return () => { };
+                             });
 
             Exception e = null;
             var result = SynchronousReadToEndOrException(ref e);

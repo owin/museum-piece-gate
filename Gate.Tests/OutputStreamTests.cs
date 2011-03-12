@@ -31,10 +31,10 @@ namespace Gate.Tests
         void SynchronousConsumer()
         {
             next = (d, c) =>
-            {
-                sb.Append(Encoding.ASCII.GetString(d.Array, d.Offset, d.Count));
-                return false;
-            };
+                       {
+                           sb.Append(Encoding.ASCII.GetString(d.Array, d.Offset, d.Count));
+                           return false;
+                       };
         }
 
         void WriteString(string str)
@@ -82,16 +82,16 @@ namespace Gate.Tests
         void AsynchronousConsumer()
         {
             next = (d, c) =>
-            {
-                sb.Append(Encoding.ASCII.GetString(d.Array, d.Offset, d.Count));
+                       {
+                           sb.Append(Encoding.ASCII.GetString(d.Array, d.Offset, d.Count));
 
-                if (c != null)
-                {
-                    ct = c;
-                    return true;
-                }
-                else return false;
-            };
+                           if (c != null)
+                           {
+                               ct = c;
+                               return true;
+                           }
+                           else return false;
+                       };
         }
 
         [Test]

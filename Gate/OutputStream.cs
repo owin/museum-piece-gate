@@ -25,10 +25,11 @@ namespace Gate
         {
             EnsureNotCompleted();
 
-            next(new ArraySegment<byte>(buffer, offset, count), (Action)null);
+            next(new ArraySegment<byte>(buffer, offset, count), (Action) null);
         }
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback,
+                                                object state)
         {
             EnsureNotCompleted();
 
@@ -55,7 +56,9 @@ namespace Gate
             complete();
         }
 
-        public override void Flush() { }
+        public override void Flush()
+        {
+        }
 
         void EnsureNotCompleted()
         {
@@ -64,11 +67,26 @@ namespace Gate
 
         #region Stream boilerplate
 
-        public override bool CanRead { get { return false; } }
-        public override bool CanSeek { get { return false; } }
-        public override bool CanWrite { get { return true; } }
+        public override bool CanRead
+        {
+            get { return false; }
+        }
 
-        public override long Length { get { throw new NotSupportedException(); } }
+        public override bool CanSeek
+        {
+            get { return false; }
+        }
+
+        public override bool CanWrite
+        {
+            get { return true; }
+        }
+
+        public override long Length
+        {
+            get { throw new NotSupportedException(); }
+        }
+
         public override long Position
         {
             get { throw new NotImplementedException(); }

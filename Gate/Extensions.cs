@@ -46,10 +46,15 @@ namespace Gate
         public static Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>
             GetRequestBody(this IDictionary<string, object> env)
         {
-            return env["gate.RequestBody"] as Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>;
+            return
+                env["gate.RequestBody"] as
+                Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>;
         }
 
-        public static void SetRequestBody(this IDictionary<string, object> env, Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> value)
+        public static void SetRequestBody(this IDictionary<string, object> env,
+                                          Func
+                                              <Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action
+                                              > value)
         {
             env["gate.RequestBody"] = value;
         }

@@ -11,10 +11,10 @@ namespace Gate
         Action cancel;
 
         public InputStream(Func<
-            Func<ArraySegment<byte>, Action, bool>, 
-            Action<Exception>, 
-            Action, 
-            Action> input)
+                               Func<ArraySegment<byte>, Action, bool>,
+                               Action<Exception>,
+                               Action,
+                               Action> input)
         {
             cancel = input(OnNext, OnError, OnCompleted);
         }
@@ -32,7 +32,8 @@ namespace Gate
             return false;
         }
 
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback,
+                                               object state)
         {
             return null;
         }
@@ -49,11 +50,30 @@ namespace Gate
 
         #region Stream boilerplate
 
-        public override bool CanRead { get { return true; } }
-        public override bool CanSeek { get { return false; } }
-        public override bool CanWrite { get { return false; } }
-        public override void Flush() { }
-        public override long Length { get { throw new NotSupportedException(); } }
+        public override bool CanRead
+        {
+            get { return true; }
+        }
+
+        public override bool CanSeek
+        {
+            get { return false; }
+        }
+
+        public override bool CanWrite
+        {
+            get { return false; }
+        }
+
+        public override void Flush()
+        {
+        }
+
+        public override long Length
+        {
+            get { throw new NotSupportedException(); }
+        }
+
         public override long Position
         {
             get { throw new NotSupportedException(); }

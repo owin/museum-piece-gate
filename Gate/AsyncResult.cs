@@ -11,21 +11,21 @@ namespace Gate
     {
         // Fields set at construction which never change while 
         // operation is pending
-        private readonly AsyncCallback m_AsyncCallback;
-        private readonly Object m_AsyncState;
+        readonly AsyncCallback m_AsyncCallback;
+        readonly Object m_AsyncState;
 
         // Fields set at construction which do change after 
         // operation completes
-        private const Int32 c_StatePending = 0;
-        private const Int32 c_StateCompletedSynchronously = 1;
-        private const Int32 c_StateCompletedAsynchronously = 2;
-        private Int32 m_CompletedState = c_StatePending;
+        const Int32 c_StatePending = 0;
+        const Int32 c_StateCompletedSynchronously = 1;
+        const Int32 c_StateCompletedAsynchronously = 2;
+        Int32 m_CompletedState = c_StatePending;
 
         // Field that may or may not get set depending on usage
-        private ManualResetEvent m_AsyncWaitHandle;
+        ManualResetEvent m_AsyncWaitHandle;
 
         // Fields set when operation completes
-        private Exception m_exception;
+        Exception m_exception;
 
         public AsyncResult(AsyncCallback asyncCallback, Object state)
         {
@@ -34,7 +34,7 @@ namespace Gate
         }
 
         public void SetAsCompleted(
-           Exception exception, Boolean completedSynchronously)
+            Exception exception, Boolean completedSynchronously)
         {
             // Passing null for exception means no error occurred. 
             // This is the common case
@@ -42,8 +42,9 @@ namespace Gate
 
             // The m_CompletedState field MUST be set prior calling the callback
             Int32 prevState = Interlocked.Exchange(ref m_CompletedState,
-               completedSynchronously ? c_StateCompletedSynchronously :
-               c_StateCompletedAsynchronously);
+                                                   completedSynchronously
+                                                       ? c_StateCompletedSynchronously
+                                                       : c_StateCompletedAsynchronously);
             if (prevState != c_StatePending)
                 throw new InvalidOperationException(
                     "You can set a result only once");
@@ -64,7 +65,7 @@ namespace Gate
                 // If the operation isn't done, wait for it
                 AsyncWaitHandle.WaitOne();
                 AsyncWaitHandle.Close();
-                m_AsyncWaitHandle = null;  // Allow early GC
+                m_AsyncWaitHandle = null; // Allow early GC
             }
 
             // Operation is done: if an exception occured, throw it
@@ -72,14 +73,18 @@ namespace Gate
         }
 
         #region Implementation of IAsyncResult
-        public Object AsyncState { get { return m_AsyncState; } }
+
+        public Object AsyncState
+        {
+            get { return m_AsyncState; }
+        }
 
         public Boolean CompletedSynchronously
         {
             get
             {
                 return Thread.VolatileRead(ref m_CompletedState) ==
-                    c_StateCompletedSynchronously;
+                       c_StateCompletedSynchronously;
             }
         }
 
@@ -92,7 +97,7 @@ namespace Gate
                     Boolean done = IsCompleted;
                     ManualResetEvent mre = new ManualResetEvent(done);
                     if (Interlocked.CompareExchange(ref m_AsyncWaitHandle,
-                       mre, null) != null)
+                                                    mre, null) != null)
                     {
                         // Another thread created this object's event; dispose 
                         // the event we just created
@@ -117,22 +122,25 @@ namespace Gate
             get
             {
                 return Thread.VolatileRead(ref m_CompletedState) !=
-                    c_StatePending;
+                       c_StatePending;
             }
         }
+
         #endregion
     }
 
     internal class AsyncResult<TResult> : AsyncResult
     {
         // Field set when operation completes
-        private TResult m_result = default(TResult);
+        TResult m_result = default(TResult);
 
         public AsyncResult(AsyncCallback asyncCallback, Object state) :
-            base(asyncCallback, state) { }
+            base(asyncCallback, state)
+        {
+        }
 
         public void SetAsCompleted(TResult result,
-           Boolean completedSynchronously)
+                                   Boolean completedSynchronously)
         {
             // Save the asynchronous operation's result
             m_result = result;
@@ -142,10 +150,10 @@ namespace Gate
             base.SetAsCompleted(null, completedSynchronously);
         }
 
-        new public TResult EndInvoke()
+        public new TResult EndInvoke()
         {
             base.EndInvoke(); // Wait until operation has completed 
-            return m_result;  // Return the result (if above didn't throw)
+            return m_result; // Return the result (if above didn't throw)
         }
     }
 }
