@@ -65,21 +65,18 @@ namespace Gate.Helpers.Tests
             var headers = new Dictionary<string, string>();
             BodyDelegate body = (next, error, complete) => () => { };
             var env = new Dictionary<string, object>
-                          {
-                              {"owin.RequestMethod", "GET"},
-                              {"owin.RequestUri", "/foo"},
-                              {"owin.RequestHeaders", headers},
-                              {"owin.RequestBody", body},
-                              {"owin.BaseUri", "/my-app"},
-                              {"owin.ServerName", "localhost"},
-                              {"owin.ServerPort", "8080"},
-                              {"owin.UriScheme", "https"},
-                              {
-                                  "owin.RemoteEndPoint",
-                                  new IPEndPoint(IPAddress.Parse("127.0.0.1") ?? IPAddress.None, 80)
-                                  },
-                              {"owin.Version", "1.0"},
-                          };
+            {
+                {"owin.RequestMethod", "GET"},
+                {"owin.RequestUri", "/foo"},
+                {"owin.RequestHeaders", headers},
+                {"owin.RequestBody", body},
+                {"owin.BaseUri", "/my-app"},
+                {"owin.ServerName", "localhost"},
+                {"owin.ServerPort", "8080"},
+                {"owin.UriScheme", "https"},
+                {"owin.RemoteEndPoint", new IPEndPoint(IPAddress.Parse("127.0.0.1") ?? IPAddress.None, 80)},
+                {"owin.Version", "1.0"},
+            };
 
             var request = new Request(env);
             Assert.That(request.Method, Is.EqualTo("GET"));

@@ -11,10 +11,10 @@ namespace Gate
         Action cancel;
 
         public InputStream(Func<
-                               Func<ArraySegment<byte>, Action, bool>,
-                               Action<Exception>,
-                               Action,
-                               Action> input)
+            Func<ArraySegment<byte>, Action, bool>,
+            Action<Exception>,
+            Action,
+            Action> input)
         {
             cancel = input(OnNext, OnError, OnCompleted);
         }
@@ -33,7 +33,7 @@ namespace Gate
         }
 
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback,
-                                               object state)
+            object state)
         {
             return null;
         }

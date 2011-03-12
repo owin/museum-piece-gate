@@ -29,7 +29,7 @@ namespace Gate
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback,
-                                                object state)
+            object state)
         {
             EnsureNotCompleted();
 

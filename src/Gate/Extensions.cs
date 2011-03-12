@@ -48,13 +48,13 @@ namespace Gate
         {
             return
                 env["gate.RequestBody"] as
-                Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>;
+                    Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>;
         }
 
         public static void SetRequestBody(this IDictionary<string, object> env,
-                                          Func
-                                              <Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action
-                                              > value)
+            Func
+                <Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action
+                    > value)
         {
             env["gate.RequestBody"] = value;
         }

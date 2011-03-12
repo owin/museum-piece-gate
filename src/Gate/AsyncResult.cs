@@ -42,9 +42,9 @@ namespace Gate
 
             // The m_CompletedState field MUST be set prior calling the callback
             Int32 prevState = Interlocked.Exchange(ref m_CompletedState,
-                                                   completedSynchronously
-                                                       ? c_StateCompletedSynchronously
-                                                       : c_StateCompletedAsynchronously);
+                completedSynchronously
+                    ? c_StateCompletedSynchronously
+                    : c_StateCompletedAsynchronously);
             if (prevState != c_StatePending)
                 throw new InvalidOperationException(
                     "You can set a result only once");
@@ -84,7 +84,7 @@ namespace Gate
             get
             {
                 return Thread.VolatileRead(ref m_CompletedState) ==
-                       c_StateCompletedSynchronously;
+                    c_StateCompletedSynchronously;
             }
         }
 
@@ -97,7 +97,7 @@ namespace Gate
                     Boolean done = IsCompleted;
                     ManualResetEvent mre = new ManualResetEvent(done);
                     if (Interlocked.CompareExchange(ref m_AsyncWaitHandle,
-                                                    mre, null) != null)
+                        mre, null) != null)
                     {
                         // Another thread created this object's event; dispose 
                         // the event we just created
@@ -122,7 +122,7 @@ namespace Gate
             get
             {
                 return Thread.VolatileRead(ref m_CompletedState) !=
-                       c_StatePending;
+                    c_StatePending;
             }
         }
 
@@ -140,7 +140,7 @@ namespace Gate
         }
 
         public void SetAsCompleted(TResult result,
-                                   Boolean completedSynchronously)
+            Boolean completedSynchronously)
         {
             // Save the asynchronous operation's result
             m_result = result;
