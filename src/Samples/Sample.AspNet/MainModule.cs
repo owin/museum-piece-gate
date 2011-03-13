@@ -6,7 +6,7 @@ namespace Sample.AspNet
     {
         public MainModule()
         {
-            Get["/"] = parameters => { return View["staticview.html"]; };
+            Get["/"] = parameters => { return View["staticview"]; };
         }
     }
 }
