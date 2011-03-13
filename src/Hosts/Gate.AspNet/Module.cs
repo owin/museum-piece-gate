@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -22,24 +23,45 @@ namespace Gate.AspNet
                 Action>>>; // cancel
 
 
-    public class GateModule : IHttpModule
+    public class Module : IHttpModule
     {
-        public void Init(HttpApplication httpApplication)
+        public void Dispose()
         {
-            AppDelegate app = (env, fault, result) => fault(new NotImplementedException());
+        }
 
-            httpApplication.AddOnBeginRequestAsync(
+        public void Init(HttpApplication init)
+        {
+            init.AddOnBeginRequestAsync(
                 (sender, args, callback, state) =>
                 {
-                    var taskCompletionSource = new TaskCompletionSource<object>(state, TaskCreationOptions.PreferFairness);
+                    var taskCompletionSource = new TaskCompletionSource<Action>(state);
                     if (callback != null)
                         taskCompletionSource.Task.ContinueWith(task => callback(task), TaskContinuationOptions.ExecuteSynchronously);
 
                     var httpContext = ((HttpApplication) sender).Context;
+                    var httpRequest = httpContext.Request;
+                    var serverVariables = new ServerVariables(httpRequest.ServerVariables);
 
-                    var env = new Dictionary<string, object> {{"", ""}};
+                    var appRelCurExeFilPat = httpRequest.AppRelativeCurrentExecutionFilePath.Substring(1);
 
-                    app(
+                    var env = new Dictionary<string, object>();
+                    new Environment(env)
+                    {
+                        Version = "1.0",
+                        Method = httpRequest.HttpMethod,
+                        UriScheme = httpRequest.Url.Scheme,
+                        ServerName = serverVariables.ServerName,
+                        ServerPort = serverVariables.ServerPort,
+                        BaseUri = "",
+                        RequestUri = appRelCurExeFilPat + "?" + serverVariables.QueryString,
+                        Headers = httpRequest.Headers.AllKeys.ToDictionary(x => x, x => httpRequest.Headers.Get(x)),
+                        Body = (next, error, complete) =>
+                        {
+                            complete();
+                            return () => { };
+                        },
+                    };
+                    Host.Call(
                         env,
                         taskCompletionSource.SetException,
                         (status, headers, body) =>
@@ -53,7 +75,7 @@ namespace Gate.AspNet
                                 }
                                 if (body == null)
                                 {
-                                    taskCompletionSource.SetResult(null);
+                                    taskCompletionSource.SetResult(() => httpContext.Response.End());
                                     return;
                                 }
                                 var stream = httpContext.Response.OutputStream;
@@ -95,7 +117,7 @@ namespace Gate.AspNet
                                         }
                                     },
                                     taskCompletionSource.SetException,
-                                    () => taskCompletionSource.SetResult(null));
+                                    () => taskCompletionSource.SetResult(() => httpContext.Response.End()));
                             }
                             catch (Exception ex)
                             {
@@ -104,11 +126,32 @@ namespace Gate.AspNet
                         });
                     return taskCompletionSource.Task;
                 },
-                ar => ((Task) ar).Wait());
+                ar => ((Task<Action>) ar).Result());
         }
 
-        public void Dispose()
+        class ServerVariables
         {
+            readonly NameValueCollection _serverVariables;
+
+            public ServerVariables(NameValueCollection serverVariables)
+            {
+                _serverVariables = serverVariables;
+            }
+
+            public string QueryString
+            {
+                get { return _serverVariables.Get("QUERY_STRING"); }
+            }
+
+            public string ServerName
+            {
+                get { return _serverVariables.Get("SERVER_NAME"); }
+            }
+
+            public string ServerPort
+            {
+                get { return _serverVariables.Get("SERVER_PORT"); }
+            }
         }
     }
 }

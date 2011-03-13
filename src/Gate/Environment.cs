@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Gate.Helpers
+namespace Gate
 {
     using BodyDelegate = Func<
         // on next
@@ -18,11 +18,15 @@ namespace Gate.Helpers
         Action
         >;
 
-    public class Request
+    /// <summary>
+    /// Utility class providing strongly-typed get/set access to environment properties 
+    /// defined by the OWIN spec
+    /// </summary>
+    public class Environment
     {
         readonly IDictionary<string, object> _env;
 
-        public Request(IDictionary<string, object> env)
+        public Environment(IDictionary<string, object> env)
         {
             _env = env;
         }
@@ -33,12 +37,18 @@ namespace Gate.Helpers
             return _env.TryGetValue(name, out value) ? (T) value : default(T);
         }
 
+        void Set<T>(string name, T value)
+        {
+            _env[name] = value;
+        }
+
         /// <summary>
         /// "owin.Version" 	The string "1.0" indicating OWIN version 1.0. 
         /// </summary>
         public string Version
         {
             get { return Get<string>("owin.Version"); }
+            set { Set("owin.Version", value); }
         }
 
         /// <summary>
@@ -47,6 +57,7 @@ namespace Gate.Helpers
         public string Method
         {
             get { return Get<string>("owin.RequestMethod"); }
+            set { Set("owin.RequestMethod", value); }
         }
 
         /// <summary>
@@ -55,6 +66,7 @@ namespace Gate.Helpers
         public IDictionary<string, string> Headers
         {
             get { return Get<IDictionary<string, string>>("owin.RequestHeaders"); }
+            set { Set("owin.RequestHeaders", value); }
         }
 
         /// <summary>
@@ -63,6 +75,7 @@ namespace Gate.Helpers
         public string BaseUri
         {
             get { return Get<string>("owin.BaseUri"); }
+            set { Set("owin.BaseUri", value); }
         }
 
         /// <summary>
@@ -71,6 +84,7 @@ namespace Gate.Helpers
         public string RequestUri
         {
             get { return Get<string>("owin.RequestUri"); }
+            set { Set("owin.RequestUri", value); }
         }
 
         /// <summary>
@@ -79,6 +93,7 @@ namespace Gate.Helpers
         public string UriScheme
         {
             get { return Get<string>("owin.UriScheme"); }
+            set { Set("owin.UriScheme", value); }
         }
 
         /// <summary>
@@ -87,6 +102,7 @@ namespace Gate.Helpers
         public BodyDelegate Body
         {
             get { return Get<BodyDelegate>("owin.RequestBody"); }
+            set { Set("owin.RequestBody", value); }
         }
 
         /// <summary>
@@ -95,6 +111,7 @@ namespace Gate.Helpers
         public string ServerName
         {
             get { return Get<string>("owin.ServerName"); }
+            set { Set("owin.ServerName", value); }
         }
 
         /// <summary>
@@ -103,6 +120,7 @@ namespace Gate.Helpers
         public string ServerPort
         {
             get { return Get<string>("owin.ServerPort"); }
+            set { Set("owin.ServerPort", value); }
         }
 
         /// <summary>
@@ -111,19 +129,7 @@ namespace Gate.Helpers
         public System.Net.IPEndPoint RemoteEndPoint
         {
             get { return Get<System.Net.IPEndPoint>("owin.RemoteEndPoint"); }
-        }
-
-        /// <summary>
-        /// return only the QueryString portion of the RequestUri
-        /// </summary>
-        public string QueryString
-        {
-            get
-            {
-                var uri = RequestUri;
-                var delimiter = uri == "" ? -1 : uri.IndexOf('?');
-                return delimiter < 0 ? "" : uri.Substring(delimiter + 1);
-            }
+            set { Set("owin.RemoteEndPoint", value); }
         }
     }
 }

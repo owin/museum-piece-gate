@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EnvironmentTests.cs" />
     <Compile Include="InputStreamTests.cs" />
     <Compile Include="OutputStreamTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
