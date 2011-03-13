@@ -54,7 +54,8 @@ namespace Gate.Nancy
                 Path(environment.RequestUri),
                 environment.Headers.ToDictionary(
                     kv => kv.Key,
-                    kv => (IEnumerable<string>) kv.Value.Split(new[] {'\r', 'n'}, StringSplitOptions.RemoveEmptyEntries)),
+                    kv => (IEnumerable<string>) kv.Value.Split(new[] {'\r', 'n'}, StringSplitOptions.RemoveEmptyEntries),
+                    StringComparer.OrdinalIgnoreCase),
                 new InputStream(environment.Body),
                 environment.UriScheme,
                 QueryString(environment.RequestUri));

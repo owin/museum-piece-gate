@@ -57,8 +57,42 @@ namespace Gate.AspNet
                         Headers = httpRequest.Headers.AllKeys.ToDictionary(x => x, x => httpRequest.Headers.Get(x)),
                         Body = (next, error, complete) =>
                         {
-                            complete();
-                            return () => { };
+                            var stream = httpContext.Request.InputStream;
+                            var buffer = new byte[4096];
+                            var continuation = new AsyncCallback[1];
+                            bool[] stopped = {false};
+                            continuation[0] = result =>
+                            {
+                                if (result != null && result.CompletedSynchronously) return;
+                                try
+                                {
+                                    for (;;)
+                                    {
+                                        if (result != null)
+                                        {
+                                            var count = stream.EndRead(result);
+                                            if (stopped[0]) return;
+                                            if (count <= 0)
+                                            {
+                                                complete();
+                                                return;
+                                            }
+                                            var data = new ArraySegment<byte>(buffer, 0, count);
+                                            if (next(data, () => continuation[0](null))) return;
+                                        }
+
+                                        if (stopped[0]) return;
+                                        result = stream.BeginRead(buffer, 0, buffer.Length, continuation[0], null);
+                                        if (!result.CompletedSynchronously) return;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    error(ex);
+                                }
+                            };
+                            continuation[0](null);
+                            return () => { stopped[0] = true; };
                         },
                     };
                     Host.Call(
