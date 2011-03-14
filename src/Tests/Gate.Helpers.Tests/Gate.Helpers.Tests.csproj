@@ -56,7 +56,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Gate.Helpers\Gate.Helpers.csproj">
+    <ProjectReference Include="..\..\Gate.Helpers\Gate.Helpers.csproj">
       <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
       <Name>Gate.Helpers</Name>
     </ProjectReference>

@@ -40,11 +40,11 @@ namespace Gate.Nancy.Tests
             {
                 Version = "1.0",
                 Method = "GET",
-                UriScheme = "http",
+                RequestScheme = "http",
                 ServerName = "localhost",
                 ServerPort = "80",
-                BaseUri = "",
-                RequestUri = "/",
+                RequestPathBase = "",
+                QueryString = "/",
                 Headers = new Dictionary<string, string>(),
                 Body = (next, error, complete) =>
                 {
@@ -56,7 +56,7 @@ namespace Gate.Nancy.Tests
 
         void Execute()
         {
-            _application.Call(_env, ex => { throw ex; }, (status, headers, body) => { });
+            _application.Call(_env, (status, headers, body) => { }, ex => { throw ex; });
         }
 
         [Test]
@@ -70,7 +70,7 @@ namespace Gate.Nancy.Tests
         [Test]
         public void Query_string_is_split_away_from_requesturi()
         {
-            new Environment(_env).RequestUri = "/alpha?beta=gamma";
+            new Environment(_env).QueryString = "/alpha?beta=gamma";
 
             Execute();
 

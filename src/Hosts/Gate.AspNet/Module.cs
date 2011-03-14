@@ -49,11 +49,12 @@ namespace Gate.AspNet
                     {
                         Version = "1.0",
                         Method = httpRequest.HttpMethod,
-                        UriScheme = httpRequest.Url.Scheme,
+                        RequestScheme = httpRequest.Url.Scheme,
                         ServerName = serverVariables.ServerName,
                         ServerPort = serverVariables.ServerPort,
-                        BaseUri = "",
-                        RequestUri = appRelCurExeFilPat + "?" + serverVariables.QueryString,
+                        RequestPath = appRelCurExeFilPat,
+                        RequestPathBase = "",
+                        QueryString = serverVariables.QueryString,
                         Headers = httpRequest.Headers.AllKeys.ToDictionary(x => x, x => httpRequest.Headers.Get(x)),
                         Body = (next, error, complete) =>
                         {
@@ -97,7 +98,6 @@ namespace Gate.AspNet
                     };
                     Host.Call(
                         env,
-                        taskCompletionSource.SetException,
                         (status, headers, body) =>
                         {
                             try
@@ -157,7 +157,7 @@ namespace Gate.AspNet
                             {
                                 taskCompletionSource.SetException(ex);
                             }
-                        });
+                        }, taskCompletionSource.SetException);
                     return taskCompletionSource.Task;
                 },
                 ar => ((Task<Action>) ar).Result());

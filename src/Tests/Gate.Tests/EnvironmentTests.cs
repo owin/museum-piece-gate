@@ -57,26 +57,26 @@ namespace Gate.Tests
             var env = new Dictionary<string, object>
             {
                 {"owin.RequestMethod", "GET"},
-                {"owin.RequestUri", "/foo"},
+                {"owin.QueryString", "/foo"},
                 {"owin.RequestHeaders", headers},
                 {"owin.RequestBody", body},
-                {"owin.BaseUri", "/my-app"},
+                {"owin.RequestPathBase", "/my-app"},
                 {"owin.ServerName", "localhost"},
                 {"owin.ServerPort", "8080"},
-                {"owin.UriScheme", "https"},
+                {"owin.RequestScheme", "https"},
                 {"owin.RemoteEndPoint", new IPEndPoint(IPAddress.Parse("127.0.0.1") ?? IPAddress.None, 80)},
                 {"owin.Version", "1.0"},
             };
 
             var environment = new Environment(env);
             Assert.That(environment.Method, Is.EqualTo("GET"));
-            Assert.That(environment.RequestUri, Is.EqualTo("/foo"));
+            Assert.That(environment.QueryString, Is.EqualTo("/foo"));
             Assert.That(environment.Headers, Is.SameAs(headers));
             Assert.That(environment.Body, Is.SameAs(body));
-            Assert.That(environment.BaseUri, Is.EqualTo("/my-app"));
+            Assert.That(environment.RequestPathBase, Is.EqualTo("/my-app"));
             Assert.That(environment.ServerName, Is.EqualTo("localhost"));
             Assert.That(environment.ServerPort, Is.EqualTo("8080"));
-            Assert.That(environment.UriScheme, Is.EqualTo("https"));
+            Assert.That(environment.RequestScheme, Is.EqualTo("https"));
             Assert.That(environment.RemoteEndPoint.ToString(), Is.EqualTo("127.0.0.1:80"));
             Assert.That(environment.Version, Is.EqualTo("1.0"));
         }
@@ -91,36 +91,36 @@ namespace Gate.Tests
             var environment = new Environment(env)
             {
                 Method="GET",
-                RequestUri="/foo",
+                QueryString="/foo",
                 Headers=headers,
                 Body=body,
-                BaseUri="/my-app",
+                RequestPathBase="/my-app",
                 ServerName="localhost",
                 ServerPort="8080",
-                UriScheme="https",
+                RequestScheme="https",
                 RemoteEndPoint=new IPEndPoint(IPAddress.Parse("127.0.0.1"), 80),
                 Version = "1.0"
             };
             
             Assert.That(environment.Method, Is.EqualTo("GET"));
-            Assert.That(environment.RequestUri, Is.EqualTo("/foo"));
+            Assert.That(environment.QueryString, Is.EqualTo("/foo"));
             Assert.That(environment.Headers, Is.SameAs(headers));
             Assert.That(environment.Body, Is.SameAs(body));
-            Assert.That(environment.BaseUri, Is.EqualTo("/my-app"));
+            Assert.That(environment.RequestPathBase, Is.EqualTo("/my-app"));
             Assert.That(environment.ServerName, Is.EqualTo("localhost"));
             Assert.That(environment.ServerPort, Is.EqualTo("8080"));
-            Assert.That(environment.UriScheme, Is.EqualTo("https"));
+            Assert.That(environment.RequestScheme, Is.EqualTo("https"));
             Assert.That(environment.RemoteEndPoint.ToString(), Is.EqualTo("127.0.0.1:80"));
             Assert.That(environment.Version, Is.EqualTo("1.0"));
             
             Assert.That(env["owin.RequestMethod"], Is.EqualTo("GET"));
-            Assert.That(env["owin.RequestUri"], Is.EqualTo("/foo"));
+            Assert.That(env["owin.QueryString"], Is.EqualTo("/foo"));
             Assert.That(env["owin.RequestHeaders"], Is.SameAs(headers));
             Assert.That(env["owin.RequestBody"], Is.SameAs(body));
-            Assert.That(env["owin.BaseUri"], Is.EqualTo("/my-app"));
+            Assert.That(env["owin.RequestPathBase"], Is.EqualTo("/my-app"));
             Assert.That(env["owin.ServerName"], Is.EqualTo("localhost"));
             Assert.That(env["owin.ServerPort"], Is.EqualTo("8080"));
-            Assert.That(env["owin.UriScheme"], Is.EqualTo("https"));
+            Assert.That(env["owin.RequestScheme"], Is.EqualTo("https"));
             Assert.That(env["owin.RemoteEndPoint.ToString()"], Is.EqualTo("127.0.0.1:80"));
             Assert.That(env["owin.Version"], Is.EqualTo("1.0"));
         }

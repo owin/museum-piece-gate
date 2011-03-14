@@ -69,31 +69,41 @@ namespace Gate
             set { Set("owin.RequestHeaders", value); }
         }
 
+
         /// <summary>
-        /// "owin.BaseUri" 	A string containing the portion of the request URI's path corresponding to the "root" of the application object. See Paths.
+        /// A string containing the request path. The path must be relative to the "root" of the application delegate
         /// </summary>
-        public string BaseUri
+        public string RequestPath
         {
-            get { return Get<string>("owin.BaseUri"); }
-            set { Set("owin.BaseUri", value); }
+            get { return Get<string>("owin.RequestPath"); }
+            set { Set("owin.RequestPath", value); }
         }
 
         /// <summary>
-        /// "owin.RequestUri" 	A string containing the HTTP request URI of the request. The value must include the query string of the HTTP request URI (e.g., "/path/and?query=string"). The URI must be relative to the application delegate; see Paths.
+        /// "owin.RequestPathBase" 	A string containing the portion of the request URI's path corresponding to the "root" of the application object. See Paths.
         /// </summary>
-        public string RequestUri
+        public string RequestPathBase
         {
-            get { return Get<string>("owin.RequestUri"); }
-            set { Set("owin.RequestUri", value); }
+            get { return Get<string>("owin.RequestPathBase"); }
+            set { Set("owin.RequestPathBase", value); }
         }
 
         /// <summary>
-        /// "owin.UriScheme" 	A string representing the URI scheme (e.g. "http", "https")
+        /// "owin.QueryString"  A string containing the query string component of the HTTP request URI (e.g., "foo=bar&baz=quux"). The value may be an empty string.
         /// </summary>
-        public string UriScheme
+        public string QueryString
         {
-            get { return Get<string>("owin.UriScheme"); }
-            set { Set("owin.UriScheme", value); }
+            get { return Get<string>("owin.QueryString"); }
+            set { Set("owin.QueryString", value); }
+        }
+
+        /// <summary>
+        /// "owin.RequestScheme" 	A string representing the URI scheme (e.g. "http", "https")
+        /// </summary>
+        public string RequestScheme
+        {
+            get { return Get<string>("owin.RequestScheme"); }
+            set { Set("owin.RequestScheme", value); }
         }
 
         /// <summary>
