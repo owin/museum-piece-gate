@@ -19,12 +19,12 @@ namespace Gate
 
         public static string GetRequestUri(this IDictionary<string, object> env)
         {
-            return env["owin.RequestUri"] as string;
+            return env["owin.RequestPath"] as string;
         }
 
         public static void SetRequestUri(this IDictionary<string, object> env, string value)
         {
-            env["owin.RequestUri"] = value;
+            env["owin.RequestPath"] = value;
         }
 
         public static IDictionary<string, string> GetRequestHeaders(this IDictionary<string, object> env)

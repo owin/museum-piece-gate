@@ -51,14 +51,14 @@ namespace Gate.Nancy
             var environment = new Environment(env);
             var request = new Request(
                 environment.Method,
-                Path(environment.RequestUri),
+                Path(environment.Path),
                 environment.Headers.ToDictionary(
                     kv => kv.Key,
                     kv => (IEnumerable<string>) kv.Value.Split(new[] {'\r', 'n'}, StringSplitOptions.RemoveEmptyEntries),
                     StringComparer.OrdinalIgnoreCase),
                 new InputStream(environment.Body),
-                environment.UriScheme,
-                QueryString(environment.RequestUri));
+                environment.Scheme,
+                QueryString(environment.Path));
 
             return request;
         }

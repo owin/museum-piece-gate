@@ -40,17 +40,16 @@ namespace Gate.Nancy.Tests
             {
                 Version = "1.0",
                 Method = "GET",
-                UriScheme = "http",
-                ServerName = "localhost",
-                ServerPort = "80",
-                BaseUri = "",
-                RequestUri = "/",
+                Scheme = "http",
+                PathBase = "",
+                Path = "/",
                 Headers = new Dictionary<string, string>(),
                 Body = (next, error, complete) =>
                 {
                     complete();
                     return () => { };
                 },
+                QueryString = "hello=world",
             };
         }
 
@@ -70,7 +69,7 @@ namespace Gate.Nancy.Tests
         [Test]
         public void Query_string_is_split_away_from_requesturi()
         {
-            new Environment(_env).RequestUri = "/alpha?beta=gamma";
+            new Environment(_env).Path = "/alpha?beta=gamma";
 
             Execute();
 

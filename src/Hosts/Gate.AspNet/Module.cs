@@ -49,11 +49,10 @@ namespace Gate.AspNet
                     {
                         Version = "1.0",
                         Method = httpRequest.HttpMethod,
-                        UriScheme = httpRequest.Url.Scheme,
-                        ServerName = serverVariables.ServerName,
-                        ServerPort = serverVariables.ServerPort,
-                        BaseUri = "",
-                        RequestUri = appRelCurExeFilPat + "?" + serverVariables.QueryString,
+                        Scheme = httpRequest.Url.Scheme,
+                        PathBase = "",
+                        Path = appRelCurExeFilPat + "?" + serverVariables.QueryString,
+                        QueryString = "hello=world",
                         Headers = httpRequest.Headers.AllKeys.ToDictionary(x => x, x => httpRequest.Headers.Get(x)),
                         Body = (next, error, complete) =>
                         {

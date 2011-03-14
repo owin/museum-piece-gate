@@ -43,7 +43,7 @@ namespace Gate
         }
 
         /// <summary>
-        /// "owin.Version" 	The string "1.0" indicating OWIN version 1.0. 
+        /// "owin.Version"  The string "1.0" indicating OWIN version 1.0. 
         /// </summary>
         public string Version
         {
@@ -52,7 +52,7 @@ namespace Gate
         }
 
         /// <summary>
-        /// "owin.RequestMethod" 	A string containing the HTTP request method of the request (e.g., "GET", "POST").
+        /// "owin.RequestMethod" A string containing the HTTP request method of the request (e.g., "GET", "POST"). 
         /// </summary>
         public string Method
         {
@@ -61,7 +61,7 @@ namespace Gate
         }
 
         /// <summary>
-        /// "owin.RequestHeaders" 	An instance of IDictionary&lt;string, string&gt; which represents the HTTP headers present in the request (the request header dictionary); see Headers.
+        /// "owin.RequestHeaders"  An instance of IDictionary&lt;string, string&gt; which represents the HTTP headers present in the request (the request header dictionary); see Headers.  
         /// </summary>
         public IDictionary<string, string> Headers
         {
@@ -70,30 +70,30 @@ namespace Gate
         }
 
         /// <summary>
-        /// "owin.BaseUri" 	A string containing the portion of the request URI's path corresponding to the "root" of the application object. See Paths.
+        /// "owin.RequestPathBase"  A string containing the portion of the request path corresponding to the "root" of the application delegate; see Paths. The value may be an empty string.  
         /// </summary>
-        public string BaseUri
+        public string PathBase
         {
-            get { return Get<string>("owin.BaseUri"); }
-            set { Set("owin.BaseUri", value); }
+            get { return Get<string>("owin.RequestPathBase"); }
+            set { Set("owin.RequestPathBase", value); }
         }
 
         /// <summary>
-        /// "owin.RequestUri" 	A string containing the HTTP request URI of the request. The value must include the query string of the HTTP request URI (e.g., "/path/and?query=string"). The URI must be relative to the application delegate; see Paths.
+        /// "owin.RequestPath" A string containing the request path. The path must be relative to the "root" of the application delegate; see Paths. 
         /// </summary>
-        public string RequestUri
+        public string Path
         {
-            get { return Get<string>("owin.RequestUri"); }
-            set { Set("owin.RequestUri", value); }
+            get { return Get<string>("owin.RequestPath"); }
+            set { Set("owin.RequestPath", value); }
         }
 
         /// <summary>
-        /// "owin.UriScheme" 	A string representing the URI scheme (e.g. "http", "https")
+        /// "owin.RequestScheme"  Hosts should attempt to provide a sensible value for the URI scheme, falling back to the string "http"; see URI Scheme.  
         /// </summary>
-        public string UriScheme
+        public string Scheme
         {
-            get { return Get<string>("owin.UriScheme"); }
-            set { Set("owin.UriScheme", value); }
+            get { return Get<string>("owin.RequestScheme"); }
+            set { Set("owin.RequestScheme", value); }
         }
 
         /// <summary>
@@ -105,31 +105,14 @@ namespace Gate
             set { Set("owin.RequestBody", value); }
         }
 
+        
         /// <summary>
-        /// "owin.ServerName"	Hosts should provide values which can be used to reconstruct the full URI of the request in absence of the HTTP Host header of the request.
+        /// "owin.RequestPath" 	A string containing the HTTP request URI of the request. The value must include the query string of the HTTP request URI (e.g., "/path/and?query=string"). The URI must be relative to the application delegate; see Paths.
         /// </summary>
-        public string ServerName
+        public string QueryString
         {
-            get { return Get<string>("owin.ServerName"); }
-            set { Set("owin.ServerName", value); }
-        }
-
-        /// <summary>
-        /// "owin.ServerPort" 	Hosts should provide values which can be used to reconstruct the full URI of the request in absence of the HTTP Host header of the request.
-        /// </summary>
-        public string ServerPort
-        {
-            get { return Get<string>("owin.ServerPort"); }
-            set { Set("owin.ServerPort", value); }
-        }
-
-        /// <summary>
-        /// "owin.RemoteEndPoint" 	A System.Net.IPEndPoint representing the connected client.
-        /// </summary>
-        public System.Net.IPEndPoint RemoteEndPoint
-        {
-            get { return Get<System.Net.IPEndPoint>("owin.RemoteEndPoint"); }
-            set { Set("owin.RemoteEndPoint", value); }
+            get { return Get<string>("owin.RequestQueryString"); }
+            set { Set("owin.RequestQueryString", value); }
         }
     }
 }
