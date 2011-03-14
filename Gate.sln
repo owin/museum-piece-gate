@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate", "src\Gate\Gate.csproj", "{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Tests", "src\Gate.Tests\Gate.Tests.csproj", "{1BB1CEC7-EAAB-4B25-900B-4981DA873320}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Tests", "src\Tests\Gate.Tests\Gate.Tests.csproj", "{1BB1CEC7-EAAB-4B25-900B-4981DA873320}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Helpers", "src\Gate.Helpers\Gate.Helpers.csproj", "{85392B05-6564-472B-9A7B-58AFB721F2AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Helpers.Tests", "src\Gate.Helpers.Tests\Gate.Helpers.Tests.csproj", "{CF3647E1-E3CD-472D-96E2-7B44497D52D8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Helpers.Tests", "src\Tests\Gate.Helpers.Tests\Gate.Helpers.Tests.csproj", "{CF3647E1-E3CD-472D-96E2-7B44497D52D8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{04624DF3-D446-482F-9EE7-44CB5E64B194}"
 EndProject
