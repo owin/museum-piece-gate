@@ -17,6 +17,7 @@ namespace Gate.Tests.Spooling
             return new ArraySegment<byte>(new byte[count], 0, count);
         }
 
+
         static ArraySegment<byte> Data(int count, string fill)
         {
             var data = Data(count);
@@ -68,7 +69,7 @@ namespace Gate.Tests.Spooling
             Assert.That(asyncPush, Is.False);
 
             var data = Data(100);
-            var asyncPull = spool.Pull(data, () => { });
+            var asyncPull = spool.Pull(data, new int[1], () => { });
             Assert.That(asyncPull, Is.False);
 
             AssertDataEqual(data, Data(100, "hello"));
@@ -80,7 +81,7 @@ namespace Gate.Tests.Spooling
             var spool = new Spool();
             var data = Data(100);
             var callbackPull = false;
-            var asyncPull = spool.Pull(data, () => callbackPull = true);
+            var asyncPull = spool.Pull(data, new int[1], () => callbackPull = true);
             Assert.That(asyncPull, Is.True);
             Assert.That(callbackPull, Is.False);
 
@@ -103,7 +104,7 @@ namespace Gate.Tests.Spooling
             Assert.That(callbackPush, Is.False);
 
             var callbackPull = false;
-            var asyncPull = spool.Pull(data, () => callbackPull = true);
+            var asyncPull = spool.Pull(data, new int[1], () => callbackPull = true);
             Assert.That(asyncPull, Is.False);
             Assert.That(callbackPull, Is.False);
             Assert.That(callbackPush, Is.True);
@@ -114,35 +115,39 @@ namespace Gate.Tests.Spooling
         [Test]
         public void Pushing_odd_sizes_completes_partially()
         {
-            var spool = new Spool();            
+            var spool = new Spool();
 
+            // push 100 (delayed)
             var callbackPushOne = false;
             var asyncPushOne = spool.Push(Data(100, "hello"), () => callbackPushOne = true);
             Assert.That(asyncPushOne, Is.True);
             Assert.That(callbackPushOne, Is.False);
 
+            // pull 50 (immediate)
             var dataOne = Data(50);
             var callbackPullOne = false;
-            var asyncPullOne = spool.Pull(dataOne, () => callbackPullOne = true);
+            var asyncPullOne = spool.Pull(dataOne, new int[1], () => callbackPullOne = true);
             Assert.That(asyncPullOne, Is.False);
             Assert.That(callbackPullOne, Is.False);
             Assert.That(callbackPushOne, Is.False);
 
             AssertDataEqual(dataOne, Data(50, "hello"));
 
+            // pull 100 (delayed, and release first push)
             var dataTwo = Data(100);
             var callbackPullTwo = false;
-            var asyncPullTwo = spool.Pull(dataTwo, () => callbackPullTwo = true);
+            var asyncPullTwo = spool.Pull(dataTwo, new int[1], () => callbackPullTwo = true);
             Assert.That(asyncPullTwo, Is.True);
             Assert.That(callbackPullTwo, Is.False);
             Assert.That(callbackPushOne, Is.True);
 
+            // push 50 (immediate, and releases second pull)
             var callbackPushTwo = false;
             var asyncPushTwo = spool.Push(Data(50, "hello"), () => callbackPushTwo = true);
             Assert.That(asyncPushTwo, Is.False);
             Assert.That(callbackPushTwo, Is.False);
             Assert.That(callbackPullTwo, Is.True);
-            
+
             AssertDataEqual(dataTwo, Data(100, "hello"));
 
             //final state
@@ -154,6 +159,42 @@ namespace Gate.Tests.Spooling
             Assert.That(callbackPullTwo, Is.True);
             Assert.That(asyncPushTwo, Is.False);
             Assert.That(callbackPushTwo, Is.False);
+        }
+
+        [Test]
+        public void Completing_ends_partial_pull()
+        {
+            var spool = new Spool();
+            spool.Push(Data(50, "hello"), null);
+
+            var data = Data(200);
+            var retval = new int[1];
+            var callbackPull = false;
+            var asyncPull = spool.Pull(data, retval, () => callbackPull = true);
+            Assert.That(asyncPull, Is.True);
+            Assert.That(callbackPull, Is.False);
+
+            spool.Push(Data(50, "hello"), null);
+            Assert.That(callbackPull, Is.False);
+
+            spool.PushComplete();
+            Assert.That(callbackPull, Is.True);
+            Assert.That(retval[0], Is.EqualTo(100));
+        }
+
+        [Test]
+        public void Completing_makes_further_pulls_return_with_nothing()
+        {
+            var spool = new Spool();
+            spool.PushComplete();
+
+            var data = Data(200);
+            var retval = new int[1];
+            var callbackPull = false;
+            var asyncPull = spool.Pull(data, retval, () => callbackPull = true);
+            Assert.That(asyncPull, Is.False);
+            Assert.That(callbackPull, Is.False);
+            Assert.That(retval[0], Is.EqualTo(0));
         }
     }
 }

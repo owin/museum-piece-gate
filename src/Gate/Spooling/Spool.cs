@@ -7,17 +7,17 @@ namespace Gate.Spooling
     {
         public bool Push(ArraySegment<byte> data, Action continuation)
         {
-            //todo - potential fatal embrace
-            //todo - protect against concurrent async push
+            //todo - protect against concurrent async calls
             lock (_asyncPull)
             {
                 // drop onto outstanding pull operations first
                 while (data.Count != 0 && _asyncPull.Data.Count != 0)
                 {
-                    Drain(data, _asyncPull.Data, (a, b) =>
+                    Drain(data, _asyncPull.Data, (a, b, c) =>
                     {
                         data = a;
                         _asyncPull.Data = b;
+                        _asyncPull.Retval[0] += c;
                     });
                     if (_asyncPull.Data.Count == 0 && _asyncPull.Continuation != null)
                     {
@@ -53,8 +53,21 @@ namespace Gate.Spooling
             }
         }
 
+        public void PushComplete()
+        {
+            lock (_asyncPull)
+            {
+                _complete = true;
+                if (_asyncPull.Continuation != null)
+                {
+                    var pullContinuation = _asyncPull.Continuation;
+                    _asyncPull.Continuation = null;
+                    pullContinuation();
+                }
+            }
+        }
 
-        public bool Pull(ArraySegment<byte> data, Action continuation)
+        public bool Pull(ArraySegment<byte> data, int[] retval, Action continuation)
         {
             Action exitGate = null;
             lock (_asyncPush)
@@ -64,13 +77,18 @@ namespace Gate.Spooling
                 {
                     lock (_buffer)
                     {
-                        _buffer.Drain(data, d1 => { data = d1; });
+                        _buffer.Drain(data, (d1, c) =>
+                        {
+                            data = d1;
+                            retval[0] += c;
+                        });
                     }
                     if (data.Count == 0) return false;
-                    Drain(_asyncPush.Data, data, (d0, d1) =>
+                    Drain(_asyncPush.Data, data, (d0, d1, c) =>
                     {
                         _asyncPush.Data = d0;
                         data = d1;
+                        retval[0] += c;
                     });
                     if (_asyncPush.Data.Count == 0 && _asyncPush.Continuation != null)
                     {
@@ -80,29 +98,30 @@ namespace Gate.Spooling
                     }
                 }
             }
+            // pull fully satisfied
+            if (data.Count == 0)
+            {
+                return false;
+            }
+
+            //todo - there's a simultaneous push-pull problem entering this lock...
             lock (_asyncPull)
             {
                 lock (_asyncPush)
                 {
-                    // pull fully satisfied
-                    if (data.Count == 0)
-                    {
-                        return false;
-                    }
+                    if (_complete) return false;
 
-                    lock (_asyncPull)
+                    _asyncPull.Data = data;
+                    _asyncPull.Retval = retval;
+                    if (continuation != null)
                     {
-                        _asyncPull.Data = data;
-                        if (continuation != null)
-                        {
-                            _asyncPull.Continuation = continuation;
-                        }
-                        else
-                        {
-                            var gate = new ManualResetEvent(false);
-                            _asyncPull.Continuation = () => { gate.Set(); };
-                            exitGate = () => { gate.WaitOne(); };
-                        }
+                        _asyncPull.Continuation = continuation;
+                    }
+                    else
+                    {
+                        var gate = new ManualResetEvent(false);
+                        _asyncPull.Continuation = () => { gate.Set(); };
+                        exitGate = () => { gate.WaitOne(); };
                     }
                 }
             }
@@ -117,18 +136,19 @@ namespace Gate.Spooling
             return true;
         }
 
-        
+
         static void Drain(
             ArraySegment<byte> source,
             ArraySegment<byte> destination,
-            Action<ArraySegment<byte>, ArraySegment<byte>> result)
+            Action<ArraySegment<byte>, ArraySegment<byte>, int> result)
         {
             var copied = Math.Min(source.Count, destination.Count);
             if (copied == 0) return;
             Array.Copy(source.Array, source.Offset, destination.Array, destination.Offset, copied);
             result(
                 source.Count == copied ? Empty : new ArraySegment<byte>(source.Array, source.Offset + copied, source.Count - copied),
-                destination.Count == copied ? Empty : new ArraySegment<byte>(destination.Array, destination.Offset + copied, destination.Count - copied));
+                destination.Count == copied ? Empty : new ArraySegment<byte>(destination.Array, destination.Offset + copied, destination.Count - copied),
+                copied);
         }
 
         static readonly ArraySegment<byte> Empty = new ArraySegment<byte>(new byte[0], 0, 0);
@@ -141,14 +161,17 @@ namespace Gate.Spooling
             public AsyncOp()
             {
                 Data = Empty;
+                Retval = new int[1];
             }
 
-            public ArraySegment<byte> Data;
+            public ArraySegment<byte> Data { get; set; }
+            public int[] Retval { get; set; }
             public Action Continuation { get; set; }
         }
 
 
         readonly Buffer _buffer = new Buffer();
+        bool _complete;
 
         class Buffer
         {
@@ -168,13 +191,13 @@ namespace Gate.Spooling
                 Data = concat;
             }
 
-            public void Drain(ArraySegment<byte> data, Action<ArraySegment<byte>> result)
+            public void Drain(ArraySegment<byte> data, Action<ArraySegment<byte>, int> result)
             {
                 var copied = Math.Min(data.Count, Data.Count);
                 if (copied == 0) return;
                 Array.Copy(Data.Array, Data.Offset, data.Array, data.Offset, copied);
                 Data = new ArraySegment<byte>(Data.Array, Data.Offset + copied, Data.Count - copied);
-                result(new ArraySegment<byte>(data.Array, data.Offset + copied, data.Count - copied));
+                result(new ArraySegment<byte>(data.Array, data.Offset + copied, data.Count - copied), copied);
             }
         }
     }
