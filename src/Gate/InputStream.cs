@@ -9,9 +9,9 @@ namespace Gate
 {
     public class InputStream : Stream
     {
-        Spool _spool = new Spool();
-
-        Action cancel;
+        readonly Spool _spool = new Spool();
+        Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> _input;
+        Action _cancel;
 
         public InputStream(Func<
             Func<ArraySegment<byte>, Action, bool>,
@@ -19,7 +19,16 @@ namespace Gate
             Action,
             Action> input)
         {
-            cancel = input(OnNext, OnError, OnCompleted);
+            _input = input;
+        }
+
+        void EnsureStarted()
+        {
+            if (_input != null)
+            {
+                _cancel = _input(OnNext, OnError, OnCompleted);
+                _input = null;
+            }
         }
 
         bool OnNext(ArraySegment<byte> data, Action ct)
@@ -38,13 +47,16 @@ namespace Gate
             _spool.PushComplete();
         }
 
-        public override void Close() {
-            cancel();
+        public override void Close()
+        {
+            _cancel();
             base.Close();
         }
 
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
+            EnsureStarted();
+
             var asyncResult = new AsyncResult<int>(callback, state);
             var retval = new int[1];
             var async = _spool.Pull(new ArraySegment<byte>(buffer, offset, count), retval, () => asyncResult.SetAsCompleted(retval[0], false));
@@ -53,6 +65,7 @@ namespace Gate
             return asyncResult;
         }
 
+
         public override int EndRead(IAsyncResult asyncResult)
         {
             return ((AsyncResult<int>) asyncResult).EndInvoke();
@@ -60,6 +73,8 @@ namespace Gate
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            EnsureStarted();
+
             var retval = new int[1];
             _spool.Pull(new ArraySegment<byte>(buffer, offset, count), retval, null);
             return retval[0];
