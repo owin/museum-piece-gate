@@ -66,14 +66,5 @@ namespace Gate.Nancy.Tests
             Assert.That(_request, Is.Not.Null);
         }
 
-        [Test]
-        public void Query_string_is_split_away_from_requesturi()
-        {
-            new Environment(_env).Path = "/alpha?beta=gamma";
-
-            Execute();
-
-            Assert.That((string) _request.Query.beta, Is.EqualTo("gamma"));
-        }
     }
 }
