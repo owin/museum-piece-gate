@@ -7,7 +7,6 @@ namespace Gate.AspNet
 {
     using AppDelegate = Action< // app
         IDictionary<string, object>, // env
-        Action<Exception>, // fault
         Action< // result
             string, // status
             IDictionary<string, string>, // headers
@@ -18,12 +17,13 @@ namespace Gate.AspNet
                     bool>, // async                    
                 Action<Exception>, // error
                 Action, // complete
-                Action>>>; // cancel
+                Action>>, // cancel
+                Action<Exception>>; // error
 
 
     public static class Host
     {
-        static AppDelegate _app = (env, fault, result) => result("404 NOTFOUND", null, null);
+        static AppDelegate _app = (env, result, fault) => result("404 NOTFOUND", null, null);
 
         public static void Run(AppDelegate app)
         {

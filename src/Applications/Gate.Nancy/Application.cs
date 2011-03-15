@@ -27,7 +27,7 @@ namespace Gate.Nancy
             _engine = engine;
         }
 
-        public static Action<IDictionary<string, object>, Action<Exception>, ResultDelegate> Create()
+        public static Action<IDictionary<string, object>, ResultDelegate, Action<Exception>> Create()
         {
             var bootstrapper = NancyBootstrapperLocator.Bootstrapper;
             bootstrapper.Initialise();
@@ -38,8 +38,8 @@ namespace Gate.Nancy
 
         public void Call(
             IDictionary<string, object> env,
-            Action<Exception> fault,
-            ResultDelegate result)
+            ResultDelegate result,
+            Action<Exception> fault)
         {
             var nancyRequest = CreateNancyRequestFromEnvironment(env);
             var nancyContext = _engine.HandleRequest(nancyRequest);

@@ -55,7 +55,7 @@ namespace Gate.Nancy.Tests
 
         void Execute()
         {
-            _application.Call(_env, ex => { throw ex; }, (status, headers, body) => { });
+            _application.Call(_env, (status, headers, body) => { }, ex => { throw ex; });
         }
 
         [Test]

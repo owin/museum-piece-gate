@@ -96,7 +96,6 @@ namespace Gate.AspNet
                     };
                     Host.Call(
                         env,
-                        taskCompletionSource.SetException,
                         (status, headers, body) =>
                         {
                             try
@@ -156,7 +155,8 @@ namespace Gate.AspNet
                             {
                                 taskCompletionSource.SetException(ex);
                             }
-                        });
+                        },
+                        taskCompletionSource.SetException);
                     return taskCompletionSource.Task;
                 },
                 ar => ((Task<Action>) ar).Result());
