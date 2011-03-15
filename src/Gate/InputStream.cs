@@ -49,7 +49,11 @@ namespace Gate
 
         public override void Close()
         {
-            _cancel();
+            if (_cancel != null)
+            {
+                _cancel();
+                _cancel = null;
+            }
             base.Close();
         }
 
