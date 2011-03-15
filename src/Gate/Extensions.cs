@@ -17,14 +17,34 @@ namespace Gate
             env["owin.RequestMethod"] = value;
         }
 
-        public static string GetRequestUri(this IDictionary<string, object> env)
+        public static string GetRequestPath(this IDictionary<string, object> env)
         {
             return env["owin.RequestPath"] as string;
         }
 
-        public static void SetRequestUri(this IDictionary<string, object> env, string value)
+        public static void SetRequestPath(this IDictionary<string, object> env, string value)
         {
             env["owin.RequestPath"] = value;
+        }
+
+        public static string GetRequestPathBase(this IDictionary<string, object> env)
+        {
+            return env["owin.RequestPathBase"] as string;
+        }
+
+        public static void SetRequestPathBase(this IDictionary<string, object> env, string value)
+        {
+            env["owin.RequestPathBase"] = value;
+        }
+
+        public static string GetRequestQueryString(this IDictionary<string, object> env)
+        {
+            return env["owin.RequestQueryString"] as string;
+        }
+
+        public static void SetRequestQueryString(this IDictionary<string, object> env, string value)
+        {
+            env["owin.RequestQueryString"] = value;
         }
 
         public static IDictionary<string, string> GetRequestHeaders(this IDictionary<string, object> env)
@@ -58,5 +78,26 @@ namespace Gate
         {
             env["gate.RequestBody"] = value;
         }
+
+        public static string GetRequestScheme(this IDictionary<string, object> env)
+        {
+            return env["owin.RequestScheme"] as string;
+        }
+
+        public static void SetRequestScheme(this IDictionary<string, object> env, string value)
+        {
+            env["owin.RequestScheme"] = value;
+        }
+
+        public static string GetVersion(this IDictionary<string, object> env)
+        {
+            return env["owin.Version"] as string;
+        }
+
+        public static void SetVersion(this IDictionary<string, object> env, string value)
+        {
+            env["owin.Version"] = value;
+        }
+
     }
 }
