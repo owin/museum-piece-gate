@@ -51,8 +51,8 @@ namespace Gate.AspNet
                         Method = httpRequest.HttpMethod,
                         Scheme = httpRequest.Url.Scheme,
                         PathBase = "",
-                        Path = appRelCurExeFilPat + "?" + serverVariables.QueryString,
-                        QueryString = "hello=world",
+                        Path = appRelCurExeFilPat,
+                        QueryString = serverVariables.QueryString,
                         Headers = httpRequest.Headers.AllKeys.ToDictionary(x => x, x => httpRequest.Headers.Get(x)),
                         Body = (next, error, complete) =>
                         {
