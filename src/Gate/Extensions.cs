@@ -7,9 +7,15 @@ namespace Gate
 {
     public static class Extensions
     {
+        static T Get<T>(IDictionary<string, object> env, string name)
+        {
+            object value;
+            return env.TryGetValue(name, out value) ? (T)value : default(T);
+        }
+
         public static string GetRequestMethod(this IDictionary<string, object> env)
         {
-            return env["owin.RequestMethod"] as string;
+            return Get<string>(env, "owin.RequestMethod");
         }
 
         public static void SetRequestMethod(this IDictionary<string, object> env, string value)
@@ -19,7 +25,7 @@ namespace Gate
 
         public static string GetRequestPath(this IDictionary<string, object> env)
         {
-            return env["owin.RequestPath"] as string;
+            return Get<string>(env, "owin.RequestPath");
         }
 
         public static void SetRequestPath(this IDictionary<string, object> env, string value)
@@ -29,7 +35,7 @@ namespace Gate
 
         public static string GetRequestPathBase(this IDictionary<string, object> env)
         {
-            return env["owin.RequestPathBase"] as string;
+            return Get<string>(env, "owin.RequestPathBase");
         }
 
         public static void SetRequestPathBase(this IDictionary<string, object> env, string value)
@@ -39,7 +45,7 @@ namespace Gate
 
         public static string GetRequestQueryString(this IDictionary<string, object> env)
         {
-            return env["owin.RequestQueryString"] as string;
+            return Get<string>(env, "owin.RequestQueryString");
         }
 
         public static void SetRequestQueryString(this IDictionary<string, object> env, string value)
@@ -49,7 +55,7 @@ namespace Gate
 
         public static IDictionary<string, string> GetRequestHeaders(this IDictionary<string, object> env)
         {
-            return env["owin.RequestHeaders"] as IDictionary<string, string>;
+            return Get<IDictionary<string, string>>(env, "owin.RequestHeaders");
         }
 
         public static void SetRequestHeaders(this IDictionary<string, object> env, IDictionary<string, string> value)
@@ -60,28 +66,26 @@ namespace Gate
         public static string GetRequestHeader(this IDictionary<string, object> env, string name)
         {
             var headers = env.GetRequestHeaders();
-            return headers.ContainsKey(name) ? headers[name] : null;
+            string value;
+            return headers.TryGetValue(name, out value) ? value : default(string);
         }
 
         public static Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>
             GetRequestBody(this IDictionary<string, object> env)
         {
-            return
-                env["gate.RequestBody"] as
-                    Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>;
+            return Get<Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>>
+                (env, "gate.RequestBody");
         }
 
         public static void SetRequestBody(this IDictionary<string, object> env,
-            Func
-                <Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action
-                    > value)
+            Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> value)
         {
             env["gate.RequestBody"] = value;
         }
 
         public static string GetRequestScheme(this IDictionary<string, object> env)
         {
-            return env["owin.RequestScheme"] as string;
+            return Get<string>(env, "owin.RequestScheme");
         }
 
         public static void SetRequestScheme(this IDictionary<string, object> env, string value)
@@ -91,7 +95,7 @@ namespace Gate
 
         public static string GetVersion(this IDictionary<string, object> env)
         {
-            return env["owin.Version"] as string;
+            return Get<string>(env, "owin.Version");
         }
 
         public static void SetVersion(this IDictionary<string, object> env, string value)
