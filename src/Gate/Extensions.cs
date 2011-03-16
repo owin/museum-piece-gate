@@ -114,6 +114,5 @@ namespace Gate
         {
             env["owin.Version"] = value;
         }
-
     }
 }
