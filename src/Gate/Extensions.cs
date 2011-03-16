@@ -5,6 +5,21 @@ using System.Text;
 
 namespace Gate
 {
+    using BodyDelegate = Func<
+        // on next
+        Func<
+            ArraySegment<byte>, // data
+            Action, // continuation
+            bool // continuation was or will be invoked
+            >,
+        // on error
+        Action<Exception>,
+        // on complete
+        Action,
+        // cancel 
+        Action
+        >;
+
     public static class Extensions
     {
         static T Get<T>(IDictionary<string, object> env, string name)
@@ -70,15 +85,12 @@ namespace Gate
             return headers.TryGetValue(name, out value) ? value : default(string);
         }
 
-        public static Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>
-            GetRequestBody(this IDictionary<string, object> env)
+        public static BodyDelegate GetRequestBody(this IDictionary<string, object> env)
         {
-            return Get<Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>>
-                (env, "gate.RequestBody");
+            return Get<BodyDelegate>(env, "gate.RequestBody");
         }
 
-        public static void SetRequestBody(this IDictionary<string, object> env,
-            Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> value)
+        public static void SetRequestBody(this IDictionary<string, object> env, BodyDelegate value)
         {
             env["gate.RequestBody"] = value;
         }
