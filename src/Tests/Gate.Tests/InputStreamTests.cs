@@ -66,7 +66,7 @@ namespace Gate.Tests
             Assert.AreEqual("asdfjkl;lol", result);
         }
 
-        [Test]
+        [Test,Ignore("Not yet tested")]
         public void PsCsException()
         {
             CreateStream((next, fault, complete) =>
@@ -103,7 +103,7 @@ namespace Gate.Tests
             Assert.AreEqual("asdfjkl;lol", result);
         }
 
-        [Test]
+        [Test,Ignore("Not yet tested")]
         public void PaCsException()
         {
             CreateStream((next, fault, complete) =>

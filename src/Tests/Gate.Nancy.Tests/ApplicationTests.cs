@@ -65,6 +65,5 @@ namespace Gate.Nancy.Tests
 
             Assert.That(_request, Is.Not.Null);
         }
-
     }
 }

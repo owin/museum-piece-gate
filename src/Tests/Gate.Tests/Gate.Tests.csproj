@@ -63,6 +63,10 @@
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Gate.TestHelpers\Gate.TestHelpers.csproj">
+      <Project>{E4256EDF-0B54-4715-8E66-8D4D4887E15F}</Project>
+      <Name>Gate.TestHelpers</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{CF3647E1-E3CD-472D-96E2-7B44497D52D8}</ProjectGuid>
+    <ProjectGuid>{9FDB2522-B9C8-4104-81C8-7A2D961D0F24}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Gate.Helpers.Tests</RootNamespace>
-    <AssemblyName>Gate.Helpers.Tests</AssemblyName>
+    <RootNamespace>Gate.Startup.Tests</RootNamespace>
+    <AssemblyName>Gate.Startup.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -34,12 +34,6 @@
     <Reference Include="nunit.framework">
       <HintPath>..\..\..\packages\NUnit.2.5.9.10348\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.mocks">
-      <HintPath>..\..\..\packages\NUnit.2.5.9.10348\lib\nunit.mocks.dll</HintPath>
-    </Reference>
-    <Reference Include="pnunit.framework">
-      <HintPath>..\..\..\packages\NUnit.2.5.9.10348\lib\pnunit.framework.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -49,16 +43,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="RequestTests.cs" />
+    <Compile Include="AppBuilderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Gate.Helpers\Gate.Helpers.csproj">
-      <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
-      <Name>Gate.Helpers</Name>
+    <ProjectReference Include="..\..\Gate.Startup\Gate.Startup.csproj">
+      <Project>{9AB4A187-06E2-4DA4-8040-32EC4A1FFC0F}</Project>
+      <Name>Gate.Startup</Name>
     </ProjectReference>
     <ProjectReference Include="..\Gate.TestHelpers\Gate.TestHelpers.csproj">
       <Project>{E4256EDF-0B54-4715-8E66-8D4D4887E15F}</Project>
