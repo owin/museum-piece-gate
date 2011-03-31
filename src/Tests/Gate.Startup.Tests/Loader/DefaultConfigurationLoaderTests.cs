@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Gate.Startup;
 using Gate.Startup.Loader;
 using NUnit.Framework;
 
@@ -113,9 +114,23 @@ namespace Gate.Startup.Tests.Loader
             Assert.That(MultiConfigs.BarCalls, Is.EqualTo(0));
             Assert.That(MultiConfigs.ConfigurationCalls, Is.EqualTo(1));
         }
+
+        
+        [Test]
+        public void Comma_may_be_used_if_assembly_name_doesnt_match_namespace()
+        {
+            var loader = new DefaultConfigurationLoader();
+            var configuration = loader.Load("DifferentNamespace.DoesNotFollowConvention, Gate.Startup.Tests");
+
+            DifferentNamespace.DoesNotFollowConvention.ConfigurationCalls = 0;
+
+            configuration(null);
+
+            Assert.That(DifferentNamespace.DoesNotFollowConvention.ConfigurationCalls, Is.EqualTo(1));
+        }
     }
 
-    internal class MultiConfigs
+    public class MultiConfigs
     {
         public static int FooCalls;
 
@@ -138,4 +153,18 @@ namespace Gate.Startup.Tests.Loader
             ConfigurationCalls += 1;
         }
     }
+}
+
+namespace DifferentNamespace
+{
+    public class DoesNotFollowConvention
+    {     
+        public static int ConfigurationCalls;
+
+        public static void Configuration(AppBuilder builder)
+        {
+            ConfigurationCalls += 1;
+        }
+    }
+
 }

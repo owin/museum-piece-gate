@@ -10,15 +10,10 @@ namespace Gate.Startup.Loader
     {
         public Action<AppBuilder> Load(string configurationString)
         {
-            // normalize away leading/trailing dots and whatnot
-            var longestPossibleName = DotByDot(configurationString).FirstOrDefault();
-
-            // go through each segment except the first (assuming the last segment is a class name at a minimum)
-            foreach (var assemblyName in DotByDot(longestPossibleName).Skip(1))
+            foreach (var hit in HuntForAssemblies(configurationString))
             {
-                var assembly = TryAssemblyLoad(assemblyName);
-                if (assembly == null)
-                    continue;
+                var longestPossibleName = hit.Item1;
+                var assembly = hit.Item2;
 
                 // try the longest 2 possibilities at most (because you can't have a dot in the method name)
                 foreach (var typeName in DotByDot(longestPossibleName).Take(2))
@@ -38,6 +33,32 @@ namespace Gate.Startup.Loader
                 }
             }
             return null;
+        }
+
+        static IEnumerable<Tuple<string, Assembly>> HuntForAssemblies(string configurationString)
+        {
+            var commaIndex = configurationString.IndexOf(',');
+            if (commaIndex >= 0)
+            {
+                // break the type and assembly apart
+                var longestPossibleName = DotByDot(configurationString.Substring(0, commaIndex)).FirstOrDefault();
+                var assemblyName = configurationString.Substring(commaIndex + 1).Trim();
+                var assembly = TryAssemblyLoad(assemblyName);
+                if (assembly != null)
+                    yield return Tuple.Create(longestPossibleName, assembly);
+            }
+            else
+            {
+                var longestPossibleName = DotByDot(configurationString).FirstOrDefault();
+
+                // go through each segment except the first (assuming the last segment is a class name at a minimum))
+                foreach (var assemblyName in DotByDot(longestPossibleName).Skip(1))
+                {
+                    var assembly = TryAssemblyLoad(assemblyName);
+                    if (assembly != null)
+                        yield return Tuple.Create(longestPossibleName, assembly);
+                }
+            }
         }
 
         static Assembly TryAssemblyLoad(string assemblyName)
