@@ -19,9 +19,12 @@ namespace Gate.Startup.Tests
                 Action>>, // cancel
         Action<Exception>>; // error
 
+
     [TestFixture]
     public class AppBuilderTests
     {
+        // ReSharper disable InconsistentNaming
+
         public static AppDelegate TwoHundredFoo = (env, result, fault) => result("200 Foo", null, null);
 
         [Test]
@@ -49,6 +52,31 @@ namespace Gate.Startup.Tests
             var app = new AppBuilder()
                 .Run(TwoHundredFoo)
                 .Build();
+            var stat = "";
+            app(null, (status, headers, body) => stat = status, ex => { });
+            Assert.That(stat, Is.EqualTo("200 Foo"));
+        }
+
+        static void MyConfig(AppBuilder builder)
+        {
+            builder.Run(TwoHundredFoo);
+        }
+
+        [Test]
+        public void Calling_Configure_passes_control_to_a_builder_configuration_method()
+        {
+            var app = new AppBuilder()
+                .Configure(MyConfig)
+                .Build();
+            var stat = "";
+            app(null, (status, headers, body) => stat = status, ex => { });
+            Assert.That(stat, Is.EqualTo("200 Foo"));
+        }
+
+        [Test]
+        public void Overloaded_constructor_calls_Configure()
+        {
+            var app = new AppBuilder(MyConfig).Build();
             var stat = "";
             app(null, (status, headers, body) => stat = status, ex => { });
             Assert.That(stat, Is.EqualTo("200 Foo"));

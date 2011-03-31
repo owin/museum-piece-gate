@@ -41,6 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppBuilder.cs" />
+    <Compile Include="Loader\DefaultConfigurationLoader.cs" />
+    <Compile Include="Loader\IConfigurationLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RunExtensions.cs" />
   </ItemGroup>
