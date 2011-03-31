@@ -30,7 +30,7 @@ namespace Gate.Startup
         }
 
         public AppBuilder(string configurationString)
-            : this(new DefaultConfigurationLoader(), configuration)
+            : this(new DefaultConfigurationLoader(), configurationString)
         {
         }
 
