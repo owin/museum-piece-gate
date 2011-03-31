@@ -57,7 +57,7 @@ namespace Gate.Startup.Tests
             Assert.That(stat, Is.EqualTo("200 Foo"));
         }
 
-        static void MyConfig(AppBuilder builder)
+        public static void MyConfig(AppBuilder builder)
         {
             builder.Run(TwoHundredFoo);
         }
@@ -80,6 +80,21 @@ namespace Gate.Startup.Tests
             var stat = "";
             app(null, (status, headers, body) => stat = status, ex => { });
             Assert.That(stat, Is.EqualTo("200 Foo"));
+        }
+
+        public void NoWay(AppBuilder builder)
+        {
+            builder.Run((a, b, c) => b("200 Way", null, null));
+        }
+
+        [Test]
+        public void String_constructor_overload_also_eventually_calls_Configure()
+        {
+            var builder = new AppBuilder("Gate.Startup.Tests.AppBuilderTests.NoWay");
+            var app = builder.Build();
+            var stat = "";
+            app(null, (status, headers, body) => stat = status, ex => { });
+            Assert.That(stat, Is.EqualTo("200 Way"));
         }
     }
 }
