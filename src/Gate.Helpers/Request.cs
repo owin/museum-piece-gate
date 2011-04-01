@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 
 namespace Gate.Helpers
 {
@@ -108,9 +109,9 @@ namespace Gate.Helpers
         /// <summary>
         /// "owin.RemoteEndPoint" 	A System.Net.IPEndPoint representing the connected client.
         /// </summary>
-        public System.Net.IPEndPoint RemoteEndPoint
+        public IPEndPoint RemoteEndPoint
         {
-            get { return Get<System.Net.IPEndPoint>("owin.RemoteEndPoint"); }
+            get { return Get<IPEndPoint>("owin.RemoteEndPoint"); }
         }
 
         /// <summary>
@@ -124,6 +125,11 @@ namespace Gate.Helpers
                 var delimiter = uri == "" ? -1 : uri.IndexOf('?');
                 return delimiter < 0 ? "" : uri.Substring(delimiter + 1);
             }
+        }
+
+        public IDictionary<string, string> GET
+        {
+            get { throw new NotImplementedException(); }
         }
     }
 }

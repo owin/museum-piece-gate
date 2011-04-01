@@ -75,6 +75,10 @@
       <Project>{BA66262D-8CDC-4743-98D0-D40F1DD6A220}</Project>
       <Name>Gate.Nancy</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Gate.Helpers\Gate.Helpers.csproj">
+      <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
+      <Name>Gate.Helpers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Hosts\Gate.AspNet\Gate.AspNet.csproj">
       <Project>{F32E456A-F26E-4C5D-93B8-311941A714E4}</Project>
       <Name>Gate.AspNet</Name>

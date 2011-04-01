@@ -66,7 +66,10 @@ namespace Gate.Startup
 
         public AppBuilder Configure(string configurationString)
         {
-            return Configure(ConfigurationLoader.Load(configurationString));
+            var configuration = ConfigurationLoader.Load(configurationString);
+            if (configuration == null)
+                throw new ArgumentException("Configuration not loadable", "configurationString");
+            return Configure(configuration);
         }
 
         public AppBuilder Use(Func<AppDelegate, AppDelegate> factory)
