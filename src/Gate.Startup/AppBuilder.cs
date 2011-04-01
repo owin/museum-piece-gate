@@ -23,6 +23,7 @@ namespace Gate.Startup
     {
         public IConfigurationLoader ConfigurationLoader { get; set; }
         AppDelegate _app;
+        readonly Stack<Func<AppDelegate, AppDelegate>> _middleware = new Stack<Func<AppDelegate, AppDelegate>>();
 
         public AppBuilder()
             : this(new DefaultConfigurationLoader())
@@ -68,9 +69,20 @@ namespace Gate.Startup
             return Configure(ConfigurationLoader.Load(configurationString));
         }
 
+        public AppBuilder Use(Func<AppDelegate, AppDelegate> factory)
+        {
+            _middleware.Push(factory);
+            return this;
+        }
+
         public AppBuilder Run(Func<AppDelegate> factory)
         {
-            _app = factory();
+            var chain = factory.Invoke();
+            while (_middleware.Count != 0)
+            {
+                chain = _middleware.Pop().Invoke(chain);
+            }
+            _app = chain;
             return this;
         }
 

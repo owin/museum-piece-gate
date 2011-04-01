@@ -96,5 +96,63 @@ namespace Gate.Startup.Tests
             app(null, (status, headers, body) => stat = status, ex => { });
             Assert.That(stat, Is.EqualTo("200 Way"));
         }
+
+
+        static string Execute(AppDelegate app)
+        {
+            var stat = "";
+            app(null, (status, headers, body) => stat = status, null);
+            return stat;
+        }
+
+        static AppDelegate ReturnStatus(string status)
+        {
+            return (env, result, fault) => result(status, null, null);
+        }
+
+        static AppDelegate AppendStatus(AppDelegate app, string text)
+        {
+            return (env, result, fault) =>
+                app(
+                    env,
+                    (status, headers, body) =>
+                        result(status + text, headers, body),
+                    fault);
+        }
+
+        [Test]
+        public void Extension_methods_let_you_call_factories_with_parameters()
+        {
+            var app = new AppBuilder()
+                .Run(ReturnStatus, "200 Foo")
+                .Build();
+
+            var status = Execute(app);
+            Assert.That(status, Is.EqualTo("200 Foo"));
+        }
+
+        [Test]
+        public void Calling_Use_wraps_middleware_around_app()
+        {
+            var app = new AppBuilder()
+                .Use(AppendStatus, "[2]")
+                .Run(ReturnStatus, "[1]")
+                .Build();
+            var status = Execute(app);
+            Assert.That(status, Is.EqualTo("[1][2]"));
+        }
+
+        [Test]
+        public void Use_middleware_runs_in_the_order_they_are_registered()
+        {
+            var app = new AppBuilder()
+                .Use(AppendStatus, "[3]")
+                .Use(AppendStatus, "[2]")
+                .Run(ReturnStatus, "[1]")
+                .Build();
+
+            var status = Execute(app);
+            Assert.That(status, Is.EqualTo("[1][2][3]"));
+        }
     }
 }
