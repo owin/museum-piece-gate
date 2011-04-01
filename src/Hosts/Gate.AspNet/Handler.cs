@@ -18,10 +18,10 @@ namespace Gate.AspNet
                 Action<Exception>, // error
                 Action, // complete
                 Action>>, // cancel
-                Action<Exception>>; // error
+        Action<Exception>>; // fault
 
 
-    public static class Host
+    public static class Handler
     {
         static AppDelegate _app = (env, result, fault) => result("404 NOTFOUND", null, null);
 

@@ -1,10 +1,28 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using DifferentNamespace;
 using Gate.Startup;
 using Gate.Startup.Loader;
 using NUnit.Framework;
 
 namespace Gate.Startup.Tests.Loader
 {
+    using AppDelegate = Action< // app
+        IDictionary<string, object>, // env
+        Action< // result
+            string, // status
+            IDictionary<string, string>, // headers
+            Func< // body
+                Func< // next
+                    ArraySegment<byte>, // data
+                    Action, // continuation
+                    bool>, // async                    
+                Action<Exception>, // error
+                Action, // complete
+                Action>>, // cancel
+        Action<Exception>>; // fault
+
     [TestFixture]
     public class DefaultConfigurationLoaderTests
     {
@@ -47,7 +65,6 @@ namespace Gate.Startup.Tests.Loader
         }
 
         static int _helloCalls;
-
         public static void Hello(AppBuilder builder)
         {
             _helloCalls += 1;
@@ -115,18 +132,36 @@ namespace Gate.Startup.Tests.Loader
             Assert.That(MultiConfigs.ConfigurationCalls, Is.EqualTo(1));
         }
 
-        
+
         [Test]
         public void Comma_may_be_used_if_assembly_name_doesnt_match_namespace()
         {
             var loader = new DefaultConfigurationLoader();
             var configuration = loader.Load("DifferentNamespace.DoesNotFollowConvention, Gate.Startup.Tests");
 
-            DifferentNamespace.DoesNotFollowConvention.ConfigurationCalls = 0;
+            DoesNotFollowConvention.ConfigurationCalls = 0;
 
             configuration(null);
 
-            Assert.That(DifferentNamespace.DoesNotFollowConvention.ConfigurationCalls, Is.EqualTo(1));
+            Assert.That(DoesNotFollowConvention.ConfigurationCalls, Is.EqualTo(1));
+        }
+
+        static int _alphaCalls;
+        public static AppDelegate Alpha()
+        {
+            return (env, result, fault) => ++_alphaCalls;
+        }
+
+        [Test]
+        public void Method_that_returns_app_action_may_also_be_called()
+        {
+            var loader = new DefaultConfigurationLoader();
+            var configuration = loader.Load("Gate.Startup.Tests.Loader.DefaultConfigurationLoaderTests.Alpha");
+            
+            var app = new AppBuilder(configuration).Build();
+            _alphaCalls=0;
+            app(null,null,null);
+            Assert.That(_alphaCalls, Is.EqualTo(1));
         }
     }
 
@@ -158,7 +193,7 @@ namespace Gate.Startup.Tests.Loader
 namespace DifferentNamespace
 {
     public class DoesNotFollowConvention
-    {     
+    {
         public static int ConfigurationCalls;
 
         public static void Configuration(AppBuilder builder)
@@ -166,5 +201,4 @@ namespace DifferentNamespace
             ConfigurationCalls += 1;
         }
     }
-
 }

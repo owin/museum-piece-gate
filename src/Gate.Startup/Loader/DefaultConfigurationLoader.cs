@@ -6,6 +6,21 @@ using System.Reflection;
 
 namespace Gate.Startup.Loader
 {
+    using AppDelegate = Action< // app
+        IDictionary<string, object>, // env
+        Action< // result
+            string, // status
+            IDictionary<string, string>, // headers
+            Func< // body
+                Func< // next
+                    ArraySegment<byte>, // data
+                    Action, // continuation
+                    bool>, // async                    
+                Action<Exception>, // error
+                Action, // complete
+                Action>>, // cancel
+        Action<Exception>>; // error
+
     public class DefaultConfigurationLoader : IConfigurationLoader
     {
         public Action<AppBuilder> Load(string configurationString)
@@ -94,22 +109,31 @@ namespace Gate.Startup.Loader
                 return null;
             }
 
-            if (methodInfo.ReturnType != typeof (void))
+            if (Matches(methodInfo, typeof (void), typeof (AppBuilder)))
             {
-                return null;
+                var instance = methodInfo.IsStatic ? null : Activator.CreateInstance(type);
+                return builder => methodInfo.Invoke(instance, new[] {builder});
             }
+
+            if (Matches(methodInfo, typeof (AppDelegate)))
+            {
+                var instance = methodInfo.IsStatic ? null : Activator.CreateInstance(type);
+                return builder => builder.Run((AppDelegate) methodInfo.Invoke(instance, new object[0] {}));
+            }
+
+            return null;
+        }
+
+        static bool Matches(MethodInfo methodInfo, Type returnType, params Type[] parameterTypes)
+        {
+            if (methodInfo.ReturnType != returnType)
+                return false;
 
             var parameters = methodInfo.GetParameters();
-            if (parameters.Length != 1 ||
-                parameters[0].ParameterType != typeof (AppBuilder))
-            {
-                return null;
-            }
+            if (parameters.Length != parameterTypes.Length)
+                return false;
 
-
-            var instance = methodInfo.IsStatic ? null : Activator.CreateInstance(type);
-
-            return builder => methodInfo.Invoke(instance, new[] {builder});
+            return parameters.Zip(parameterTypes, (pi, t) => pi.ParameterType == t).All(b => b);
         }
     }
 }
