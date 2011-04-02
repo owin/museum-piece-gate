@@ -37,7 +37,6 @@
   <ItemGroup>
     <Compile Include="AsyncResult.cs" />
     <Compile Include="Environment.cs" />
-    <Compile Include="Extensions.cs" />
     <Compile Include="InputStream.cs" />
     <Compile Include="OutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -20,11 +20,26 @@ namespace Gate
 
     /// <summary>
     /// Utility class providing strongly-typed get/set access to environment properties 
-    /// defined by the OWIN spec
+    /// defined by the OWIN spec.
     /// </summary>
     public class Environment
     {
+        static readonly string RequestMethodKey = "owin.RequestMethod";
+        static readonly string RequestPathBaseKey = "owin.RequestPathBase";
+        static readonly string RequestPathKey = "owin.RequestPath";
+        static readonly string RequestQueryStringKey = "owin.RequestQueryString";
+        static readonly string RequestBodyKey = "owin.RequestBody";
+        static readonly string RequestHeadersKey = "owin.RequestHeaders";
+        static readonly string RequestSchemeKey = "owin.RequestScheme";
+        static readonly string VersionKey = "owin.Version";
+    
         readonly IDictionary<string, object> _env;
+
+        T Get<T>(string name)
+        {
+            object value;
+            return _env.TryGetValue(name, out value) ? (T)value : default(T);
+        }
 
         public Environment(IDictionary<string, object> env)
         {
@@ -36,8 +51,8 @@ namespace Gate
         /// </summary>
         public string Version
         {
-            get { return _env.GetVersion(); }
-            set { _env.SetVersion(value); }
+            get { return Get<string>(VersionKey); }
+            set { _env[VersionKey] = value; }
         }
 
         /// <summary>
@@ -45,8 +60,8 @@ namespace Gate
         /// </summary>
         public string Method
         {
-            get { return _env.GetRequestMethod(); }
-            set { _env.SetRequestMethod(value); }
+            get { return Get<string>(RequestMethodKey); }
+            set { _env[RequestMethodKey] = value; }
         }
 
         /// <summary>
@@ -54,8 +69,8 @@ namespace Gate
         /// </summary>
         public IDictionary<string, string> Headers
         {
-            get { return _env.GetRequestHeaders(); }
-            set { _env.SetRequestHeaders(value); }
+            get { return Get<IDictionary<string, string>>(RequestHeadersKey); }
+            set { _env[RequestHeadersKey] = value; }
         }
 
         /// <summary>
@@ -63,8 +78,8 @@ namespace Gate
         /// </summary>
         public string PathBase
         {
-            get { return _env.GetRequestPathBase(); }
-            set { _env.SetRequestPathBase(value); }
+            get { return Get<string>(RequestPathBaseKey); }
+            set { _env[RequestPathBaseKey] = value; }
         }
 
         /// <summary>
@@ -72,8 +87,8 @@ namespace Gate
         /// </summary>
         public string Path
         {
-            get { return _env.GetRequestPath(); }
-            set { _env.SetRequestPath(value); }
+            get { return Get<string>(RequestPathKey); }
+            set { _env[RequestPathKey] = value; }
         }
 
         /// <summary>
@@ -81,8 +96,8 @@ namespace Gate
         /// </summary>
         public string Scheme
         {
-            get { return _env.GetRequestScheme(); }
-            set { _env.SetRequestScheme(value); }
+            get { return Get<string>(RequestSchemeKey); }
+            set { _env[RequestSchemeKey] = value; }
         }
 
         /// <summary>
@@ -90,18 +105,17 @@ namespace Gate
         /// </summary>
         public BodyDelegate Body
         {
-            get { return _env.GetRequestBody(); }
-            set { _env.SetRequestBody(value); }
+            get { return Get<BodyDelegate>(RequestBodyKey); }
+            set { _env[RequestBodyKey] = value; }
         }
-
         
         /// <summary>
         /// "owin.QueryString" A string containing the query string component of the HTTP request URI (e.g., "foo=bar&baz=quux"). The value may be an empty string.
         /// </summary>
         public string QueryString
         {
-            get { return _env.GetRequestQueryString(); }
-            set { _env.SetRequestQueryString(value); }
+            get { return Get<string>(RequestQueryStringKey); }
+            set { _env[RequestQueryStringKey] = value; }
         }
     }
 }
