@@ -31,11 +31,11 @@ namespace Gate.Helpers
                 var wilson = "left - right\r\n123456789012\r\nhello world!\r\n";
 
                 var href = "?flip=left";
-                if (request.GET["flip"] == "left") 
+                if (request.Query["flip"] == "left") 
                 {
-                    wilson = wilson.Split(new[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
+                    wilson = wilson.Split(new[] {System.Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
                         .Select(line => new string(line.Reverse().ToArray()))
-                        .Aggregate("", (agg, line) => agg + line + Environment.NewLine);
+                        .Aggregate("", (agg, line) => agg + line + System.Environment.NewLine);
                     href = "?flip=right";
                 }
 
@@ -43,7 +43,7 @@ namespace Gate.Helpers
                 response.Write("<pre>");
                 response.Write(wilson);
                 response.Write("</pre>");
-                if (request.GET["flip"] == "crash") 
+                if (request.Query["flip"] == "crash") 
                 {
                     throw new ApplicationException("Wilson crashed!");
                 }
@@ -64,10 +64,10 @@ namespace Gate.Helpers
                 ThreadPool.QueueUserWorkItem(_ => {
                     try {
                         var href = "?flip=left";
-                        if (request.GET["flip"] == "left") {
-                            wilson = wilson.Split(new[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
+                        if (request.Query["flip"] == "left") {
+                            wilson = wilson.Split(new[] {System.Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
                                 .Select(line => new string(line.Reverse().ToArray()))
-                                .Aggregate("", (agg, line) => agg + line + Environment.NewLine);
+                                .Aggregate("", (agg, line) => agg + line + System.Environment.NewLine);
                             href = "?flip=right";
                         }
 
@@ -77,7 +77,7 @@ namespace Gate.Helpers
                             () => response.Write(wilson),
                             () => response.Write("</pre>"),
                             () => {
-                                if (request.GET["flip"] == "crash") {
+                                if (request.Query["flip"] == "crash") {
                                     throw new ApplicationException("Wilson crashed!");
                                 }
                             },

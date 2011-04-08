@@ -43,6 +43,8 @@
     <Compile Include="Request.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Response.cs" />
+    <Compile Include="ShowExceptions.cs" />
+    <Compile Include="Utils\ParamDictionary.cs" />
     <Compile Include="Wilson.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -51,6 +53,7 @@
       <Name>Gate</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

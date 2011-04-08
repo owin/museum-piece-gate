@@ -25,6 +25,8 @@ namespace Gate.Helpers
         public Response(ResultDelegate result)
         {
             _result = result;
+
+            Status = "200 OK";
             Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             Encoding = Encoding.UTF8;
         }
@@ -56,8 +58,8 @@ namespace Gate.Helpers
         public Response Write(string text)
         {
             // this could be more efficient if it spooled the immutable strings instead...
-            var bytes = Encoding.GetBytes(text);
-            _spool.Push(new ArraySegment<byte>(bytes, 0, bytes.Length), null);
+            var data = Encoding.GetBytes(text);
+            _spool.Push(new ArraySegment<byte>(data), null);
             return this;
         }
 
@@ -68,7 +70,29 @@ namespace Gate.Helpers
 
         public void Finish(Action<Action<Exception>, Action> body)
         {
-            _result(Status, Headers, null);
+            _result(
+                Status,
+                Headers,
+                (next, error, complete) =>
+                {
+                    // TODO - this is sloppy and barely works
+                    var buffer = new byte[512];
+
+                    body(error, _spool.PushComplete);
+
+                    for (;;)
+                    {
+                        var count = new[] {0};
+                        _spool.Pull(new ArraySegment<byte>(buffer), count, null);
+                        if (count[0] == 0)
+                            break;
+                        next(new ArraySegment<byte>(buffer, 0, count[0]), null);
+                    }
+
+                    complete();
+
+                    return () => { };
+                });
         }
     }
 }

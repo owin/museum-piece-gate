@@ -31,13 +31,13 @@ namespace Gate
             _env = env;
         }
 
-        T Get<T>(string name)
+        protected T Get<T>(string name)
         {
             object value;
             return _env.TryGetValue(name, out value) ? (T) value : default(T);
         }
 
-        void Set<T>(string name, T value)
+        protected void Set<T>(string name, T value)
         {
             _env[name] = value;
         }
