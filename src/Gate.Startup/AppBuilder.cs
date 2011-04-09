@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Gate.Startup.Loader;
 
 namespace Gate.Startup
@@ -22,8 +23,10 @@ namespace Gate.Startup
     public class AppBuilder
     {
         public IConfigurationLoader ConfigurationLoader { get; set; }
-        AppDelegate _app;
-        readonly Stack<Func<AppDelegate, AppDelegate>> _middleware = new Stack<Func<AppDelegate, AppDelegate>>();
+        readonly IList<Func<AppDelegate, AppDelegate>> _stack = new List<Func<AppDelegate, AppDelegate>>();
+
+        Func<AppDelegate, IDictionary<string, AppDelegate>, AppDelegate> _mapper;
+        IDictionary<string, AppDelegate> _maps;
 
         public AppBuilder()
             : this(new DefaultConfigurationLoader())
@@ -57,6 +60,11 @@ namespace Gate.Startup
             Configure(configuration);
         }
 
+        public AppBuilder SetUrlMapper(Func<AppDelegate, IDictionary<string, AppDelegate>, AppDelegate> mapper)
+        {
+            _mapper = mapper;
+            return this;
+        }
 
         public AppBuilder Configure(Action<AppBuilder> configuration)
         {
@@ -74,24 +82,37 @@ namespace Gate.Startup
 
         public AppBuilder Use(Func<AppDelegate, AppDelegate> factory)
         {
-            _middleware.Push(factory);
+            _stack.Add(factory);
+            _maps = null;
             return this;
         }
 
         public AppBuilder Run(Func<AppDelegate> factory)
         {
-            var chain = factory.Invoke();
-            while (_middleware.Count != 0)
+            _stack.Add(_ => factory());
+            _maps = null;
+            return this;
+        }
+
+        public AppBuilder Map(string path, Action<AppBuilder> configuration)
+        {
+            if (_maps == null)
             {
-                chain = _middleware.Pop().Invoke(chain);
+                _maps = new Dictionary<string, AppDelegate>();
+                _stack.Add(app => _mapper(app, _maps));
             }
-            _app = chain;
+            _maps[path] = new AppBuilder(ConfigurationLoader)
+                .SetUrlMapper(_mapper)
+                .Configure(configuration)
+                .Build();
             return this;
         }
 
         public AppDelegate Build()
         {
-            return _app;
+            return _stack
+                .Reverse()
+                .Aggregate(default(AppDelegate), (app, factory) => factory(app));
         }
     }
 }

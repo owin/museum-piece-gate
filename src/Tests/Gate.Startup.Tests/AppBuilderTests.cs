@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Gate.Helpers;
 using NUnit.Framework;
 
 namespace Gate.Startup.Tests
@@ -153,6 +154,32 @@ namespace Gate.Startup.Tests
 
             var status = Execute(app);
             Assert.That(status, Is.EqualTo("[1][2][3]"));
+        }
+
+        [Test]
+        public void UrlMapper_is_called_only_when_Map_is_used()
+        {
+            IDictionary<string, AppDelegate> mapsArg = null;
+            Func<IDictionary<string, AppDelegate>, AppDelegate> mapper = maps =>
+            {
+                mapsArg = maps;
+                return (a,b,c)=>{};
+            };
+
+            var app1 = new AppBuilder()
+                .SetUrlMapper(mapper)
+                .Run(ReturnStatus, "[1]")
+                .Build();
+            Assert.That(app1, Is.Not.Null);
+            Assert.That(mapsArg, Is.Null);
+
+            var app2 = new AppBuilder()
+                .SetUrlMapper(mapper)
+                .Map("/foo", ReturnStatus, "[1]")
+                .Build();
+
+            Assert.That(app2, Is.Not.Null);
+            Assert.That(mapsArg, Is.Not.Null);
         }
     }
 }
