@@ -22,7 +22,7 @@ namespace Gate.Helpers
         Action<Exception>>; // error
 
     public class Wilson {
-        public static AppDelegate App() 
+        public static AppDelegate Create() 
         {
             return (env, result, fault) => 
             {

@@ -20,7 +20,7 @@ namespace Gate.Helpers
 
     public class ShowExceptions
     {
-        public static AppDelegate New(AppDelegate app)
+        public static AppDelegate Create(AppDelegate app)
         {
             return (env, result, fault) =>
             {

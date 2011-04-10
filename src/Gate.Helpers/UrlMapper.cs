@@ -41,14 +41,14 @@ namespace Gate.Helpers
             _app = app;
         }
 
-        public static AppDelegate New(IDictionary<string, AppDelegate> map)
+        public static AppDelegate Create(IDictionary<string, AppDelegate> map)
         {
-            return New(null, map);
+            return Create(null, map);
         }
 
-        public static AppDelegate New(AppDelegate app, IDictionary<string, AppDelegate> map)
+        public static AppDelegate Create(AppDelegate app, IDictionary<string, AppDelegate> map)
         {
-            var mapper = new UrlMapper(app ?? NotFound.New());
+            var mapper = new UrlMapper(app ?? NotFound.Create());
             mapper.Remap(map);
             return mapper.Call;
         }

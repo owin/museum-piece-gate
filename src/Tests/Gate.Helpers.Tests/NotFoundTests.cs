@@ -13,7 +13,7 @@ namespace Gate.Helpers.Tests
         [Test]
         public void Not_found_returns_status_404()
         {
-            var app = NotFound.New();
+            var app = NotFound.Create();
             var callResult = AppUtils.Call(app);
             Assert.That(callResult.Status, Is.EqualTo("404 NOTFOUND"));
         }

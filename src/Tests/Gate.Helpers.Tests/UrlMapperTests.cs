@@ -28,7 +28,7 @@ namespace Gate.Helpers.Tests
         public void Call_on_empty_map_defaults_to_status_404()
         {
             var map = new Dictionary<string, AppDelegate>();
-            var app = UrlMapper.New(map);
+            var app = UrlMapper.Create(map);
             var callResult = AppUtils.Call(app);
             Assert.That(callResult.Status, Is.EqualTo("404 NOTFOUND"));
             Assert.That(callResult.BodyText, Is.StringContaining("Not Found"));
@@ -39,9 +39,9 @@ namespace Gate.Helpers.Tests
         {
             var map = new Dictionary<string, AppDelegate>
             {
-                {"/foo", Wilson.App()}
+                {"/foo", Wilson.Create()}
             };
-            var app = UrlMapper.New(map);
+            var app = UrlMapper.Create(map);
 
             var rootResult = AppUtils.Call(app);
             Assert.That(rootResult.Status, Is.EqualTo("404 NOTFOUND"));
@@ -60,7 +60,7 @@ namespace Gate.Helpers.Tests
                 {"/foo", AppUtils.ShowEnvironment()}
             };
 
-            var app = UrlMapper.New(map);
+            var app = UrlMapper.Create(map);
 
             var rootResult = AppUtils.Call(app);
             Assert.That(rootResult.Status, Is.EqualTo("404 NOTFOUND"));

@@ -22,7 +22,7 @@ namespace Gate.Helpers
 
     public class NotFound
     {
-        public static AppDelegate New()
+        public static AppDelegate Create()
         {
             var body = new ArraySegment<byte>(Encoding.UTF8.GetBytes(@"
 <!DOCTYPE HTML PUBLIC ""-//IETF//DTD HTML 2.0//EN"">
