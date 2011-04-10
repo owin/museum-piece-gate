@@ -29,6 +29,7 @@ namespace Gate.Helpers.Tests
             var app = UrlMapper.New(new Dictionary<string,AppDelegate>());
             var callResult = AppUtils.Call(app);
             Assert.That(callResult.Status, Is.EqualTo("404 NOTFOUND"));
+            Assert.That(callResult.BodyText, Is.StringContaining("Not Found"));
         }
     }
 }

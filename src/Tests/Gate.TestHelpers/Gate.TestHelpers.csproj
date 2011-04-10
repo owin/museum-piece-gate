@@ -41,6 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppUtils.cs" />
+    <Compile Include="FakeConsumer.cs" />
+    <Compile Include="FakeProducer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

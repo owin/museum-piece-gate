@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Nancy.Hosting.Owin.Tests.Fakes;
 
 namespace Gate.TestHelpers
 {
@@ -36,6 +37,11 @@ namespace Gate.TestHelpers
                     callResult.Status = status;
                     callResult.Headers = headers;
                     callResult.Body = body;
+
+                    callResult.Consumer = new FakeConsumer(true);
+                    callResult.Consumer.InvokeBodyDelegate(callResult.Body, true);
+                    callResult.BodyText = Encoding.UTF8.GetString(callResult.Consumer.ConsumedData);
+
                     wait.Set();
                 },
                 exception =>
@@ -53,6 +59,9 @@ namespace Gate.TestHelpers
         public string Status { get; set; }
         public IDictionary<string, string> Headers { get; set; }
         public Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> Body { get; set; }
+        public string BodyText { get; set; }
+
+        public FakeConsumer Consumer { get; set; }
         public Exception Exception { get; set; }
     }
 }
