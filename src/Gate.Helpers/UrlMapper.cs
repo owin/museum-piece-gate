@@ -29,9 +29,14 @@ namespace Gate.Helpers
             _app = app;
         }
 
+        public static AppDelegate New(IDictionary<string, AppDelegate> map)
+        {
+            return New(null, map);
+        }
+
         public static AppDelegate New(AppDelegate app, IDictionary<string, AppDelegate> map)
         {
-            var mapper = new UrlMapper(app);
+            var mapper = new UrlMapper(app ?? NotFound.New());
             mapper.Remap(map);
             return mapper.Call;
         }
