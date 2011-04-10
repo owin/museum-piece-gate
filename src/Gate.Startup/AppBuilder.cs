@@ -98,8 +98,9 @@ namespace Gate.Startup
         {
             if (_maps == null)
             {
-                _maps = new Dictionary<string, AppDelegate>();
-                _stack.Add(app => _mapper(app, _maps));
+                var maps = new Dictionary<string, AppDelegate>();
+                _stack.Add(app => _mapper(app, maps));
+                _maps = maps;
             }
             _maps[path] = new AppBuilder(ConfigurationLoader)
                 .SetUrlMapper(_mapper)

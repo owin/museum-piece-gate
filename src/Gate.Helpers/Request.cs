@@ -31,7 +31,8 @@ namespace Gate.Helpers
             get
             {
                 var text = QueryString;
-                if (Get<string>("Gate.Helpers.Request.Query:text") != text)
+                if (Get<string>("Gate.Helpers.Request.Query:text") != text ||
+                    Get<IDictionary<string, string>>("Gate.Helpers.Request.Query") == null)
                 {
                     Set("Gate.Helpers.Request.Query:text", text);
                     Set("Gate.Helpers.Request.Query", ParamDictionary.Parse(text));

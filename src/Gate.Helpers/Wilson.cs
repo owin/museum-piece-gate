@@ -39,7 +39,7 @@ namespace Gate.Helpers
                     href = "?flip=right";
                 }
 
-                response.Write("<title>Hutchtastic</title>");
+                response.Write("<title>Wilson</title>");
                 response.Write("<pre>");
                 response.Write(wilson);
                 response.Write("</pre>");

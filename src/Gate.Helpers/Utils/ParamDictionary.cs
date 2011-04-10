@@ -6,8 +6,9 @@ using System.Linq;
 namespace Gate.Helpers.Utils {
     public class ParamDictionary : IDictionary<string, string> {
         public static IDictionary<string, string> Parse(string queryString) {
+
             // TODO: this is wrong in many, many ways
-            var d = queryString.Split("&".ToCharArray())
+            var d = (queryString??"").Split("&".ToCharArray())
                 .Select(item => item.Split("=".ToCharArray(), 2))
                 .Where(item => item.Length == 2)
                 .GroupBy(item => item[0], item => Decode(item[1]), StringComparer.OrdinalIgnoreCase)

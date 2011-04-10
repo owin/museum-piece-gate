@@ -8,8 +8,10 @@ namespace Sample.AspNet
         public void Configuration(AppBuilder builder)
         {
             builder
+                .SetUrlMapper(UrlMapper.New)
                 .Use(ShowExceptions.New)
-                .Run(Wilson.App);
+                .Map("/wilson", Wilson.App)
+                .Run(Gate.Nancy.Application.Create);
         }
     }
 }
