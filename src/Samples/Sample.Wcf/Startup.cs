@@ -8,7 +8,6 @@ namespace Sample.Wcf
         public void Configuration(AppBuilder builder)
         {
             builder
-                .SetUrlMapper(UrlMapper.Create)
                 .Use(ShowExceptions.Create)
                 .Map("/wilson", Wilson.Create);
         }

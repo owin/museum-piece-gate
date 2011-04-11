@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Gate.Helpers;
 using Gate.Startup.Loader;
 
 namespace Gate.Startup
@@ -25,7 +26,7 @@ namespace Gate.Startup
         public IConfigurationLoader ConfigurationLoader { get; set; }
         readonly IList<Func<AppDelegate, AppDelegate>> _stack = new List<Func<AppDelegate, AppDelegate>>();
 
-        Func<AppDelegate, IDictionary<string, AppDelegate>, AppDelegate> _mapper;
+        Func<AppDelegate, IDictionary<string, AppDelegate>, AppDelegate> _mapper = UrlMapper.Create;
         IDictionary<string, AppDelegate> _maps;
 
         public AppBuilder()

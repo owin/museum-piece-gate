@@ -49,7 +49,7 @@ namespace Gate.Wcf
 
         public static WebServiceHost Create(Uri baseUri, string configurationString)
         {
-            var builder = new AppBuilder().SetUrlMapper(UrlMapper.Create);
+            var builder = new AppBuilder();
             builder.Configure(configurationString);
             return Create(baseUri, builder.Build());
         }
