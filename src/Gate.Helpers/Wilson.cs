@@ -5,7 +5,7 @@ using System.Threading;
 using Timer = System.Timers.Timer;
 
 namespace Gate.Helpers
-{    
+{
     using AppDelegate = Action< // app
         IDictionary<string, object>, // env
         Action< // result
@@ -21,17 +21,18 @@ namespace Gate.Helpers
                 Action>>, // cancel
         Action<Exception>>; // error
 
-    public class Wilson {
-        public static AppDelegate Create() 
+    public class Wilson
+    {
+        public static AppDelegate Create()
         {
-            return (env, result, fault) => 
+            return (env, result, fault) =>
             {
                 var request = new Request(env);
-                var response = new Response(result);
+                var response = new Response(result) {ContentType = "text/html"};
                 var wilson = "left - right\r\n123456789012\r\nhello world!\r\n";
 
                 var href = "?flip=left";
-                if (request.Query["flip"] == "left") 
+                if (request.Query["flip"] == "left")
                 {
                     wilson = wilson.Split(new[] {System.Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
                         .Select(line => new string(line.Reverse().ToArray()))
@@ -43,7 +44,7 @@ namespace Gate.Helpers
                 response.Write("<pre>");
                 response.Write(wilson);
                 response.Write("</pre>");
-                if (request.Query["flip"] == "crash") 
+                if (request.Query["flip"] == "crash")
                 {
                     throw new ApplicationException("Wilson crashed!");
                 }
@@ -53,18 +54,21 @@ namespace Gate.Helpers
             };
         }
 
-        public static AppDelegate AppAsync() 
+        public static AppDelegate AppAsync()
         {
-            return (env, result, fault) => 
+            return (env, result, fault) =>
             {
                 var request = new Request(env);
                 var response = new Response(result);
                 var wilson = "left - right\r\n123456789012\r\nhello world!\r\n";
 
-                ThreadPool.QueueUserWorkItem(_ => {
-                    try {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    try
+                    {
                         var href = "?flip=left";
-                        if (request.Query["flip"] == "left") {
+                        if (request.Query["flip"] == "left")
+                        {
                             wilson = wilson.Split(new[] {System.Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
                                 .Select(line => new string(line.Reverse().ToArray()))
                                 .Aggregate("", (agg, line) => agg + line + System.Environment.NewLine);
@@ -76,8 +80,10 @@ namespace Gate.Helpers
                             () => response.Write("<pre>"),
                             () => response.Write(wilson),
                             () => response.Write("</pre>"),
-                            () => {
-                                if (request.Query["flip"] == "crash") {
+                            () =>
+                            {
+                                if (request.Query["flip"] == "crash")
+                                {
                                     throw new ApplicationException("Wilson crashed!");
                                 }
                             },
@@ -85,27 +91,34 @@ namespace Gate.Helpers
                             () => response.Write("<p><a href='?flip=crash'>crash!</a></p>"),
                             complete));
                     }
-                    catch (Exception ex) {
+                    catch (Exception ex)
+                    {
                         fault(ex);
                     }
                 });
             };
         }
 
-        static void TimerLoop(double interval, Action<Exception> fault, params Action[] steps) {
+        static void TimerLoop(double interval, Action<Exception> fault, params Action[] steps)
+        {
             var iter = steps.AsEnumerable().GetEnumerator();
             var timer = new Timer(interval);
-            timer.Elapsed += (sender, e) => {
-                if (iter.MoveNext()) {
-                    try {
+            timer.Elapsed += (sender, e) =>
+            {
+                if (iter.MoveNext())
+                {
+                    try
+                    {
                         iter.Current();
                     }
-                    catch (Exception ex) {
+                    catch (Exception ex)
+                    {
                         timer.Stop();
                         fault(ex);
                     }
                 }
-                else {
+                else
+                {
                     timer.Stop();
                 }
             };
