@@ -34,8 +34,8 @@ namespace Gate.Helpers
                 if (Get<string>("Gate.Helpers.Request.Query:text") != text ||
                     Get<IDictionary<string, string>>("Gate.Helpers.Request.Query") == null)
                 {
-                    Set("Gate.Helpers.Request.Query:text", text);
-                    Set("Gate.Helpers.Request.Query", ParamDictionary.Parse(text));
+                    _env["Gate.Helpers.Request.Query:text"] = text;
+                    _env["Gate.Helpers.Request.Query"] = ParamDictionary.Parse(text);
                 }
                 return Get<IDictionary<string, string>>("Gate.Helpers.Request.Query");
             }

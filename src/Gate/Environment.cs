@@ -20,35 +20,40 @@ namespace Gate
 
     /// <summary>
     /// Utility class providing strongly-typed get/set access to environment properties 
-    /// defined by the OWIN spec
+    /// defined by the OWIN spec.
     /// </summary>
     public class Environment
     {
-        readonly IDictionary<string, object> _env;
+        static readonly string RequestMethodKey = "owin.RequestMethod";
+        static readonly string RequestPathBaseKey = "owin.RequestPathBase";
+        static readonly string RequestPathKey = "owin.RequestPath";
+        static readonly string RequestQueryStringKey = "owin.RequestQueryString";
+        static readonly string RequestBodyKey = "owin.RequestBody";
+        static readonly string RequestHeadersKey = "owin.RequestHeaders";
+        static readonly string RequestSchemeKey = "owin.RequestScheme";
+        static readonly string VersionKey = "owin.Version";
+
+        protected readonly IDictionary<string, object> _env;
+
+
+        protected T Get<T>(string name)
+        {
+            object value;
+            return _env.TryGetValue(name, out value) ? (T)value : default(T);
+        }
 
         public Environment(IDictionary<string, object> env)
         {
             _env = env;
         }
 
-        protected T Get<T>(string name)
-        {
-            object value;
-            return _env.TryGetValue(name, out value) ? (T) value : default(T);
-        }
-
-        protected void Set<T>(string name, T value)
-        {
-            _env[name] = value;
-        }
-
         /// <summary>
-        /// "owin.Version"  The string "1.0" indicating OWIN version 1.0. 
+        /// "owin.Version" The string "1.0" indicating OWIN version 1.0. 
         /// </summary>
         public string Version
         {
-            get { return Get<string>("owin.Version"); }
-            set { Set("owin.Version", value); }
+            get { return Get<string>(VersionKey); }
+            set { _env[VersionKey] = value; }
         }
 
         /// <summary>
@@ -56,63 +61,62 @@ namespace Gate
         /// </summary>
         public string Method
         {
-            get { return Get<string>("owin.RequestMethod"); }
-            set { Set("owin.RequestMethod", value); }
+            get { return Get<string>(RequestMethodKey); }
+            set { _env[RequestMethodKey] = value; }
         }
 
         /// <summary>
-        /// "owin.RequestHeaders"  An instance of IDictionary&lt;string, string&gt; which represents the HTTP headers present in the request (the request header dictionary); see Headers.  
+        /// "owin.RequestHeaders" An instance of IDictionary&lt;string, string&gt; which represents the HTTP headers present in the request (the request header dictionary).
         /// </summary>
         public IDictionary<string, string> Headers
         {
-            get { return Get<IDictionary<string, string>>("owin.RequestHeaders"); }
-            set { Set("owin.RequestHeaders", value); }
+            get { return Get<IDictionary<string, string>>(RequestHeadersKey); }
+            set { _env[RequestHeadersKey] = value; }
         }
 
         /// <summary>
-        /// "owin.RequestPathBase"  A string containing the portion of the request path corresponding to the "root" of the application delegate; see Paths. The value may be an empty string.  
+        /// "owin.RequestPathBase" A string containing the portion of the request path corresponding to the "root" of the application delegate. The value may be an empty string.  
         /// </summary>
         public string PathBase
         {
-            get { return Get<string>("owin.RequestPathBase"); }
-            set { Set("owin.RequestPathBase", value); }
+            get { return Get<string>(RequestPathBaseKey); }
+            set { _env[RequestPathBaseKey] = value; }
         }
 
         /// <summary>
-        /// "owin.RequestPath" A string containing the request path. The path must be relative to the "root" of the application delegate; see Paths. 
+        /// "owin.RequestPath" A string containing the request path. The path must be relative to the "root" of the application delegate. 
         /// </summary>
         public string Path
         {
-            get { return Get<string>("owin.RequestPath"); }
-            set { Set("owin.RequestPath", value); }
+            get { return Get<string>(RequestPathKey); }
+            set { _env[RequestPathKey] = value; }
         }
 
         /// <summary>
-        /// "owin.RequestScheme"  Hosts should attempt to provide a sensible value for the URI scheme, falling back to the string "http"; see URI Scheme.  
+        /// "owin.RequestScheme" A string containing the URI scheme used for the request (e.g., "http", "https").  
         /// </summary>
         public string Scheme
         {
-            get { return Get<string>("owin.RequestScheme"); }
-            set { Set("owin.RequestScheme", value); }
+            get { return Get<string>(RequestSchemeKey); }
+            set { _env[RequestSchemeKey] = value; }
         }
 
         /// <summary>
-        /// "owin.RequestBody" 	An instance of the body delegate representing the body of the request. May be null.
+        /// "owin.RequestBody" An instance of the body delegate representing the body of the request. May be null.
         /// </summary>
         public BodyDelegate Body
         {
-            get { return Get<BodyDelegate>("owin.RequestBody"); }
-            set { Set("owin.RequestBody", value); }
+            get { return Get<BodyDelegate>(RequestBodyKey); }
+            set { _env[RequestBodyKey] = value; }
         }
-
         
         /// <summary>
-        /// "owin.RequestPath" 	A string containing the HTTP request URI of the request. The value must include the query string of the HTTP request URI (e.g., "/path/and?query=string"). The URI must be relative to the application delegate; see Paths.
+        /// "owin.QueryString" A string containing the query string component of the HTTP request URI (e.g., "foo=bar&baz=quux"). The value may be an empty string.
         /// </summary>
         public string QueryString
         {
-            get { return Get<string>("owin.RequestQueryString"); }
-            set { Set("owin.RequestQueryString", value); }
+            get { return Get<string>(RequestQueryStringKey); }
+            set { _env[RequestQueryStringKey] = value; }
         }
     }
 }
