@@ -28,7 +28,7 @@ namespace Gate.Helpers.Tests
         public void QueryString_is_used_to_populate_Query_dictionary()
         {
             var env = new Dictionary<string, object>();
-            new Environment(env) {QueryString = "foo=bar"};
+            new Owin(env) {QueryString = "foo=bar"};
 
             var request = new Request(env);
             Assert.That(request.Query["foo"], Is.EqualTo("bar"));
@@ -38,12 +38,12 @@ namespace Gate.Helpers.Tests
         public void Changing_QueryString_in_environment_reparses_Query_dictionary()
         {
             var env = new Dictionary<string, object>();
-            new Environment(env) {QueryString = "foo=bar"};
+            new Owin(env) {QueryString = "foo=bar"};
 
             var request = new Request(env);
             Assert.That(request.Query["foo"], Is.EqualTo("bar"));
 
-            new Environment(env) {QueryString = "foo=quux"};
+            new Owin(env) {QueryString = "foo=quux"};
             Assert.That(request.Query["foo"], Is.EqualTo("quux"));
         }
     }

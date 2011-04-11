@@ -54,7 +54,7 @@ namespace Gate.AspNet
                     var appRelCurExeFilPat = httpRequest.AppRelativeCurrentExecutionFilePath.Substring(1);
 
                     var env = new Dictionary<string, object>();
-                    new Environment(env)
+                    new Owin(env)
                     {
                         Version = "1.0",
                         Method = httpRequest.HttpMethod,

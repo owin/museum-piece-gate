@@ -36,7 +36,7 @@ namespace Gate.Nancy.Tests
             _application = new Application(_engine);
 
             _env = new Dictionary<string, object>();
-            new Environment(_env)
+            new Owin(_env)
             {
                 Version = "1.0",
                 Method = "GET",

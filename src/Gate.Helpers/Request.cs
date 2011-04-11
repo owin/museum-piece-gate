@@ -20,7 +20,7 @@ namespace Gate.Helpers
         Action
         >;
 
-    public class Request : Environment
+    public class Request : Owin
     {
         public Request(IDictionary<string, object> env) : base(env)
         {
@@ -34,8 +34,8 @@ namespace Gate.Helpers
                 if (Get<string>("Gate.Helpers.Request.Query:text") != text ||
                     Get<IDictionary<string, string>>("Gate.Helpers.Request.Query") == null)
                 {
-                    _env["Gate.Helpers.Request.Query:text"] = text;
-                    _env["Gate.Helpers.Request.Query"] = ParamDictionary.Parse(text);
+                    Env["Gate.Helpers.Request.Query:text"] = text;
+                    Env["Gate.Helpers.Request.Query"] = ParamDictionary.Parse(text);
                 }
                 return Get<IDictionary<string, string>>("Gate.Helpers.Request.Query");
             }

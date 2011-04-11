@@ -34,7 +34,7 @@ namespace Gate.TestHelpers
         public static CallResult Call(AppDelegate app, string path)
         {
             var env = new Dictionary<string, object>();
-            new Environment(env)
+            new Owin(env)
             {
                 Version = "1.0",
                 Path = path,

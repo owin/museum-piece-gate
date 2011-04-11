@@ -68,13 +68,13 @@ namespace Gate.Helpers.Tests
 
             var fooResult = AppUtils.Call(app, "/foo");
             Assert.That(fooResult.Status, Is.EqualTo("200 OK"));
-            Assert.That(fooResult.BodyXml.Element("owin.RequestPathBase").Value, Is.EqualTo("/foo"));
-            Assert.That(fooResult.BodyXml.Element("owin.RequestPath").Value, Is.EqualTo(""));
+            Assert.That(fooResult.BodyXml.Element(Owin.RequestPathBaseKey).Value, Is.EqualTo("/foo"));
+            Assert.That(fooResult.BodyXml.Element(Owin.RequestPathKey).Value, Is.EqualTo(""));
 
             var fooBarResult = AppUtils.Call(app, "/foo/bar");
             Assert.That(fooBarResult.Status, Is.EqualTo("200 OK"));
-            Assert.That(fooBarResult.BodyXml.Element("owin.RequestPathBase").Value, Is.EqualTo("/foo"));
-            Assert.That(fooBarResult.BodyXml.Element("owin.RequestPath").Value, Is.EqualTo("/bar"));
+            Assert.That(fooBarResult.BodyXml.Element(Owin.RequestPathBaseKey).Value, Is.EqualTo("/foo"));
+            Assert.That(fooBarResult.BodyXml.Element(Owin.RequestPathKey).Value, Is.EqualTo("/bar"));
 
         }
     }

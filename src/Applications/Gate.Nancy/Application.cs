@@ -48,7 +48,7 @@ namespace Gate.Nancy
 
         static Request CreateNancyRequestFromEnvironment(IDictionary<string, object> env)
         {
-            var environment = new Environment(env);
+            var environment = new Owin(env);
             var request = new Request(
                 environment.Method,
                 environment.Path,

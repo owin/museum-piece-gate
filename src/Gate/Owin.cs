@@ -22,29 +22,29 @@ namespace Gate
     /// Utility class providing strongly-typed get/set access to environment properties 
     /// defined by the OWIN spec.
     /// </summary>
-    public class Environment
+    public class Owin
     {
-        static readonly string RequestMethodKey = "owin.RequestMethod";
-        static readonly string RequestPathBaseKey = "owin.RequestPathBase";
-        static readonly string RequestPathKey = "owin.RequestPath";
-        static readonly string RequestQueryStringKey = "owin.RequestQueryString";
-        static readonly string RequestBodyKey = "owin.RequestBody";
-        static readonly string RequestHeadersKey = "owin.RequestHeaders";
-        static readonly string RequestSchemeKey = "owin.RequestScheme";
-        static readonly string VersionKey = "owin.Version";
+        public static readonly string RequestMethodKey = "owin.RequestMethod";
+        public static readonly string RequestPathBaseKey = "owin.RequestPathBase";
+        public static readonly string RequestPathKey = "owin.RequestPath";
+        public static readonly string RequestQueryStringKey = "owin.RequestQueryString";
+        public static readonly string RequestBodyKey = "owin.RequestBody";
+        public static readonly string RequestHeadersKey = "owin.RequestHeaders";
+        public static readonly string RequestSchemeKey = "owin.RequestScheme";
+        public static readonly string VersionKey = "owin.Version";
 
-        protected readonly IDictionary<string, object> _env;
+        protected readonly IDictionary<string, object> Env;
 
 
         protected T Get<T>(string name)
         {
             object value;
-            return _env.TryGetValue(name, out value) ? (T)value : default(T);
+            return Env.TryGetValue(name, out value) ? (T)value : default(T);
         }
 
-        public Environment(IDictionary<string, object> env)
+        public Owin(IDictionary<string, object> env)
         {
-            _env = env;
+            Env = env;
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Gate
         public string Version
         {
             get { return Get<string>(VersionKey); }
-            set { _env[VersionKey] = value; }
+            set { Env[VersionKey] = value; }
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Gate
         public string Method
         {
             get { return Get<string>(RequestMethodKey); }
-            set { _env[RequestMethodKey] = value; }
+            set { Env[RequestMethodKey] = value; }
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Gate
         public IDictionary<string, string> Headers
         {
             get { return Get<IDictionary<string, string>>(RequestHeadersKey); }
-            set { _env[RequestHeadersKey] = value; }
+            set { Env[RequestHeadersKey] = value; }
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Gate
         public string PathBase
         {
             get { return Get<string>(RequestPathBaseKey); }
-            set { _env[RequestPathBaseKey] = value; }
+            set { Env[RequestPathBaseKey] = value; }
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Gate
         public string Path
         {
             get { return Get<string>(RequestPathKey); }
-            set { _env[RequestPathKey] = value; }
+            set { Env[RequestPathKey] = value; }
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Gate
         public string Scheme
         {
             get { return Get<string>(RequestSchemeKey); }
-            set { _env[RequestSchemeKey] = value; }
+            set { Env[RequestSchemeKey] = value; }
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace Gate
         public BodyDelegate Body
         {
             get { return Get<BodyDelegate>(RequestBodyKey); }
-            set { _env[RequestBodyKey] = value; }
+            set { Env[RequestBodyKey] = value; }
         }
         
         /// <summary>
@@ -116,7 +116,7 @@ namespace Gate
         public string QueryString
         {
             get { return Get<string>(RequestQueryStringKey); }
-            set { _env[RequestQueryStringKey] = value; }
+            set { Env[RequestQueryStringKey] = value; }
         }
     }
 }
