@@ -25,6 +25,10 @@ namespace Gate.Startup.Loader
     {
         public Action<AppBuilder> Load(string configurationString)
         {
+            if (string.IsNullOrWhiteSpace(configurationString))
+            {
+                return LoadDefault();
+            }
             foreach (var hit in HuntForAssemblies(configurationString))
             {
                 var longestPossibleName = hit.Item1;
@@ -48,6 +52,12 @@ namespace Gate.Startup.Loader
                 }
             }
             return null;
+        }
+
+        Action<AppBuilder> LoadDefault()
+        {
+            // todo: scan for assemblies
+            throw new NotImplementedException();
         }
 
         static IEnumerable<Tuple<string, Assembly>> HuntForAssemblies(string configurationString)

@@ -60,10 +60,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Applications\Gate.Nancy\Gate.Nancy.csproj">
-      <Project>{BA66262D-8CDC-4743-98D0-D40F1DD6A220}</Project>
-      <Name>Gate.Nancy</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Gate\Gate.csproj">
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>

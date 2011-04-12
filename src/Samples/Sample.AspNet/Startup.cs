@@ -10,7 +10,7 @@ namespace Sample.AspNet
             builder
                 .Use(ShowExceptions.Create)
                 .Map("/wilson", Wilson.Create)
-                .Run(Gate.Nancy.Application.Create);
+                .Run(new Nancy.Hosting.Owin.NancyOwinHost().ProcessRequest);
         }
     }
 }
