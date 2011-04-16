@@ -56,8 +56,24 @@ namespace Gate.Startup.Loader
 
         Action<AppBuilder> LoadDefault()
         {
-            // todo: scan for assemblies
-            throw new NotImplementedException();
+            var info = AppDomain.CurrentDomain.SetupInformation;
+            var applicationBase = Path.Combine(info.ApplicationBase, info.PrivateBinPath);
+
+            foreach (var file in Directory.GetFiles(applicationBase, "*.dll"))
+            {
+                var reflectionOnlyAssembly = Assembly.ReflectionOnlyLoadFrom(file);
+
+                var assemblyName = reflectionOnlyAssembly.GetName().Name;
+                var assemblyFullName = reflectionOnlyAssembly.FullName;
+
+                foreach (var possibleType in new[] {"Startup", assemblyName + ".Startup"})
+                {
+                    var startupType = reflectionOnlyAssembly.GetType(possibleType, false);
+                    if (startupType != null)
+                        return Load(possibleType + ", " + assemblyFullName);
+                }
+            }
+            return null;
         }
 
         static IEnumerable<Tuple<string, Assembly>> HuntForAssemblies(string configurationString)

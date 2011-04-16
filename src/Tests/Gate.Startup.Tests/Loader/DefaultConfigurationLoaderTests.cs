@@ -65,6 +65,7 @@ namespace Gate.Startup.Tests.Loader
         }
 
         static int _helloCalls;
+
         public static void Hello(AppBuilder builder)
         {
             _helloCalls += 1;
@@ -147,6 +148,7 @@ namespace Gate.Startup.Tests.Loader
         }
 
         static int _alphaCalls;
+
         public static AppDelegate Alpha()
         {
             return (env, result, fault) => ++_alphaCalls;
@@ -157,11 +159,26 @@ namespace Gate.Startup.Tests.Loader
         {
             var loader = new DefaultConfigurationLoader();
             var configuration = loader.Load("Gate.Startup.Tests.Loader.DefaultConfigurationLoaderTests.Alpha");
-            
+
             var app = new AppBuilder(configuration).Build();
-            _alphaCalls=0;
-            app(null,null,null);
+            _alphaCalls = 0;
+            app(null, null, null);
             Assert.That(_alphaCalls, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Startup_Configuration_in_assembly_namespace_will_be_discovered_by_default()
+        {
+            var loader = new DefaultConfigurationLoader();
+            var configuration = loader.Load("");
+            Startup.ConfigurationCalls = 0;
+            configuration(null);
+            Assert.That(Startup.ConfigurationCalls, Is.EqualTo(1));
+
+            configuration = loader.Load(null);
+            Startup.ConfigurationCalls = 0;
+            configuration(null);
+            Assert.That(Startup.ConfigurationCalls, Is.EqualTo(1));
         }
     }
 

@@ -46,6 +46,7 @@
     <Compile Include="AppBuilderTests.cs" />
     <Compile Include="Loader\DefaultConfigurationLoaderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Gate.Helpers\Gate.Helpers.csproj">

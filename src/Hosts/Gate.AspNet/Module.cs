@@ -33,12 +33,11 @@ namespace Gate.AspNet
         public void Init(HttpApplication init)
         {
             var configurationString = ConfigurationManager.AppSettings["Gate.Startup"];
-            if (!string.IsNullOrEmpty(configurationString))
-            {
-                var builder = new AppBuilder();
-                builder.Configure(configurationString);
-                Handler.Run(builder.Build());
-            }
+
+            var builder = new AppBuilder();
+            builder.Configure(configurationString);
+            Handler.Run(builder.Build());
+
 
             init.AddOnBeginRequestAsync(
                 (sender, args, callback, state) =>
