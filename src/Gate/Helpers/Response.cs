@@ -20,7 +20,7 @@ namespace Gate.Helpers
     public class Response
     {
         readonly ResultDelegate _result;
-        readonly Spool _spool = new Spool();
+        readonly Spool _spool = new Spool(true);
 
         public Response(ResultDelegate result)
         {

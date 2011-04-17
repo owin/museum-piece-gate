@@ -196,5 +196,59 @@ namespace Gate.Tests.Spooling
             Assert.That(callbackPull, Is.False);
             Assert.That(retval[0], Is.EqualTo(0));
         }
+
+        [Test]
+        public void Eager_spool_returns_partial_pull_on_push()
+        {
+            var spool = new Spool(true);
+
+            var data = Data(200);
+            var retval = new int[1];
+            var callbackPull = false;
+            var asyncPull = spool.Pull(data, retval, () => callbackPull = true);
+            Assert.That(asyncPull, Is.True);
+            Assert.That(callbackPull, Is.False);
+
+            spool.Push(Data(50, "hello"), null);
+            Assert.That(callbackPull, Is.True);
+            Assert.That(retval[0], Is.EqualTo(50));
+        }
+
+        [Test]
+        public void Eager_spool_returns_partial_pull_immediately_if_push_spooled()
+        {
+            var spool = new Spool(true);
+
+            spool.Push(Data(50, "hello"), null);
+
+            var data = Data(200);
+            var retval = new int[1];
+            var callbackPull = false;
+            var asyncPull = spool.Pull(data, retval, () => callbackPull = true);
+            Assert.That(asyncPull, Is.False);
+            Assert.That(callbackPull, Is.False);
+            Assert.That(retval[0], Is.EqualTo(50));
+        }
+        
+        [Test]
+        public void Eager_spool_returns_partial_pull_immediately_if_push_pending()
+        {
+            var spool = new Spool(true);
+
+            var callbackPush = false;
+            var asyncPush = spool.Push(Data(50, "hello"), () => callbackPush = true);
+            Assert.That(asyncPush, Is.True);
+            Assert.That(callbackPush, Is.False);
+
+            var data = Data(200);
+            var retval = new int[1];
+            var callbackPull = false;
+            var asyncPull = spool.Pull(data, retval, () => callbackPull = true);
+            Assert.That(asyncPull, Is.False);
+            Assert.That(callbackPull, Is.False);
+            Assert.That(retval[0], Is.EqualTo(50));
+
+            Assert.That(callbackPush, Is.True);
+        }
     }
 }

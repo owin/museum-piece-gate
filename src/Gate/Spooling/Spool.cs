@@ -5,6 +5,17 @@ namespace Gate.Spooling
 {
     public class Spool
     {
+        readonly bool _eagerPull;
+
+        public Spool()
+        {
+        }
+
+        public Spool(bool eagerPull)
+        {
+            _eagerPull = eagerPull;
+        }
+
         public bool Push(ArraySegment<byte> data, Action continuation)
         {
             //todo - protect against concurrent async calls
@@ -25,6 +36,14 @@ namespace Gate.Spooling
                         _asyncPull.Continuation = null;
                         pullContinuation();
                     }
+                }
+
+                // release partially filled when eager
+                if (_eagerPull && _asyncPull.Retval[0] != 0 && _asyncPull.Continuation != null)
+                {
+                    var pullContinuation = _asyncPull.Continuation;
+                    _asyncPull.Continuation = null;
+                    pullContinuation();
                 }
 
                 // push fully consumed
@@ -98,6 +117,13 @@ namespace Gate.Spooling
                     }
                 }
             }
+                
+            // return partially filled when eager
+            if (_eagerPull && retval[0] != 0)
+            {
+                return false;
+            }
+
             // pull fully satisfied
             if (data.Count == 0)
             {
