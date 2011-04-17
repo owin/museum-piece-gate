@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace Gate.Helpers
@@ -36,7 +35,7 @@ namespace Gate.Helpers
 
             return (env, result, fault) =>
                 result(
-                    "404 NOTFOUND",
+                    "404 NotFound",
                     new Dictionary<string, string> {{"Content-Type", "text/html"}},
                     (next, error, complete) =>
                     {

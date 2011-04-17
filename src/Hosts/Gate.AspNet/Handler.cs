@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Gate.Helpers;
 
 namespace Gate.AspNet
 {
@@ -23,7 +24,7 @@ namespace Gate.AspNet
 
     public static class Handler
     {
-        static AppDelegate _app = (env, result, fault) => result("404 NOTFOUND", null, null);
+        static AppDelegate _app = NotFound.Create();
 
         public static void Run(AppDelegate app)
         {

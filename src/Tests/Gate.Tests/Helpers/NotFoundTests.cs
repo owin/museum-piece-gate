@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Gate.Helpers;
 using Gate.TestHelpers;
 using NUnit.Framework;
 
-namespace Gate.Helpers.Tests
+namespace Gate.Tests.Helpers
 {
     [TestFixture]
     public class NotFoundTests
@@ -15,7 +12,7 @@ namespace Gate.Helpers.Tests
         {
             var app = NotFound.Create();
             var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("404 NOTFOUND"));
+            Assert.That(callResult.Status, Is.EqualTo("404 NotFound"));
         }
     }
 }

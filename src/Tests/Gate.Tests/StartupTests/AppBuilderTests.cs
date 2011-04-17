@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Gate.Helpers;
 using Gate.Startup;
+using Gate.TestHelpers;
 using NUnit.Framework;
 
 namespace Gate.Tests.StartupTests
@@ -30,11 +31,12 @@ namespace Gate.Tests.StartupTests
         public static AppDelegate TwoHundredFoo = (env, result, fault) => result("200 Foo", null, null);
 
         [Test]
-        public void Build_returns_null_by_default()
+        public void Build_returns_404_by_default()
         {
             var builder = new AppBuilder();
             var app = builder.Build();
-            Assert.That(app, Is.Null);
+            var callResult = AppUtils.Call(app);
+            Assert.That(callResult.Status, Is.EqualTo("404 NotFound"));
         }
 
         [Test]

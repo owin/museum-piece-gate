@@ -49,17 +49,9 @@ namespace Gate.Helpers
 
         public static AppDelegate Create(AppDelegate app, IDictionary<string, AppDelegate> map)
         {
-            var mapper = new UrlMapper(app ?? NotFound());
+            var mapper = new UrlMapper(app ?? NotFound.Create());
             mapper.Remap(map);
             return mapper.Call;
-        }
-
-        static AppDelegate NotFound()
-        {
-            return (env, result, fault) => result(
-                "404 NotFound",
-                new Dictionary<string, string> {{"Content-Type", "text/plain"}},
-                Body.FromText("Not Found", Encoding.UTF8));
         }
 
         public void Remap(IDictionary<string, AppDelegate> map)

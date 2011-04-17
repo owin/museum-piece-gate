@@ -114,7 +114,7 @@ namespace Gate.Startup
         {
             return _stack
                 .Reverse()
-                .Aggregate(default(AppDelegate), (app, factory) => factory(app));
+                .Aggregate(NotFound.Create(), (app, factory) => factory(app));
         }
     }
 }

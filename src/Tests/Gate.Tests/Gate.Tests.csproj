@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\NotFoundTests.cs" />
     <Compile Include="Helpers\RequestTests.cs" />
     <Compile Include="Helpers\ResponseTests.cs" />
     <Compile Include="OwinTests.cs" />
