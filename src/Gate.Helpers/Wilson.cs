@@ -59,7 +59,10 @@ namespace Gate.Helpers
             return (env, result, fault) =>
             {
                 var request = new Request(env);
-                var response = new Response(result);
+                var response = new Response(result) 
+                {
+                    ContentType = "text/html",
+                };
                 var wilson = "left - right\r\n123456789012\r\nhello world!\r\n";
 
                 ThreadPool.QueueUserWorkItem(_ =>

@@ -57,9 +57,12 @@ namespace Gate.Startup.Loader
         Action<AppBuilder> LoadDefault()
         {
             var info = AppDomain.CurrentDomain.SetupInformation;
-            var applicationBase = Path.Combine(info.ApplicationBase, info.PrivateBinPath);
+            var assembliesPath = Path.Combine(info.ApplicationBase, info.PrivateBinPath ?? "");
 
-            foreach (var file in Directory.GetFiles(applicationBase, "*.dll"))
+            var files = Directory.GetFiles(assembliesPath, "*.dll")
+                .Concat(Directory.GetFiles(assembliesPath, "*.exe"));
+
+            foreach (var file in files)
             {
                 var reflectionOnlyAssembly = Assembly.ReflectionOnlyLoadFrom(file);
 

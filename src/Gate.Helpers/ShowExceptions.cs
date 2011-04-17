@@ -28,7 +28,7 @@ namespace Gate.Helpers
                 {
                     var response = new Response(result)
                     {
-                        Status = "500 ERROR", 
+                        Status = "500 ERROR",
                         ContentType = "text/html",
                     };
                     response.Finish((error, complete) =>

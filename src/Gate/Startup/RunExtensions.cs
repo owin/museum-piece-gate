@@ -45,5 +45,5 @@ namespace Gate.Startup
         {
             return builder.Run(() => factory(arg1, arg2, arg3, arg4));
         }
-   }
+    }
 }

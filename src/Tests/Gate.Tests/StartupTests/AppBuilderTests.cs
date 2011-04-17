@@ -164,7 +164,7 @@ namespace Gate.Tests.StartupTests
             Func<IDictionary<string, AppDelegate>, AppDelegate> mapper = maps =>
             {
                 mapsArg = maps;
-                return (a,b,c)=>{};
+                return (a, b, c) => { };
             };
 
             var app1 = new AppBuilder()

@@ -86,16 +86,16 @@ namespace Gate.Tests
             var env = new Dictionary<string, object>();
             var environment = new Owin(env)
             {
-                Method="GET",
-                Path="/foo",
-                Headers=headers,
-                Body=body,
-                PathBase="/my-app",
-                QueryString="hello=world",
-                Scheme="https",
+                Method = "GET",
+                Path = "/foo",
+                Headers = headers,
+                Body = body,
+                PathBase = "/my-app",
+                QueryString = "hello=world",
+                Scheme = "https",
                 Version = "1.0"
             };
-            
+
             Assert.That(environment.Method, Is.EqualTo("GET"));
             Assert.That(environment.Path, Is.EqualTo("/foo"));
             Assert.That(environment.Headers, Is.SameAs(headers));
@@ -104,7 +104,7 @@ namespace Gate.Tests
             Assert.That(environment.QueryString, Is.EqualTo("hello=world"));
             Assert.That(environment.Scheme, Is.EqualTo("https"));
             Assert.That(environment.Version, Is.EqualTo("1.0"));
-            
+
             Assert.That(env["owin.RequestMethod"], Is.EqualTo("GET"));
             Assert.That(env["owin.RequestPath"], Is.EqualTo("/foo"));
             Assert.That(env["owin.RequestHeaders"], Is.SameAs(headers));

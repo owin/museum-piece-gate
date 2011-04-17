@@ -108,6 +108,8 @@ namespace Gate.AspNet
                         {
                             try
                             {
+                                httpContext.Response.BufferOutput = false;
+
                                 httpContext.Response.Status = status;
                                 foreach (var header in headers.SelectMany(kv => kv.Value.Split("\r\n".ToArray(), StringSplitOptions.RemoveEmptyEntries).Select(v => new {kv.Key, Value = v})))
                                 {
@@ -118,6 +120,7 @@ namespace Gate.AspNet
                                     taskCompletionSource.SetResult(() => httpContext.Response.End());
                                     return;
                                 }
+                                
                                 var stream = httpContext.Response.OutputStream;
                                 body(
                                     (data, continuation) =>

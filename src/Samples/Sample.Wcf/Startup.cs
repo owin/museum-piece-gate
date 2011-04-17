@@ -9,7 +9,8 @@ namespace Sample.Wcf
         {
             builder
                 .Use(ShowExceptions.Create)
-                .Map("/wilson", Wilson.Create);
+                .Map("/wilson", Wilson.Create)
+                .Map("/wilsonasync", Wilson.AppAsync);
         }
     }
 }

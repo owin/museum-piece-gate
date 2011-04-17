@@ -8,9 +8,9 @@ using Gate.Wcf;
 
 namespace Sample.Wcf
 {
-    class Program
-    {        
-        private static readonly Uri BaseUri = new Uri("http://localhost:1234/");
+    internal class Program
+    {
+        static readonly Uri BaseUri = new Uri("http://localhost:1234/");
 
         static void Main(string[] args)
         {

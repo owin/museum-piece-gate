@@ -10,6 +10,7 @@ namespace Sample.AspNet
             builder
                 .Use(ShowExceptions.Create)
                 .Map("/wilson", Wilson.Create)
+                .Map("/wilsonasync", Wilson.AppAsync)
                 .Run(new Nancy.Hosting.Owin.NancyOwinHost().ProcessRequest);
         }
     }

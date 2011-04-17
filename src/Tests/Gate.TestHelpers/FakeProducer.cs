@@ -3,24 +3,24 @@
     using System;
     using System.Threading;
     using BodyDelegate = System.Func<System.Func<System.ArraySegment<byte>, // data
-                             System.Action,                         // continuation
-                             bool>,                                 // continuation will be invoked
-                             System.Action<System.Exception>,       // onError
-                             System.Action,                         // on Complete
-                             System.Action>;                        // cancel
+        System.Action, // continuation
+        bool>, // continuation will be invoked
+        System.Action<System.Exception>, // onError
+        System.Action, // on Complete
+        System.Action>; // cancel
 
     public class FakeProducer
     {
-        private Func<ArraySegment<byte>, Action, bool> onNext;
-        private Action<Exception> onError;
-        private Action onComplete;
-        private bool active;
+        Func<ArraySegment<byte>, Action, bool> onNext;
+        Action<Exception> onError;
+        Action onComplete;
+        bool active;
 
-        private bool sendContinuation;
-        private int currentIndex;
-        private byte[] buffer;
-        private int chunkSize;
-        private bool autoSend;
+        bool sendContinuation;
+        int currentIndex;
+        byte[] buffer;
+        int chunkSize;
+        bool autoSend;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FakeProducer"/> class. 
@@ -168,7 +168,7 @@
             this.onComplete.Invoke();
         }
 
-        private void OnCancel()
+        void OnCancel()
         {
             this.Cancelled = true;
 

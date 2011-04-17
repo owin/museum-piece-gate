@@ -39,7 +39,7 @@ namespace Gate
         protected T Get<T>(string name)
         {
             object value;
-            return Env.TryGetValue(name, out value) ? (T)value : default(T);
+            return Env.TryGetValue(name, out value) ? (T) value : default(T);
         }
 
         public Owin(IDictionary<string, object> env)
@@ -109,7 +109,7 @@ namespace Gate
             get { return Get<BodyDelegate>(RequestBodyKey); }
             set { Env[RequestBodyKey] = value; }
         }
-        
+
         /// <summary>
         /// "owin.QueryString" A string containing the query string component of the HTTP request URI (e.g., "foo=bar&baz=quux"). The value may be an empty string.
         /// </summary>

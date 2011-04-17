@@ -75,7 +75,6 @@ namespace Gate.Tests.Helpers
             Assert.That(fooBarResult.Status, Is.EqualTo("200 OK"));
             Assert.That(fooBarResult.BodyXml.Element(Owin.RequestPathBaseKey).Value, Is.EqualTo("/foo"));
             Assert.That(fooBarResult.BodyXml.Element(Owin.RequestPathKey).Value, Is.EqualTo("/bar"));
-
         }
     }
 }

@@ -1,25 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
+﻿using System.Collections.Generic;
 using Gate.Helpers.Utils;
 
 namespace Gate.Helpers
 {
-    using BodyDelegate = Func<
-        // on next
-        Func<
-            ArraySegment<byte>, // data
-            Action, // continuation
-            bool // continuation was or will be invoked
-            >,
-        // on error
-        Action<Exception>,
-        // on complete
-        Action,
-        // cancel 
-        Action
-        >;
-
     public class Request : Owin
     {
         public Request(IDictionary<string, object> env) : base(env)

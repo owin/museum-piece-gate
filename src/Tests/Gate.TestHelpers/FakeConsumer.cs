@@ -4,25 +4,25 @@
     using System.IO;
     using System.Threading;
     using BodyDelegate = System.Func<System.Func<System.ArraySegment<byte>, // data
-                                 System.Action,                         // continuation
-                                 bool>,                                 // continuation will be invoked
-                                 System.Action<System.Exception>,       // onError
-                                 System.Action,                         // on Complete
-                                 System.Action>;                        // cancel
+        System.Action, // continuation
+        bool>, // continuation will be invoked
+        System.Action<System.Exception>, // onError
+        System.Action, // on Complete
+        System.Action>; // cancel
 
     /// <summary>
     /// Consumes a body delegate
     /// </summary>
     public class FakeConsumer
     {
-        private readonly bool useContinuation;
+        readonly bool useContinuation;
 
-        private Action cancelDelegate;
+        Action cancelDelegate;
 
-        private bool bodyDelegateInvoked;
+        bool bodyDelegateInvoked;
 
-        private MemoryStream dataStream;
-        private ManualResetEventSlim sync = new ManualResetEventSlim();
+        MemoryStream dataStream;
+        ManualResetEventSlim sync = new ManualResetEventSlim();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FakeConsumer"/> class.
@@ -61,7 +61,7 @@
         {
             if (bodyDelegate == null)
             {
-                throw new ArgumentNullException("bodyDelegate");    
+                throw new ArgumentNullException("bodyDelegate");
             }
 
             this.sync.Reset();
@@ -91,7 +91,7 @@
             this.sync.Set();
         }
 
-        private void OnComplete()
+        void OnComplete()
         {
             this.CompleteCalled = true;
             this.dataStream.Close();
@@ -99,14 +99,14 @@
             this.sync.Set();
         }
 
-        private void OnError(Exception ex)
+        void OnError(Exception ex)
         {
             this.RaisedException = ex;
             this.dataStream.Dispose();
             this.sync.Set();
         }
 
-        private bool DataConsumer(ArraySegment<byte> data, Action continuation)
+        bool DataConsumer(ArraySegment<byte> data, Action continuation)
         {
             this.ContinuationSent = continuation != null;
 
@@ -127,21 +127,21 @@
             return true;
         }
 
-        private void ConsumeDataSync(ArraySegment<byte> data)
+        void ConsumeDataSync(ArraySegment<byte> data)
         {
             this.dataStream.Write(data.Array, data.Offset, data.Count);
         }
 
-        private void ConsumeDataAsync(ArraySegment<byte> data, Action continuation)
+        void ConsumeDataAsync(ArraySegment<byte> data, Action continuation)
         {
             // We don't us the thread pool to try and stop it being clever
             // and running us sync.
             var worker = new Thread(
                 ts =>
-                    {
-                        this.ConsumeDataSync(data);
-                        continuation.Invoke();
-                    });
+                {
+                    this.ConsumeDataSync(data);
+                    continuation.Invoke();
+                });
 
             worker.Start();
         }

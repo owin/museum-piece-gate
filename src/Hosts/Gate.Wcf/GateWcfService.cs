@@ -107,7 +107,7 @@ namespace Gate.Wcf
                 GetExpectedRequestLength(headers);
 
             var env = new Dictionary<string, object>();
-            
+
             new Owin(env)
             {
                 Version = "1.0",
@@ -167,6 +167,11 @@ namespace Gate.Wcf
             {
                 webResponse.OutgoingResponse.Headers.Add(header.Key, header.Value);
             }
+
+            string contentType;
+            if (!headers.TryGetValue("Content-Type", out contentType))
+                contentType = "text/plain";
+
             return webResponse.CreateStreamResponse(
                 stream =>
                 {
@@ -182,7 +187,7 @@ namespace Gate.Wcf
                         );
                     done.WaitOne();
                 },
-                headers["Content-Type"]);
+                contentType);
         }
 
         static IEnumerable<KeyValuePair<string, string>> Split(IEnumerable<KeyValuePair<string, string>> headers)
