@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Gate.Helpers.Utils;
 
 namespace Gate.Helpers
@@ -22,6 +23,11 @@ namespace Gate.Helpers
                 }
                 return Get<IDictionary<string, string>>("Gate.Helpers.Request.Query");
             }
+        }
+
+        public string Host  
+        {
+            get { return "Host"; }            
         }
     }
 }

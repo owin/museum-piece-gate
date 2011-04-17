@@ -65,10 +65,15 @@ namespace Gate.Helpers
 
         public void Finish()
         {
-            Finish((fault, complete) => complete());
+            Finish((response, fault, complete) => complete());
         }
 
         public void Finish(Action<Action<Exception>, Action> body)
+        {
+            Finish((response, fault, complete) => body(fault, complete));
+        }
+
+        public void Finish(Action<Response, Action<Exception>, Action> body)
         {
             _result(
                 Status,
@@ -78,7 +83,7 @@ namespace Gate.Helpers
                     // TODO - this is sloppy and barely works
                     var buffer = new byte[512];
 
-                    body(error, _spool.PushComplete);
+                    body(this, error, _spool.PushComplete);
 
                     for (;;)
                     {

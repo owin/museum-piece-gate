@@ -35,7 +35,7 @@ namespace Gate.Helpers
 
             return (env, result, fault) =>
                 result(
-                    "404 NotFound",
+                    "404 Not Found",
                     new Dictionary<string, string> {{"Content-Type", "text/html"}},
                     (next, error, complete) =>
                     {

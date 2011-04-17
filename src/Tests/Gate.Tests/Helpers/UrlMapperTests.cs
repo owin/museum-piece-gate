@@ -30,7 +30,7 @@ namespace Gate.Tests.Helpers
             var map = new Dictionary<string, AppDelegate>();
             var app = UrlMapper.Create(map);
             var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("404 NotFound"));
+            Assert.That(callResult.Status, Is.EqualTo("404 Not Found"));
             Assert.That(callResult.BodyText, Is.StringContaining("Not Found"));
         }
 
@@ -44,7 +44,7 @@ namespace Gate.Tests.Helpers
             var app = UrlMapper.Create(map);
 
             var rootResult = AppUtils.Call(app);
-            Assert.That(rootResult.Status, Is.EqualTo("404 NotFound"));
+            Assert.That(rootResult.Status, Is.EqualTo("404 Not Found"));
             Assert.That(rootResult.BodyText, Is.StringContaining("Not Found"));
 
             var fooResult = AppUtils.Call(app, "/foo");
@@ -63,7 +63,7 @@ namespace Gate.Tests.Helpers
             var app = UrlMapper.Create(map);
 
             var rootResult = AppUtils.Call(app);
-            Assert.That(rootResult.Status, Is.EqualTo("404 NotFound"));
+            Assert.That(rootResult.Status, Is.EqualTo("404 Not Found"));
             Assert.That(rootResult.BodyText, Is.StringContaining("Not Found"));
 
             var fooResult = AppUtils.Call(app, "/foo");

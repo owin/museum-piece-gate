@@ -36,7 +36,7 @@ namespace Gate.Tests.StartupTests
             var builder = new AppBuilder();
             var app = builder.Build();
             var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("404 NotFound"));
+            Assert.That(callResult.Status, Is.EqualTo("404 Not Found"));
         }
 
         [Test]

@@ -12,7 +12,7 @@ namespace Gate.Tests.Helpers
         {
             var app = NotFound.Create();
             var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("404 NotFound"));
+            Assert.That(callResult.Status, Is.EqualTo("404 Not Found"));
         }
     }
 }

@@ -18,26 +18,19 @@ namespace Gate.Helpers
                 Action>>, // cancel
         Action<Exception>>; // error
 
-    public class ShowExceptions
+    public partial class ShowExceptions
     {
         public static AppDelegate Create(AppDelegate app)
         {
             return (env, result, fault) =>
             {
                 Action<Exception> show = ex =>
-                {
-                    var response = new Response(result)
-                    {
-                        Status = "500 ERROR",
-                        ContentType = "text/html",
-                    };
-                    response.Finish((error, complete) =>
-                    {
-                        response.Write("<h1>Server Error</h1>");
-                        response.Write(ex.Message);
-                        complete();
-                    });
-                };
+                    new Response(result) {Status = "500 Internal Server Error", ContentType = "text/html"}
+                        .Finish((response, error, complete) =>
+                        {
+                            ErrorPage(env, response, ex);
+                            complete();
+                        });
 
                 try
                 {
@@ -48,6 +41,11 @@ namespace Gate.Helpers
                     show(exception);
                 }
             };
+        }
+
+        static string h(object text)
+        {
+            return Convert.ToString(text);
         }
     }
 }
