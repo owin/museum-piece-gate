@@ -35,6 +35,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Nancy">
+      <HintPath>..\..\..\..\OwinRelated\Nancy\src\Nancy.ViewEngines.Spark\bin\Debug\Nancy.dll</HintPath>
+    </Reference>
+    <Reference Include="Nancy.Hosting.Owin">
+      <HintPath>..\..\..\dependencies\nancy\binaries\Nancy.Hosting.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Nancy.ViewEngines.Spark">
+      <HintPath>..\..\..\dependencies\nancy\binaries\Nancy.ViewEngines.Spark.dll</HintPath>
+    </Reference>
+    <Reference Include="Spark">
+      <HintPath>..\..\..\dependencies\nancy\binaries\Spark.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.ServiceModel" />
@@ -48,12 +60,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MainModule.cs" />
+    <Compile Include="Models\Index.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <Content Include="Views\FileUpload.spark">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\Index.spark">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Gate.Helpers\Gate.Helpers.csproj">

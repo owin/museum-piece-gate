@@ -1,4 +1,4 @@
-﻿<viewdata model="Sample.AspNet.Models.Index" />
+﻿<viewdata model="Sample.Wcf.Models.Index" />
 <html>
   <head>
     <title>Nancy OWIN Host Demo</title>
@@ -6,10 +6,10 @@
   <body>
     <h1>Hello ${Model.Name}!</h1>
     <p>This is a Spark view rendered via the OWIN hosting.</p>
-    <p>You uploaded: ${Model.Posted}</p>
+    <p>You posted: ${Model.Posted}</p>
     <p>
-      <form method="POST" enctype="multipart/form-data">
-        <input name="upload" type="file" size="40"/>
+      <form method="POST">
+        <input name="posted"/>
         <input type="submit" value="Post!"/>
       </form>
     </p>
