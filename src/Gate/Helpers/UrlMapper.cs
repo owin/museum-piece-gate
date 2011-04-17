@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Gate.Utils;
 
 namespace Gate.Helpers
 {
@@ -48,9 +49,17 @@ namespace Gate.Helpers
 
         public static AppDelegate Create(AppDelegate app, IDictionary<string, AppDelegate> map)
         {
-            var mapper = new UrlMapper(app ?? NotFound.Create());
+            var mapper = new UrlMapper(app ?? NotFound());
             mapper.Remap(map);
             return mapper.Call;
+        }
+
+        static AppDelegate NotFound()
+        {
+            return (env, result, fault) => result(
+                "404 NotFound",
+                new Dictionary<string, string> {{"Content-Type", "text/plain"}},
+                Body.FromText("Not Found", Encoding.UTF8));
         }
 
         public void Remap(IDictionary<string, AppDelegate> map)
@@ -66,13 +75,13 @@ namespace Gate.Helpers
             ResultDelegate result,
             Action<Exception> fault)
         {
-            var request = new Request(env);
-            var path = request.Path;
-            var pathBase = request.PathBase;
+            var owin = new Owin(env);
+            var path = owin.Path;
+            var pathBase = owin.PathBase;
             Action finish = () =>
             {
-                request.Path = path;
-                request.PathBase = pathBase;
+                owin.Path = path;
+                owin.PathBase = pathBase;
             };
             var match = _map.FirstOrDefault(m => path.StartsWith(m.Item1));
             if (match == null)
@@ -81,8 +90,8 @@ namespace Gate.Helpers
                 _app(env, result, fault);
                 return;
             }
-            request.PathBase = pathBase + match.Item1;
-            request.Path = path.Substring(match.Item1.Length);
+            owin.PathBase = pathBase + match.Item1;
+            owin.Path = path.Substring(match.Item1.Length);
             match.Item2.Invoke(env, result, fault);
         }
     }

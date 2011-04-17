@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
+using Gate.Helpers;
 using NUnit.Framework;
 
-namespace Gate.Helpers.Tests
+namespace Gate.Tests.Helpers
 {
     using ResultDelegate = Action< // result
         string, // status

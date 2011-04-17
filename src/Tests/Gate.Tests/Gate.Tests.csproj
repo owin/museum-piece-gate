@@ -49,16 +49,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\RequestTests.cs" />
+    <Compile Include="Helpers\ResponseTests.cs" />
     <Compile Include="OwinTests.cs" />
-    <Compile Include="InputStreamTests.cs" />
-    <Compile Include="OutputStreamTests.cs" />
+    <Compile Include="Helpers\InputStreamTests.cs" />
+    <Compile Include="Helpers\OutputStreamTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Spooling\SpoolTests.cs" />
+    <Compile Include="StartupTests\AppBuilderTests.cs" />
+    <Compile Include="Startup.cs" />
+    <Compile Include="StartupTests\Loader\DefaultConfigurationLoaderTests.cs" />
+    <Compile Include="Helpers\UrlMapperTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Gate.Helpers\Gate.Helpers.csproj">
+      <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
+      <Name>Gate.Helpers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Gate\Gate.csproj">
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>

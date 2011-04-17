@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Gate.Helpers;
+using Gate.Startup;
 using NUnit.Framework;
 
-namespace Gate.Startup.Tests
+namespace Gate.Tests.StartupTests
 {
     using AppDelegate = Action< // app
         IDictionary<string, object>, // env
@@ -91,7 +92,7 @@ namespace Gate.Startup.Tests
         [Test]
         public void String_constructor_overload_also_eventually_calls_Configure()
         {
-            var builder = new AppBuilder("Gate.Startup.Tests.AppBuilderTests.NoWay");
+            var builder = new AppBuilder("Gate.Tests.StartupTests.AppBuilderTests.NoWay");
             var app = builder.Build();
             var stat = "";
             app(null, (status, headers, body) => stat = status, ex => { });

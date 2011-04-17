@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Xml.Linq;
+using Gate.Helpers;
 using Gate.TestHelpers;
 using NUnit.Framework;
 
-namespace Gate.Helpers.Tests
+namespace Gate.Tests.Helpers
 {
     using AppDelegate = Action< // app
         IDictionary<string, object>, // env
@@ -30,7 +30,7 @@ namespace Gate.Helpers.Tests
             var map = new Dictionary<string, AppDelegate>();
             var app = UrlMapper.Create(map);
             var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("404 NOTFOUND"));
+            Assert.That(callResult.Status, Is.EqualTo("404 NotFound"));
             Assert.That(callResult.BodyText, Is.StringContaining("Not Found"));
         }
 
@@ -44,7 +44,7 @@ namespace Gate.Helpers.Tests
             var app = UrlMapper.Create(map);
 
             var rootResult = AppUtils.Call(app);
-            Assert.That(rootResult.Status, Is.EqualTo("404 NOTFOUND"));
+            Assert.That(rootResult.Status, Is.EqualTo("404 NotFound"));
             Assert.That(rootResult.BodyText, Is.StringContaining("Not Found"));
 
             var fooResult = AppUtils.Call(app, "/foo");
@@ -63,7 +63,7 @@ namespace Gate.Helpers.Tests
             var app = UrlMapper.Create(map);
 
             var rootResult = AppUtils.Call(app);
-            Assert.That(rootResult.Status, Is.EqualTo("404 NOTFOUND"));
+            Assert.That(rootResult.Status, Is.EqualTo("404 NotFound"));
             Assert.That(rootResult.BodyText, Is.StringContaining("Not Found"));
 
             var fooResult = AppUtils.Call(app, "/foo");

@@ -35,12 +35,23 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncResult.cs" />
+    <Compile Include="Utils\AsyncResult.cs" />
+    <Compile Include="Helpers\Response.cs" />
     <Compile Include="Owin.cs" />
-    <Compile Include="InputStream.cs" />
-    <Compile Include="OutputStream.cs" />
+    <Compile Include="Helpers\InputStream.cs" />
+    <Compile Include="Helpers\OutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Helpers\Request.cs" />
     <Compile Include="Spooling\Spool.cs" />
+    <Compile Include="Startup\AppBuilder.cs" />
+    <Compile Include="Startup\Loader\DefaultConfigurationLoader.cs" />
+    <Compile Include="Startup\Loader\IConfigurationLoader.cs" />
+    <Compile Include="Startup\MapExtensions.cs" />
+    <Compile Include="Startup\RunExtensions.cs" />
+    <Compile Include="Helpers\UrlMapper.cs" />
+    <Compile Include="Startup\UseExtensions.cs" />
+    <Compile Include="Utils\Body.cs" />
+    <Compile Include="Utils\ParamDictionary.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

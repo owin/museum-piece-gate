@@ -41,12 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NotFound.cs" />
-    <Compile Include="Request.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Response.cs" />
     <Compile Include="ShowExceptions.cs" />
-    <Compile Include="UrlMapper.cs" />
-    <Compile Include="Utils\ParamDictionary.cs" />
     <Compile Include="Wilson.cs" />
   </ItemGroup>
   <ItemGroup>
