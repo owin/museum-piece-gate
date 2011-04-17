@@ -90,6 +90,19 @@ namespace Gate.TestHelpers
                 });
             };
         }
+
+        public static AppDelegate Simple(string status, IDictionary<string, string> headers, string body)
+        {
+            return (env, result, fault) => result(
+                status,
+                headers,
+                (data, error, complete) =>
+                {
+                    data(new ArraySegment<byte>(Encoding.UTF8.GetBytes(body)), null);
+                    complete();
+                    return () => { };
+                });
+        }
     }
 
     public class CallResult

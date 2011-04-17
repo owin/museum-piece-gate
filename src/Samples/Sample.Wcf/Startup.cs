@@ -11,6 +11,7 @@ namespace Sample.Wcf
         {
             builder
                 .Use(ShowExceptions.Create)
+                .Use(ContentType.Create, "text/html")
                 .Map("/wilson", Wilson.Create)
                 .Map("/wilsonasync", Wilson.AppAsync)
                 .Map("/nancy", new Nancy.Hosting.Owin.NancyOwinHost().ProcessRequest)
