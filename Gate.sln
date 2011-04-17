@@ -16,9 +16,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.AspNet", "src\Hosts\Gate.AspNet\Gate.AspNet.csproj", "{F32E456A-F26E-4C5D-93B8-311941A714E4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{C84C3CDC-FC22-4AF2-8759-4B407BF5AD56}"
-	ProjectSection(SolutionItems) = preProject
-		src\Hosts\Gate.Wcf\GateWcfService.cs = src\Hosts\Gate.Wcf\GateWcfService.cs
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.AspNet", "src\Samples\Sample.AspNet\Sample.AspNet.csproj", "{0D16BD06-1972-4714-9D79-7E84F82748F4}"
 EndProject
