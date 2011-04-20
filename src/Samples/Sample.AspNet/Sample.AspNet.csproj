@@ -77,6 +77,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AspNetRootSourceProvider.cs" />
+    <Compile Include="DefaultPage.cs" />
     <Compile Include="MainModule.cs" />
     <Compile Include="Models\Index.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

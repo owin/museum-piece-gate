@@ -21,8 +21,18 @@ namespace Gate.Helpers
                 Action>>, // cancel
         Action<Exception>>; // error
 
-    public class Wilson
+    public class Wilson : IApplication, IApplication<bool>
     {
+        AppDelegate IApplication.Create()
+        {
+            return Create();
+        }
+
+        AppDelegate IApplication<bool>.Create(bool async)
+        {
+            return async ? CreateAsync() : Create();
+        }
+
         public static AppDelegate Create()
         {
             return (env, result, fault) =>
@@ -54,12 +64,12 @@ namespace Gate.Helpers
             };
         }
 
-        public static AppDelegate AppAsync()
+        public static AppDelegate CreateAsync()
         {
             return (env, result, fault) =>
             {
                 var request = new Request(env);
-                var response = new Response(result) 
+                var response = new Response(result)
                 {
                     ContentType = "text/html",
                 };

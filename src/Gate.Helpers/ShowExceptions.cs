@@ -18,8 +18,13 @@ namespace Gate.Helpers
                 Action>>, // cancel
         Action<Exception>>; // error
 
-    public partial class ShowExceptions
+    public partial class ShowExceptions : IMiddleware
     {
+        AppDelegate IMiddleware.Create(AppDelegate app)
+        {
+            return Create(app);
+        }
+
         public static AppDelegate Create(AppDelegate app)
         {
             return (env, result, fault) =>
@@ -47,5 +52,6 @@ namespace Gate.Helpers
         {
             return Convert.ToString(text);
         }
+
     }
 }

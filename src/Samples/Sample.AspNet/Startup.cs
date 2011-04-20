@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Gate.Helpers;
+﻿using Gate.Helpers;
 using Gate.Startup;
 
 namespace Sample.AspNet
@@ -12,24 +10,20 @@ namespace Sample.AspNet
             builder
                 .Use(ShowExceptions.Create)
                 .Map("/wilson", Wilson.Create)
-                .Map("/wilsonasync", Wilson.AppAsync)
+                .Map("/wilsonasync", Wilson.CreateAsync)
                 .Map("/nancy", new Nancy.Hosting.Owin.NancyOwinHost().ProcessRequest)
-                .Run(DefaultPage);
+                .Run(DefaultPage.Create);
         }
-
-        static Action<IDictionary<string, object>, Action<string, IDictionary<string, string>, Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>>, Action<Exception>> DefaultPage()
+        
+        public void Configuration_variation(AppBuilder builder)
         {
-            return (env, result, fault) =>
-            {
-                var request = new Request(env);
-                new Response(result) {ContentType = "text/html"}
-                    .Write("<h1>Sample.AspNet</h1>")
-                    .Write("<p><a href='{0}/wilson/'>Wilson</a></p>", request.PathBase)
-                    .Write("<p><a href='{0}/wilsonasync/'>Wilson (async)</a></p>", request.PathBase)
-                    .Write("<p><a href='{0}/nancy/'>Nancy</a></p>", request.PathBase)
-                    .Write("<p><a href='{0}/nancy/fileupload'>File Upload</a></p>", request.PathBase)
-                    .Finish();
-            };
+            var nancyOwinHost = new Nancy.Hosting.Owin.NancyOwinHost();
+            builder
+                .Use<ShowExceptions>()
+                .Map("/wilson", map => map.Run<Wilson>())
+                .Map("/wilsonasync", map => map.Run<Wilson, bool>(true))
+                .Map("/nancy", map => map.Run(nancyOwinHost.ProcessRequest))
+                .Run<DefaultPage>();
         }
     }
 }

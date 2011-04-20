@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DefaultPage.cs" />
     <Compile Include="MainModule.cs" />
     <Compile Include="Models\Index.cs" />
     <Compile Include="Program.cs" />
