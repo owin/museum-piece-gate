@@ -1,3 +1,3 @@
-# Gato
+# Gate
 
 An OWIN utility library.
