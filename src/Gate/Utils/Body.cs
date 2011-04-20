@@ -16,6 +16,11 @@ namespace Gate.Utils
 
     public static class Body
     {
+        public static BodyDelegate FromText(string text)
+        {
+            return FromText(text, Encoding.UTF8);
+        }
+
         public static BodyDelegate FromText(string text, Encoding encoding)
         {
             return (data, error, complete) =>
