@@ -19,13 +19,17 @@ namespace Sample.AspNet
 
         static Action<IDictionary<string, object>, Action<string, IDictionary<string, string>, Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>>, Action<Exception>> DefaultPage()
         {
-            return (env, result, fault) => new Response(result) {ContentType = "text/html"}
-                .Write("<h1>Sample.AspNet</h1>")
-                .Write("<p><a href='/wilson/'>Wilson</a></p>")
-                .Write("<p><a href='/wilsonasync/'>Wilson (async)</a></p>")
-                .Write("<p><a href='/nancy/'>Nancy</a></p>")
-                .Write("<p><a href='/nancy/fileupload'>File Upload</a></p>")
-                .Finish();
+            return (env, result, fault) =>
+            {
+                var request = new Request(env);
+                new Response(result) {ContentType = "text/html"}
+                    .Write("<h1>Sample.AspNet</h1>")
+                    .Write("<p><a href='{0}/wilson/'>Wilson</a></p>", request.PathBase)
+                    .Write("<p><a href='{0}/wilsonasync/'>Wilson (async)</a></p>", request.PathBase)
+                    .Write("<p><a href='{0}/nancy/'>Nancy</a></p>", request.PathBase)
+                    .Write("<p><a href='{0}/nancy/fileupload'>File Upload</a></p>", request.PathBase)
+                    .Finish();
+            };
         }
     }
 }
