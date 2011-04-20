@@ -63,6 +63,11 @@ namespace Gate.Helpers
             return this;
         }
 
+        public Response Write(string format, params object[] args)
+        {
+            return Write(string.Format(format, args));
+        }
+
         public void Finish()
         {
             Finish((response, fault, complete) => complete());
