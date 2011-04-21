@@ -28,7 +28,7 @@ namespace Gate.TestHelpers
             var callResult = new CallResult();
             app(
                 env,
-                (status, headers, body) =>
+                (string status, IDictionary<string, string> headers, BodyDelegate body) =>
                 {
                     callResult.Status = status;
                     callResult.Headers = headers;
@@ -94,7 +94,7 @@ namespace Gate.TestHelpers
     {
         public string Status { get; set; }
         public IDictionary<string, string> Headers { get; set; }
-        public Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> Body { get; set; }
+        public BodyDelegate Body { get; set; }
         public string BodyText { get; set; }
         public XElement BodyXml { get; set; }
 

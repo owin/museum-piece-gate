@@ -22,13 +22,5 @@ namespace Gate
     public delegate void ResultDelegate(
         string status,
         IDictionary<string, string> headers,
-        Func<
-            Func< // next
-                ArraySegment<byte>, // data
-                Action, // continuation
-                bool>, // async                    
-            Action<Exception>, // error
-            Action, // complete
-            Action> // cancel
-        body); 
+        BodyDelegate body);
 }

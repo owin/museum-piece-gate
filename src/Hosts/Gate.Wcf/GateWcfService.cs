@@ -140,7 +140,7 @@ namespace Gate.Wcf
             WebOperationContext webResponse,
             string status,
             IDictionary<string, string> headers,
-            Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> body)
+            BodyDelegate body)
         {
             //TODO: hardenning
 
