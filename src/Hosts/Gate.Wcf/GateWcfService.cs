@@ -16,21 +16,6 @@ using Gate.Startup;
 
 namespace Gate.Wcf
 {
-    using AppDelegate = Action< // app
-        IDictionary<string, object>, // env
-        Action< // result
-            string, // status
-            IDictionary<string, string>, // headers
-            Func< // body
-                Func< // next
-                    ArraySegment<byte>, // data
-                    Action, // continuation
-                    bool>, // async                    
-                Action<Exception>, // error
-                Action, // complete
-                Action>>, // cancel
-        Action<Exception>>; // fault
-
     [ServiceContract]
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class GateWcfService
@@ -108,7 +93,7 @@ namespace Gate.Wcf
 
             var env = new Dictionary<string, object>();
 
-            new Owin(env)
+            new Environment(env)
             {
                 Version = "1.0",
                 Method = incomingRequest.Method,

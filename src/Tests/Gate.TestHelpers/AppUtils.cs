@@ -9,21 +9,6 @@ using Nancy.Hosting.Owin.Tests.Fakes;
 
 namespace Gate.TestHelpers
 {
-    using AppDelegate = Action< // app
-        IDictionary<string, object>, // env
-        Action< // result
-            string, // status
-            IDictionary<string, string>, // headers
-            Func< // body
-                Func< // next
-                    ArraySegment<byte>, // data
-                    Action, // continuation
-                    bool>, // async                    
-                Action<Exception>, // error
-                Action, // complete
-                Action>>, // cancel
-        Action<Exception>>; // error
-
     public class AppUtils
     {
         public static CallResult Call(AppDelegate app)
@@ -34,7 +19,7 @@ namespace Gate.TestHelpers
         public static CallResult Call(AppDelegate app, string path)
         {
             var env = new Dictionary<string, object>();
-            new Owin(env)
+            new Environment(env)
             {
                 Version = "1.0",
                 Path = path,

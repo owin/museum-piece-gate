@@ -4,34 +4,8 @@ using System.Linq;
 using System.Text;
 using Gate.Utils;
 
-namespace Gate.Helpers
+namespace Gate
 {
-    using AppDelegate = Action< // app
-        IDictionary<string, object>, // env
-        Action< // result
-            string, // status
-            IDictionary<string, string>, // headers
-            Func< // body
-                Func< // next
-                    ArraySegment<byte>, // data
-                    Action, // continuation
-                    bool>, // async                    
-                Action<Exception>, // error
-                Action, // complete
-                Action>>, // cancel
-        Action<Exception>>; // error
-    using ResultDelegate = Action< // result
-        string, // status
-        IDictionary<string, string>, // headers
-        Func< // body
-            Func< // next
-                ArraySegment<byte>, // data
-                Action, // continuation
-                bool>, // async                    
-            Action<Exception>, // error
-            Action, // complete
-            Action>>; // cancel
-
     public class UrlMapper
     {
         readonly AppDelegate _app;
@@ -67,7 +41,7 @@ namespace Gate.Helpers
             ResultDelegate result,
             Action<Exception> fault)
         {
-            var owin = new Owin(env);
+            var owin = new Environment(env);
             var path = owin.Path;
             var pathBase = owin.PathBase;
             Action finish = () =>

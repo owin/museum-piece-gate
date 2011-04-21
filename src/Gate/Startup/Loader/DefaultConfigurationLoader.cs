@@ -6,21 +6,6 @@ using System.Reflection;
 
 namespace Gate.Startup.Loader
 {
-    using AppDelegate = Action< // app
-        IDictionary<string, object>, // env
-        Action< // result
-            string, // status
-            IDictionary<string, string>, // headers
-            Func< // body
-                Func< // next
-                    ArraySegment<byte>, // data
-                    Action, // continuation
-                    bool>, // async                    
-                Action<Exception>, // error
-                Action, // complete
-                Action>>, // cancel
-        Action<Exception>>; // error
-
     public class DefaultConfigurationLoader : IConfigurationLoader
     {
         public Action<AppBuilder> Load(string configurationString)

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Gate.Helpers.Utils;
 
-namespace Gate.Helpers
+namespace Gate
 {
-    public class Request : Owin
+    public class Request : Environment
     {
         public Request(IDictionary<string, object> env) : base(env)
         {

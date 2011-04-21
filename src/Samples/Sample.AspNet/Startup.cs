@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Gate;
 using Gate.Helpers;
 using Gate.Startup;
 
@@ -13,13 +14,26 @@ namespace Sample.AspNet
                 .Use(ShowExceptions.Create)
                 .Map("/wilson", Wilson.Create)
                 .Map("/wilsonasync", Wilson.AppAsync)
-                .Map("/nancy", new Nancy.Hosting.Owin.NancyOwinHost().ProcessRequest)
+                // this could be cleaned up if NancyOwinHost exposed a member which *returned* AppDelegate. 
+                //
+                // unfortunately, due a bug in the C# compiler, you can't just say
+                //
+                // .Map("/nancy", new NancyOwinHost().ProcessRequest)
+                //
+                // where ProcessRequest conforms to AppDelegate.
+                // 
+                // see: 
+                // http://stackoverflow.com/questions/4466859/delegate-system-action-does-not-take-0-arguments-is-this-a-c-compiler-bug
+                .Map("/nancy", (IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault) =>
+                    {
+                        new Nancy.Hosting.Owin.NancyOwinHost().ProcessRequest(env, (status, headers, body) => result(status, headers, body), fault);
+                    })
                 .Run(DefaultPage);
         }
 
-        static Action<IDictionary<string, object>, Action<string, IDictionary<string, string>, Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>>, Action<Exception>> DefaultPage()
+        static AppDelegate DefaultPage()
         {
-            return (env, result, fault) =>
+            return (IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault) =>
             {
                 var request = new Request(env);
                 new Response(result) {ContentType = "text/html"}

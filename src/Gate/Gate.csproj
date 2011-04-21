@@ -35,6 +35,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Delegates.cs" />
     <Compile Include="Helpers\NotFound.cs" />
     <Compile Include="Utils\AsyncResult.cs" />
     <Compile Include="Helpers\Response.cs" />

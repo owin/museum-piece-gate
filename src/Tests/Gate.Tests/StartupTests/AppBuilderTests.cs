@@ -7,6 +7,7 @@ using NUnit.Framework;
 
 namespace Gate.Tests.StartupTests
 {
+    /*
     using AppDelegate = Action< // app
         IDictionary<string, object>, // env
         Action< // result
@@ -21,7 +22,7 @@ namespace Gate.Tests.StartupTests
                 Action, // complete
                 Action>>, // cancel
         Action<Exception>>; // error
-
+    */
 
     [TestFixture]
     public class AppBuilderTests
