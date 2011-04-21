@@ -62,14 +62,6 @@ namespace Gate.TestHelpers
         /// </summary>
         public Environment Owin { get {return new Environment(Env);} }
 
-        public AppDelegate GetAppDelegate()
-        {
-            return new AppDelegate((
-                IDictionary<string, object> env, 
-                ResultDelegate result,
-                Action<Exception> fault) => { AppDelegate(env, result, fault); });
-        }
-
         /// <summary>
         /// The actual app delegate
         /// </summary>

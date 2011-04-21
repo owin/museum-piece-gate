@@ -5,22 +5,6 @@ using NUnit.Framework;
 
 namespace Gate.Tests
 {
-    /*
-    using BodyDelegate = Func<
-        // on next
-        Func<
-            ArraySegment<byte>, // data
-            Action, // continuation
-            bool // continuation was or will be invoked
-            >,
-        // on error
-        Action<Exception>,
-        // on complete
-        Action,
-        // cancel 
-        Action
-        >;
-    */
     [TestFixture]
     public class OwinTests
     {
