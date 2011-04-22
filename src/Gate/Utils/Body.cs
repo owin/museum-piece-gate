@@ -5,15 +5,6 @@ using System.Text;
 
 namespace Gate.Utils
 {
-    using BodyDelegate = Func< // body
-        Func< // next
-            ArraySegment<byte>, // data
-            Action, // continuation
-            bool>, // async                    
-        Action<Exception>, // error
-        Action, // complete
-        Action>; //cancel
-
     public static class Body
     {
         public static BodyDelegate FromText(string text)

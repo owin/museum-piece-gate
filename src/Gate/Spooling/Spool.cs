@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
 
-namespace Gate.Spooling
+namespace Gate
 {
-    public class Spool
+    class Spool
     {
         readonly bool _eagerPull;
 

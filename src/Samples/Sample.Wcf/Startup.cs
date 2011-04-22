@@ -1,4 +1,5 @@
-﻿using Gate.Helpers;
+﻿using Gate;
+using Gate.Helpers;
 using Gate.Startup;
 
 namespace Sample.Wcf
@@ -11,7 +12,7 @@ namespace Sample.Wcf
                 .Use(ShowExceptions.Create)
                 .Map("/wilson", Wilson.Create)
                 .Map("/wilsonasync", Wilson.CreateAsync)
-                .Map("/nancy", new Nancy.Hosting.Owin.NancyOwinHost().ProcessRequest)
+                .Map("/nancy", Delegates.ToDelegate(new Nancy.Hosting.Owin.NancyOwinHost().ProcessRequest))
                 .Run(DefaultPage.Create);
         }
         
@@ -22,7 +23,7 @@ namespace Sample.Wcf
                 .Use<ShowExceptions>()
                 .Map("/wilson", map => map.Run<Wilson>())
                 .Map("/wilsonasync", map => map.Run<Wilson, bool>(true))
-                .Map("/nancy", map => map.Run(nancyOwinHost.ProcessRequest))
+                .Map("/nancy", map => map.Run(Delegates.ToDelegate(nancyOwinHost.ProcessRequest)))
                 .Run<DefaultPage>();
         }
     }

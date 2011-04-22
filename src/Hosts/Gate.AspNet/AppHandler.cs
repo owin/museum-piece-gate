@@ -8,21 +8,6 @@ using System.Web;
 
 namespace Gate.AspNet
 {
-    using AppDelegate = Action< // app
-        IDictionary<string, object>, // env
-        Action< // result
-            string, // status
-            IDictionary<string, string>, // headers
-            Func< // body
-                Func< // next
-                    ArraySegment<byte>, // data
-                    Action, // continuation
-                    bool>, // async                    
-                Action<Exception>, // error
-                Action, // complete
-                Action>>, // cancel
-        Action<Exception>>; // fault
-
     public class AppHandler
     {
         readonly AppDelegate _app;
@@ -50,7 +35,7 @@ namespace Gate.AspNet
                 path = path.Substring(pathBase.Length);
 
             var env = new Dictionary<string, object>();
-            new Owin(env)
+            new Environment(env)
             {
                 Version = "1.0",
                 Method = httpRequest.HttpMethod,
@@ -59,7 +44,7 @@ namespace Gate.AspNet
                 Path = path,
                 QueryString = serverVariables.QueryString,
                 Headers = httpRequest.Headers.AllKeys.ToDictionary(x => x, x => httpRequest.Headers.Get(x)),
-                Body = (next, error, complete) =>
+                Body = (Func<ArraySegment<byte>, Action, bool> next, Action<Exception> error, Action complete) =>
                 {
                     var stream = httpContext.Request.InputStream;
                     var buffer = new byte[4096];

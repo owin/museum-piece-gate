@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using Gate;
-using Gate.Helpers;
+﻿using Gate;
 
 namespace Sample.Wcf
 {
     public class DefaultPage : IApplication
     {
-        public static Action<IDictionary<string, object>, Action<string, IDictionary<string, string>, Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>>, Action<Exception>> Create()
+        public static AppDelegate Create()
         {
             return (env, result, fault) =>
             {
@@ -22,7 +19,7 @@ namespace Sample.Wcf
             };
         }
 
-        Action<IDictionary<string, object>, Action<string, IDictionary<string, string>, Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>>, Action<Exception>> IApplication.Create()
+        AppDelegate IApplication.Create()
         {
             return Create();
         }

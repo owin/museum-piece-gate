@@ -8,26 +8,6 @@ using NUnit.Framework;
 
 namespace Gate.Tests.Helpers
 {
-    using ResultDelegate = Action< // result
-        string, // status
-        IDictionary<string, string>, // headers
-        Func< // body
-            Func< // next
-                ArraySegment<byte>, // data
-                Action, // continuation
-                bool>, // async                    
-            Action<Exception>, // error
-            Action, // complete
-            Action>>; // cancel
-    using BodyDelegate = Func< // body
-        Func< // next
-            ArraySegment<byte>, // data
-            Action, // continuation
-            bool>, // async                    
-        Action<Exception>, // error
-        Action, // complete
-        Action>; //cancel
-
     [TestFixture]
     public class ResponseTests
     {

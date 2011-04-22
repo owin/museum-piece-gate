@@ -6,20 +6,6 @@ using Timer = System.Timers.Timer;
 
 namespace Gate.Helpers
 {
-    using AppDelegate = Action< // app
-        IDictionary<string, object>, // env
-        Action< // result
-            string, // status
-            IDictionary<string, string>, // headers
-            Func< // body
-                Func< // next
-                    ArraySegment<byte>, // data
-                    Action, // continuation
-                    bool>, // async                    
-                Action<Exception>, // error
-                Action, // complete
-                Action>>, // cancel
-        Action<Exception>>; // error
 
     public class Wilson : IApplication, IApplication<bool>
     {

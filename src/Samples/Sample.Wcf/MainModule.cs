@@ -19,7 +19,7 @@ namespace Sample.Wcf
             {
                 var model = new Index() {Name = "Boss Hawg"};
 
-                model.Posted = this.Request.Form.posted.HasValue ? this.Request.Form.posted.Value : "Nothing :-(";
+                model.Posted = this.Request.Form.posted.HasValue ? (string)this.Request.Form.posted.Value : "Nothing :-(";
 
                 return View["Index", model];
             };

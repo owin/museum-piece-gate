@@ -35,13 +35,14 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Delegates.cs" />
+    <Compile Include="Environment.cs" />
     <Compile Include="Helpers\NotFound.cs" />
     <Compile Include="IApplication.cs" />
     <Compile Include="IMiddleware.cs" />
     <Compile Include="Startup\AppBuilderArgs.cs" />
     <Compile Include="Utils\AsyncResult.cs" />
     <Compile Include="Helpers\Response.cs" />
-    <Compile Include="Owin.cs" />
     <Compile Include="Helpers\InputStream.cs" />
     <Compile Include="Helpers\OutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

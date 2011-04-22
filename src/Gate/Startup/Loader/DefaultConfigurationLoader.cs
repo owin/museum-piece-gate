@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Gate.Startup.Loader
 {
-    using AppDelegate = Action< // app
+    using AppAction = Action< // app
         IDictionary<string, object>, // env
         Action< // result
             string, // status
@@ -148,6 +148,11 @@ namespace Gate.Startup.Loader
             {
                 var instance = methodInfo.IsStatic ? null : Activator.CreateInstance(type);
                 return builder => builder.Run((AppDelegate) methodInfo.Invoke(instance, new object[0] {}));
+            }
+
+            if (Matches(methodInfo, typeof(AppAction))) {
+                var instance = methodInfo.IsStatic ? null : Activator.CreateInstance(type);
+                return builder => builder.Run(((AppAction)methodInfo.Invoke(instance, new object[0] { })).ToDelegate());
             }
 
             return null;
