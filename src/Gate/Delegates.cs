@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Gate
 {
@@ -14,13 +12,21 @@ namespace Gate
                 Func< // next
                     ArraySegment<byte>, // data
                     Action, // continuation
-                    bool>, // async                    
+                    bool>, // async
                 Action<Exception>, // error
                 Action, // complete
                 Action>>, // cancel
         Action<Exception>>; // error
 
-    
+    using BodyAction = Func< //body
+        Func< //next
+            ArraySegment<byte>, // data
+            Action, // continuation
+            bool>, // continuation was or will be invoked
+        Action<Exception>, //error
+        Action, //complete
+        Action>; //cancel
+
     public delegate void AppDelegate(
         IDictionary<string, object> env,
         ResultDelegate result,
@@ -39,16 +45,16 @@ namespace Gate
             onNext,
         Action<Exception> onError,
         Action onComplete);
-    
-    
+
+
 
     public static class Delegates
     {
-        public static AppAction ToAction(this AppDelegate method)
+        public static AppAction ToAction(this AppDelegate app)
         {
             return
                 (env, result, fault) =>
-                method(
+                app(
                     env,
                     (status, headers, body) =>
                     result(
@@ -59,10 +65,10 @@ namespace Gate
                     fault);
         }
 
-        public static AppDelegate ToDelegate(this AppAction method) {
+        public static AppDelegate ToDelegate(this AppAction app) {
             return
                 (env, result, fault) =>
-                method(
+                app(
                     env,
                     (status, headers, body) =>
                     result(
@@ -71,6 +77,14 @@ namespace Gate
                         (next, error, complete) =>
                         body(next, error, complete)),
                     fault);
+        }
+
+        public static BodyAction ToAction(this BodyDelegate body) {
+            return (next, error, complete) => body(next, error, complete);
+        }
+
+        public static BodyDelegate ToDelegate(this BodyAction body) {
+            return (next, error, complete) => body(next, error, complete);
         }
     }
 }

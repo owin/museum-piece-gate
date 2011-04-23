@@ -11,7 +11,7 @@ namespace Sample.AspNet
         public void Configuration(AppBuilder builder)
         {
             builder
-                .Use(ShowExceptions.Create)
+                //.Use(ShowExceptions.Create)
                 .Map("/wilson", Wilson.Create)
                 .Map("/wilsonasync", Wilson.CreateAsync)
                 .Map("/nancy", Delegates.ToDelegate(new Nancy.Hosting.Owin.NancyOwinHost().ProcessRequest))

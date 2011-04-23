@@ -3,6 +3,15 @@ using System.Collections.Generic;
 
 namespace Gate
 {
+    using BodyAction = Func<
+        Func< //next
+            ArraySegment<byte>, // data
+            Action, // continuation
+            bool>, // continuation was or will be invoked
+        Action<Exception>, //error
+        Action, //complete
+        Action>; //cancel
+
     /// <summary>
     /// Utility class providing strongly-typed get/set access to environment properties 
     /// defined by the OWIN spec.
@@ -89,9 +98,9 @@ namespace Gate
         /// <summary>
         /// "owin.RequestBody" An instance of the body delegate representing the body of the request. May be null.
         /// </summary>
-        public BodyDelegate Body
+        public BodyAction Body
         {
-            get { return Get<BodyDelegate>(RequestBodyKey); }
+            get { return Get<BodyAction>(RequestBodyKey); }
             set { Env[RequestBodyKey] = value; }
         }
 
