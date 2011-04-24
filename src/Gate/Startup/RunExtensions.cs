@@ -16,7 +16,8 @@ namespace Gate.Startup
                  Action<Exception>, // error
                  Action, // complete
                  Action>>, // cancel
-         Action<Exception>>; // error
+         Action<Exception>>; // error
+
     public static class RunExtensions
     {
         /* 

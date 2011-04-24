@@ -1,6 +1,6 @@
-using Gate;
 using Gate.Helpers;
 using Gate.Startup;
+using Nancy.Hosting.Owin;
 
 namespace Sample.AspNet
 {
@@ -8,22 +8,26 @@ namespace Sample.AspNet
     {
         public void Configuration(AppBuilder builder)
         {
+            var nancyOwinHost = new NancyOwinHost();
             builder
                 .Use(ShowExceptions.Create)
                 .Map("/wilson", Wilson.Create)
-                .Map("/wilsonasync", Wilson.CreateAsync)
-                .Map("/nancy", Delegates.ToDelegate(new Nancy.Hosting.Owin.NancyOwinHost().ProcessRequest))
+                .Map("/wilsonasync", Wilson.Create, true)
+                .Map("/nancy", map => map
+                    .Use(ContentType.Create, "text/html")
+                    .Ext.Run(nancyOwinHost.ProcessRequest))
                 .Run(DefaultPage.Create);
         }
-        
+
         public void ConfigurationVariation(AppBuilder builder)
         {
-            var nancyOwinHost = new Nancy.Hosting.Owin.NancyOwinHost();
             builder
                 .Use<ShowExceptions>()
                 .Map("/wilson", map => map.Run<Wilson>())
                 .Map("/wilsonasync", map => map.Run<Wilson, bool>(true))
-                .Map("/nancy", map => map.Run(Delegates.ToDelegate(nancyOwinHost.ProcessRequest)))
+                .Map("/nancy", map => map
+                    .Use<ContentType, string>("text/html")
+                    .Ext.Run(new NancyOwinHost().ProcessRequest))
                 .Run<DefaultPage>();
         }
     }

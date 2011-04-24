@@ -41,6 +41,10 @@
     <Compile Include="IApplication.cs" />
     <Compile Include="IMiddleware.cs" />
     <Compile Include="Startup\AppBuilderArgs.cs" />
+    <Compile Include="Startup\AppBuilderExt.cs" />
+    <Compile Include="Startup\ExtRunExtensions.cs" />
+    <Compile Include="Startup\ExtUseExtensions.cs" />
+    <Compile Include="Startup\ExtMapExtensions.cs" />
     <Compile Include="Utils\AsyncResult.cs" />
     <Compile Include="Helpers\Response.cs" />
     <Compile Include="Helpers\InputStream.cs" />

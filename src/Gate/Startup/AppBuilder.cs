@@ -65,6 +65,11 @@ namespace Gate.Startup
             return Configure(configuration);
         }
 
+        public AppBuilderExt Ext
+        {
+            get {return new AppBuilderExt(this);}
+        }
+
         public AppBuilder Use(Func<AppDelegate, AppDelegate> factory)
         {
             _stack.Add(factory);

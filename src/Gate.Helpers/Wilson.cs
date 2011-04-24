@@ -19,6 +19,11 @@ namespace Gate.Helpers
             return async ? CreateAsync() : Create();
         }
 
+        public static AppDelegate Create(bool async)
+        {
+            return async ? CreateAsync() : Create();
+        }
+
         public static AppDelegate Create()
         {
             return (env, result, fault) =>

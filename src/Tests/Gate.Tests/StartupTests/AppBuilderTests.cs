@@ -12,8 +12,7 @@ namespace Gate.Tests.StartupTests
     public class AppBuilderTests
     {
         // ReSharper disable InconsistentNaming
-
-        public static AppDelegate TwoHundredFoo = (env, result, fault) => result("200 Foo", null, null);
+        static readonly AppDelegate TwoHundredFoo = (env, result, fault) => result("200 Foo", null, null);
 
         [Test]
         public void Build_returns_404_by_default()
