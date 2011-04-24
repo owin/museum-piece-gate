@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Gate;
 using Gate.Helpers;
 using Gate.Startup;
@@ -11,14 +9,14 @@ namespace Sample.AspNet
         public void Configuration(AppBuilder builder)
         {
             builder
-                //.Use(ShowExceptions.Create)
+                .Use(ShowExceptions.Create)
                 .Map("/wilson", Wilson.Create)
                 .Map("/wilsonasync", Wilson.CreateAsync)
                 .Map("/nancy", Delegates.ToDelegate(new Nancy.Hosting.Owin.NancyOwinHost().ProcessRequest))
                 .Run(DefaultPage.Create);
         }
         
-        public void Configuration_variation(AppBuilder builder)
+        public void ConfigurationVariation(AppBuilder builder)
         {
             var nancyOwinHost = new Nancy.Hosting.Owin.NancyOwinHost();
             builder
