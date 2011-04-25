@@ -51,6 +51,11 @@ namespace Gate.Startup
             return this;
         }
 
+        public AppBuilder Configure()
+        {
+            return Configure(default(string));
+        }
+
         public AppBuilder Configure(Action<AppBuilder> configuration)
         {
             configuration(this);
