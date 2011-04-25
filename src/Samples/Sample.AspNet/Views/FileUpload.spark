@@ -1,4 +1,4 @@
-﻿<viewdata model="Sample.AspNet.Models.Index" />
+﻿<viewdata model="Sample.App.Models.Index" />
 <html>
   <head>
     <title>Nancy OWIN Host Demo</title>

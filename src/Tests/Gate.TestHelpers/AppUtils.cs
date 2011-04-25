@@ -19,10 +19,12 @@ namespace Gate.TestHelpers
         public static CallResult Call(AppDelegate app, string path)
         {
             var env = new Dictionary<string, object>();
+            var pathParts = path.Split("?".ToArray(), 2);
             new Environment(env)
             {
                 Version = "1.0",
-                Path = path,
+                Path = pathParts[0],
+                QueryString = pathParts.Length == 2 ? pathParts[1] : null,
             };
             var wait = new ManualResetEvent(false);
             var callResult = new CallResult();

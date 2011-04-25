@@ -60,12 +60,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DefaultPage.cs" />
-    <Compile Include="MainModule.cs" />
-    <Compile Include="Models\Index.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -77,10 +73,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Gate.Helpers\Gate.Helpers.csproj">
-      <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
-      <Name>Gate.Helpers</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Gate\Gate.csproj">
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>
@@ -88,6 +80,10 @@
     <ProjectReference Include="..\..\Hosts\Gate.Wcf\Gate.Wcf.csproj">
       <Project>{E7602355-82C2-4698-AB61-128B8A6E53CE}</Project>
       <Name>Gate.Wcf</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Sample.App\Sample.App.csproj">
+      <Project>{0E89EFE3-63CE-4222-9C0B-DD1F5559DAAF}</Project>
+      <Name>Sample.App</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
