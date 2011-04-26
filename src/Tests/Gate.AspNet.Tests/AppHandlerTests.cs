@@ -195,5 +195,11 @@ namespace Gate.AspNet.Tests
             Assert.That(headers.Keys.ToArray().Contains("Content-Type"), Is.True);
             Assert.That(headers.Keys.ToArray().Contains("CONTENT-TYPE"), Is.False);
         }
+
+        [Test]
+        public void Remote_host_closed_connection_during_write()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

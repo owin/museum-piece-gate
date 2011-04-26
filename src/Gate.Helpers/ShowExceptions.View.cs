@@ -10,6 +10,18 @@ namespace Gate.Helpers
         {
             var request = new Request(env);
             var path = request.PathBase + request.Path;
+            var frames = StackFrames(ex);
+            var first = frames.FirstOrDefault();
+            var location = "";
+            if (ex.TargetSite != null && ex.TargetSite.DeclaringType != null)
+            {
+                location = ex.TargetSite.DeclaringType.FullName + "." + ex.TargetSite.Name;
+            }
+            else if (first != null)
+            {
+                location = first.Function;
+            }
+
 
             // adapted from Django <djangoproject.com>
             // Copyright (c) 2005, the Lawrence Journal-World
@@ -139,13 +151,31 @@ write(@"</h1>
 write(h(ex.Message));
 write(@"</h2>
   <table><tr>
-    <th>Ruby</th>
+    <th>.NET</th>
     <td>
-{% if first = frames.first %}
-      <code>{%=h first.filename %}</code>: in <code>{%=h first.function %}</code>, line {%=h frames.first.lineno %}
-{% else %}
+");
+ if (!string.IsNullOrEmpty(location) && !string.IsNullOrEmpty(first.File) ) { 
+write(@"
+      <code>");
+write(h( location ));
+write(@"</code>: in <code>");
+write(h( first.File ));
+write(@"</code>, line ");
+write(h( first.Line ));
+write(@"
+");
+ } else if (!string.IsNullOrEmpty(location)) { 
+write(@"
+      <code>");
+write(h( location ));
+write(@"</code>
+");
+ } else { 
+write(@"
       unknown location
-{% end %}
+");
+ } 
+write(@"
     </td>
   </tr><tr>
     <th>Web</th>
@@ -168,34 +198,93 @@ write(@" </code></td>
 <div id=""traceback"">
   <h2>Traceback <span>(innermost first)</span></h2>
   <ul class=""traceback"">
-{% frames.each { |frame| %}
+");
+ foreach(var frameIndex in frames.Select((frame,index)=>Tuple.Create(frame,index))) { 
+     var frame = frameIndex.Item1;
+     var index = frameIndex.Item2;
+
+write(@"
       <li class=""frame"">
-        <code>{%=h frame.filename %}</code>: in <code>{%=h frame.function %}</code>
+        <code>");
+write(h( frame.File ));
+write(@"</code>: in <code>");
+write(h( frame.Function ));
+write(@"</code>
 
-          {% if frame.context_line %}
+          ");
+ if (frame.ContextCode != null) { 
+write(@"
           <div class=""context"" id=""c{%=h frame.object_id %}"">
-              {% if frame.pre_context %}
-              <ol start=""{%=h frame.pre_context_lineno+1 %}"" class=""pre-context"" id=""pre{%=h frame.object_id %}"">
-                {% frame.pre_context.each { |line| %}
-                <li onclick=""toggle('pre{%=h frame.object_id %}', 'post{%=h frame.object_id %}')"">{%=h line %}</li>
-                {% } %}
+              ");
+ if (frame.PreContextCode != null) { 
+write(@"
+              <ol start=""");
+write(h( frame.PreContextLine+1 ));
+write(@""" class=""pre-context"" id=""pre");
+write(h( index ));
+write(@""">
+                ");
+ foreach(var line in frame.PreContextCode) { 
+write(@"
+                <li onclick=""toggle('pre");
+write(h( index ));
+write(@"', 'post");
+write(h( index ));
+write(@"')"">");
+write(h( line ));
+write(@"</li>
+                ");
+ } 
+write(@"
               </ol>
-              {% end %}
+              ");
+ } 
+write(@"
 
-            <ol start=""{%=h frame.lineno %}"" class=""context-line"">
-              <li onclick=""toggle('pre{%=h frame.object_id %}', 'post{%=h frame.object_id %}')"">{%=h frame.context_line %}<span>...</span></li></ol>
+            <ol start=""");
+write(h( frame.Line ));
+write(@""" class=""context-line"">
+              <li onclick=""toggle('pre");
+write(h( index ));
+write(@"', 'post");
+write(h( index ));
+write(@"')"">");
+write(h( frame.ContextCode ));
+write(@"<span>...</span></li></ol>
 
-              {% if frame.post_context %}
-              <ol start='{%=h frame.lineno+1 %}' class=""post-context"" id=""post{%=h frame.object_id %}"">
-                {% frame.post_context.each { |line| %}
-                <li onclick=""toggle('pre{%=h frame.object_id %}', 'post{%=h frame.object_id %}')"">{%=h line %}</li>
-                {% } %}
+              ");
+ if (frame.PostContextCode != null) { 
+write(@"
+              <ol start='");
+write(h( frame.Line+1 ));
+write(@"' class=""post-context"" id=""post");
+write(h( index ));
+write(@""">
+                ");
+ foreach(var line in frame.PostContextCode) { 
+write(@"
+                <li onclick=""toggle('pre");
+write(h( index ));
+write(@"', 'post");
+write(h( index ));
+write(@"')"">");
+write(h( line ));
+write(@"</li>
+                ");
+ } 
+write(@"
               </ol>
-              {% end %}
+              ");
+ } 
+write(@"
           </div>
-          {% end %}
+          ");
+ } 
+write(@"
       </li>
-{% } %}
+");
+ } 
+write(@"
   </ul>
 </div>
 

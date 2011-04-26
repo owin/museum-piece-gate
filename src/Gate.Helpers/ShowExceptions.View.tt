@@ -10,6 +10,18 @@ namespace Gate.Helpers
         {
             var request = new Request(env);
             var path = request.PathBase + request.Path;
+            var frames = StackFrames(ex);
+            var first = frames.FirstOrDefault();
+            var location = "";
+            if (ex.TargetSite != null && ex.TargetSite.DeclaringType != null)
+            {
+                location = ex.TargetSite.DeclaringType.FullName + "." + ex.TargetSite.Name;
+            }
+            else if (first != null)
+            {
+                location = first.Function;
+            }
+
 
             // adapted from Django <djangoproject.com>
             // Copyright (c) 2005, the Lawrence Journal-World
@@ -129,13 +141,15 @@ namespace Gate.Helpers
   <h1><%:ex.GetType().Name%> at <%:path%></h1>
   <h2><%:ex.Message%></h2>
   <table><tr>
-    <th>Ruby</th>
+    <th>.NET</th>
     <td>
-{% if first = frames.first %}
-      <code>{%=h first.filename %}</code>: in <code>{%=h first.function %}</code>, line {%=h frames.first.lineno %}
-{% else %}
+<% if (!string.IsNullOrEmpty(location) && !string.IsNullOrEmpty(first.File) ) { %>
+      <code><%: location %></code>: in <code><%: first.File %></code>, line <%: first.Line %>
+<% } else if (!string.IsNullOrEmpty(location)) { %>
+      <code><%: location %></code>
+<% } else { %>
       unknown location
-{% end %}
+<% } %>
     </td>
   </tr><tr>
     <th>Web</th>
@@ -154,34 +168,37 @@ namespace Gate.Helpers
 <div id=""traceback"">
   <h2>Traceback <span>(innermost first)</span></h2>
   <ul class=""traceback"">
-{% frames.each { |frame| %}
+<% foreach(var frameIndex in frames.Select((frame,index)=>Tuple.Create(frame,index))) { 
+     var frame = frameIndex.Item1;
+     var index = frameIndex.Item2;
+%>
       <li class=""frame"">
-        <code>{%=h frame.filename %}</code>: in <code>{%=h frame.function %}</code>
+        <code><%: frame.File %></code>: in <code><%: frame.Function %></code>
 
-          {% if frame.context_line %}
+          <% if (frame.ContextCode != null) { %>
           <div class=""context"" id=""c{%=h frame.object_id %}"">
-              {% if frame.pre_context %}
-              <ol start=""{%=h frame.pre_context_lineno+1 %}"" class=""pre-context"" id=""pre{%=h frame.object_id %}"">
-                {% frame.pre_context.each { |line| %}
-                <li onclick=""toggle('pre{%=h frame.object_id %}', 'post{%=h frame.object_id %}')"">{%=h line %}</li>
-                {% } %}
+              <% if (frame.PreContextCode != null) { %>
+              <ol start=""<%: frame.PreContextLine+1 %>"" class=""pre-context"" id=""pre<%: index %>"">
+                <% foreach(var line in frame.PreContextCode) { %>
+                <li onclick=""toggle('pre<%: index %>', 'post<%: index %>')""><%: line %></li>
+                <% } %>
               </ol>
-              {% end %}
+              <% } %>
 
-            <ol start=""{%=h frame.lineno %}"" class=""context-line"">
-              <li onclick=""toggle('pre{%=h frame.object_id %}', 'post{%=h frame.object_id %}')"">{%=h frame.context_line %}<span>...</span></li></ol>
+            <ol start=""<%: frame.Line %>"" class=""context-line"">
+              <li onclick=""toggle('pre<%: index %>', 'post<%: index %>')""><%: frame.ContextCode %><span>...</span></li></ol>
 
-              {% if frame.post_context %}
-              <ol start='{%=h frame.lineno+1 %}' class=""post-context"" id=""post{%=h frame.object_id %}"">
-                {% frame.post_context.each { |line| %}
-                <li onclick=""toggle('pre{%=h frame.object_id %}', 'post{%=h frame.object_id %}')"">{%=h line %}</li>
-                {% } %}
+              <% if (frame.PostContextCode != null) { %>
+              <ol start='<%: frame.Line+1 %>' class=""post-context"" id=""post<%: index %>"">
+                <% foreach(var line in frame.PostContextCode) { %>
+                <li onclick=""toggle('pre<%: index %>', 'post<%: index %>')""><%: line %></li>
+                <% } %>
               </ol>
-              {% end %}
+              <% } %>
           </div>
-          {% end %}
+          <% } %>
       </li>
-{% } %}
+<% } %>
   </ul>
 </div>
 
