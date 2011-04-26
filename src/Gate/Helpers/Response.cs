@@ -56,6 +56,12 @@ namespace Gate
             return Write(string.Format(format, args));
         }
 
+        public bool WriteAsync(ArraySegment<byte> data, Action continuation)
+        {
+            return _spool.Push(data, continuation);
+        }
+
+
         public void Finish()
         {
             Finish((response, fault, complete) => complete());

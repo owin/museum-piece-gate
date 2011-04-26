@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="ContentTypeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShowExceptionsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

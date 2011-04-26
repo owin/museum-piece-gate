@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Gate.Helpers
 {
-
     public partial class ShowExceptions : IMiddleware
     {
         AppDelegate IMiddleware.Create(AppDelegate app)
@@ -15,21 +15,35 @@ namespace Gate.Helpers
         {
             return (env, result, fault) =>
             {
-                Action<Exception> show = ex =>
+                Action<Exception, Func<ArraySegment<byte>, Action, bool>, Action> showErrorMessage = (ex, next, complete) =>
+                {
+                    ErrorPage(env, ex, text => next(new ArraySegment<byte>(Encoding.UTF8.GetBytes(text)), null));
+                    complete();
+                };
+
+                Action<Exception> showErrorPage = ex =>
                     new Response(result) {Status = "500 Internal Server Error", ContentType = "text/html"}
                         .Finish((response, error, complete) =>
-                        {
-                            ErrorPage(env, response, ex);
-                            complete();
-                        });
+                            showErrorMessage(ex, response.WriteAsync, complete));
 
                 try
                 {
-                    app(env, result, show);
+                    app(
+                        env,
+                        (status, headers, body) =>
+                            result(
+                                status,
+                                headers,
+                                (next, error, complete) =>
+                                    body(
+                                        next,
+                                        ex => showErrorMessage(ex, next, complete),
+                                        complete)),
+                        showErrorPage);
                 }
                 catch (Exception exception)
                 {
-                    show(exception);
+                    showErrorPage(exception);
                 }
             };
         }
@@ -38,6 +52,5 @@ namespace Gate.Helpers
         {
             return Convert.ToString(text);
         }
-
     }
 }

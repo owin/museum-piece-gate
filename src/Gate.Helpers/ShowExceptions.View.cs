@@ -6,7 +6,7 @@ namespace Gate.Helpers
 {
     public partial class ShowExceptions
     {
-        static void ErrorPage(IDictionary<string,object> env, Response response, Exception ex)
+        static void ErrorPage(IDictionary<string,object> env, Exception ex, Action<string> write)
         {
             var request = new Request(env);
             var path = request.PathBase + request.Path;
@@ -15,17 +15,17 @@ namespace Gate.Helpers
             // Copyright (c) 2005, the Lawrence Journal-World
             // Used under the modified BSD license:
             // http://www.xfree86.org/3.3.6/COPYRIGHT2.html#5
-            response.Write(@"
+            write(@"
 <!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN"" ""http://www.w3.org/TR/html4/loose.dtd"">
 <html lang=""en"">
 <head>
   <meta http-equiv=""content-type"" content=""text/html; charset=utf-8"" />
   <meta name=""robots"" content=""NONE,NOARCHIVE"" />
   <title>");
-response.Write(h(ex.GetType().Name));
-response.Write(@" at ");
-response.Write(h(path));
-response.Write(@"</title>
+write(h(ex.GetType().Name));
+write(@" at ");
+write(h(path));
+write(@"</title>
   <style type=""text/css"">
     html * { padding:0; margin:0; }
     body * { padding:10px 20px; }
@@ -131,13 +131,13 @@ response.Write(@"</title>
 
 <div id=""summary"">
   <h1>");
-response.Write(h(ex.GetType().Name));
-response.Write(@" at ");
-response.Write(h(path));
-response.Write(@"</h1>
+write(h(ex.GetType().Name));
+write(@" at ");
+write(h(path));
+write(@"</h1>
   <h2>");
-response.Write(h(ex.Message));
-response.Write(@"</h2>
+write(h(ex.Message));
+write(@"</h2>
   <table><tr>
     <th>Ruby</th>
     <td>
@@ -150,10 +150,10 @@ response.Write(@"</h2>
   </tr><tr>
     <th>Web</th>
     <td><code>");
-response.Write(h(request.Method ));
-response.Write(@" ");
-response.Write(h( request.Host + path ));
-response.Write(@" </code></td>
+write(h(request.Method ));
+write(@" ");
+write(h( request.Host + path ));
+write(@" </code></td>
   </tr></table>
 
   <h3>Jump to:</h3>
@@ -205,7 +205,7 @@ response.Write(@" </code></td>
   <h3 id=""get-info"">GET</h3>
   ");
  if (request.Query.Any()) { 
-response.Write(@"
+write(@"
     <table class=""req"">
       <thead>
         <tr>
@@ -216,27 +216,27 @@ response.Write(@"
       <tbody>
           ");
  foreach(var kv in request.Query.OrderBy(kv => kv.Key)) { 
-response.Write(@"
+write(@"
           <tr>
             <td>");
-response.Write(h(kv.Key));
-response.Write(@"</td>
+write(h(kv.Key));
+write(@"</td>
             <td class=""code""><div>");
-response.Write(h(kv.Value));
-response.Write(@"</div></td>
+write(h(kv.Value));
+write(@"</div></td>
           </tr>
           ");
  } 
-response.Write(@"
+write(@"
       </tbody>
     </table>
   ");
  } else  { 
-response.Write(@"
+write(@"
     <p>No GET data.</p>
   ");
  } 
-response.Write(@"
+write(@"
 
   <h3 id=""post-info"">POST</h3>
   {% unless req.POST.empty? %}
@@ -294,18 +294,18 @@ response.Write(@"
       <tbody>
         ");
  foreach(var kv in env.OrderBy(kv=>kv.Key)) { 
-response.Write(@"
+write(@"
           <tr>
             <td>");
-response.Write(h(kv.Key));
-response.Write(@"</td>
+write(h(kv.Key));
+write(@"</td>
             <td class=""code""><div>");
-response.Write(h(kv.Value));
-response.Write(@"</div></td>
+write(h(kv.Value));
+write(@"</div></td>
           </tr>
           ");
  } 
-response.Write(@"
+write(@"
       </tbody>
     </table>
 

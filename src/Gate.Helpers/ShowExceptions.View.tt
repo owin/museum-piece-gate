@@ -6,7 +6,7 @@ namespace Gate.Helpers
 {
     public partial class ShowExceptions
     {
-        static void ErrorPage(IDictionary<string,object> env, Response response, Exception ex)
+        static void ErrorPage(IDictionary<string,object> env, Exception ex, Action<string> write)
         {
             var request = new Request(env);
             var path = request.PathBase + request.Path;
@@ -302,7 +302,7 @@ void Emit(string foo)
 
         if (nextOpen > scan)
         {
-            Write("response.Write(@\"" + foo.Substring(scan, nextOpen - scan).Replace("\"", "\"\"") + "\");\r\n");
+            Write("write(@\"" + foo.Substring(scan, nextOpen - scan).Replace("\"", "\"\"") + "\");\r\n");
         }
         if (nextClose > nextOpen)
         {
@@ -312,13 +312,13 @@ void Emit(string foo)
             if (foo[nextOpen] == '=')
             {
                 nextOpen++;
-                prefix = "response.Write(";
+                prefix = "write(";
                 suffix = ");";
             }
             else if (foo[nextOpen] == ':')
             {
                 nextOpen++;
-                prefix = "response.Write(h(";
+                prefix = "write(h(";
                 suffix = "));";
             }
             Write(prefix + foo.Substring(nextOpen, nextClose - nextOpen) + suffix + "\r\n");
