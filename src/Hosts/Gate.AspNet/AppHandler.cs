@@ -35,6 +35,7 @@ namespace Gate.AspNet
                 path = path.Substring(pathBase.Length);
 
             var env = new Dictionary<string, object>();
+
             new Environment(env)
             {
                 Version = "1.0",
@@ -84,6 +85,12 @@ namespace Gate.AspNet
                     return () => { stopped[0] = true; };
                 },
             };
+            env["aspnet.HttpContextBase"] = httpContext;
+            foreach (var kv in serverVariables.AddToEnvironment())
+            {
+                env["server." + kv.Key] = kv.Value;
+            }
+
             _app.Invoke(
                 env,
                 (status, headers, body) =>
@@ -181,6 +188,14 @@ namespace Gate.AspNet
             public string ServerPort
             {
                 get { return _serverVariables.Get("SERVER_PORT"); }
+            }
+
+            public IEnumerable<KeyValuePair<string, object>> AddToEnvironment()
+            {
+                return _serverVariables
+                    .AllKeys
+                    .Where(key => !key.StartsWith("HTTP_"))
+                    .Select(key => new KeyValuePair<string, object>(key, _serverVariables.Get(key)));
             }
         }
     }

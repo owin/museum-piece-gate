@@ -43,12 +43,12 @@ namespace Gate.AspNet.Tests
         {
             var uri = new Uri(url);
             var path = "/" + uri.GetComponents(UriComponents.Path, UriFormat.UriEscaped);
-            
+
             A.CallTo(() => _httpRequest.Url).Returns(uri);
             A.CallTo(() => _httpRequest.Path).Returns(path);
             A.CallTo(() => _httpRequest.ApplicationPath).Returns(appPath);
             A.CallTo(() => _httpRequest.CurrentExecutionFilePath).Returns(path);
-            A.CallTo(() => _httpRequest.AppRelativeCurrentExecutionFilePath).Returns("~" + path.Substring(appPath=="/"?0:appPath.Length));
+            A.CallTo(() => _httpRequest.AppRelativeCurrentExecutionFilePath).Returns("~" + path.Substring(appPath == "/" ? 0 : appPath.Length));
         }
 
         void ProcessRequest(AppHandler appHandler)
@@ -143,6 +143,35 @@ namespace Gate.AspNet.Tests
             Assert.That(app.AppDelegateInvoked);
             Assert.That(app.Owin.Path, Is.EqualTo("/bar"));
             Assert.That(app.Owin.PathBase, Is.EqualTo("/foo"));
+        }
+
+        [Test]
+        public void ServerVariables_that_are_not_headers_are_added_to_environment()
+        {
+            SetRequestPaths("http://localhost/", "/");
+            _httpRequest.ServerVariables["HTTP_HELLO"] = "http.hello.server.variable";
+            _httpRequest.ServerVariables["FOO"] = "foo.server.variable";
+
+            var app = new FakeApp("200 OK", "Hello World");
+            var appHandler = new AppHandler(app.AppDelegate);
+
+            ProcessRequest(appHandler);
+
+            Assert.That(app.Env["server.FOO"], Is.EqualTo("foo.server.variable"));
+            Assert.That(app.Env.ContainsKey("server.HTTP_HELLO"), Is.False);
+        }
+        
+        [Test]
+        public void HttpContextBase_is_added_to_environment()
+        {
+            SetRequestPaths("http://localhost/", "/");
+
+            var app = new FakeApp("200 OK", "Hello World");
+            var appHandler = new AppHandler(app.AppDelegate);
+
+            ProcessRequest(appHandler);
+
+            Assert.That(app.Env["aspnet.HttpContextBase"], Is.SameAs(_httpContext));
         }
     }
 }

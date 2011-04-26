@@ -21,7 +21,6 @@ namespace Gate.AspNet
 
             var builder = new AppBuilder();
             builder.Configure(configurationString);
-            Handler.Run(builder.Build());
 
             var appHandler = new AppHandler(builder.Build());
 
