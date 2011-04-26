@@ -30,6 +30,7 @@ namespace Gate.AspNet.Tests
             A.CallTo(() => _httpContext.Request).Returns(_httpRequest);
             A.CallTo(() => _httpContext.Response).Returns(_httpResponse);
             A.CallTo(() => _httpRequest.ServerVariables).Returns(new NameValueCollection());
+            A.CallTo(() => _httpRequest.Headers).Returns(new NameValueCollection());
             A.CallTo(() => _httpResponse.OutputStream).Returns(_outputStream);
         }
 
@@ -172,6 +173,27 @@ namespace Gate.AspNet.Tests
             ProcessRequest(appHandler);
 
             Assert.That(app.Env["aspnet.HttpContextBase"], Is.SameAs(_httpContext));
+        }
+
+        [Test]
+        public void Request_headers_dictionary_is_case_insensitive()
+        {
+            SetRequestPaths("http://localhost/", "/");
+            _httpRequest.Headers["Content-Type"] = "text/plain";
+
+            var app = new FakeApp("200 OK", "Hello World");
+            var appHandler = new AppHandler(app.AppDelegate);
+            
+            ProcessRequest(appHandler);
+
+            Assert.That(app.Env["aspnet.HttpContextBase"], Is.SameAs(_httpContext));
+
+            var headers = new Environment(app.Env).Headers;
+
+            Assert.That(headers["Content-Type"], Is.EqualTo("text/plain"));
+            Assert.That(headers["CONTENT-TYPE"], Is.EqualTo("text/plain"));
+            Assert.That(headers.Keys.ToArray().Contains("Content-Type"), Is.True);
+            Assert.That(headers.Keys.ToArray().Contains("CONTENT-TYPE"), Is.False);
         }
     }
 }

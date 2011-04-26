@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -13,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gate.Helpers;
 using Gate.Startup;
+using Gate.Utils;
 
 namespace Gate.Wcf
 {
@@ -88,9 +88,6 @@ namespace Gate.Wcf
             var headers = incomingRequest.Headers.AllKeys
                 .ToDictionary(key => key, incomingRequest.Headers.Get);
 
-            var expectedRequestLength =
-                GetExpectedRequestLength(headers);
-
             var env = new Dictionary<string, object>();
 
             new Environment(env)
@@ -102,39 +99,10 @@ namespace Gate.Wcf
                 Path = path,
                 QueryString = queryString,
                 Headers = headers,
-                Body = null, // TODO - request body
+                Body = Body.FromStream(requestBody),
             };
             return env;
         }
-
-        static long GetExpectedRequestLength(IDictionary<string, string> incomingHeaders)
-        {
-            if (incomingHeaders == null)
-            {
-                return 0;
-            }
-
-            if (!incomingHeaders.ContainsKey("Content-Length"))
-            {
-                return 0;
-            }
-
-            var headerValue = incomingHeaders["Content-Length"];
-
-            if (headerValue == null)
-            {
-                return 0;
-            }
-
-            long contentLength;
-            if (!long.TryParse(headerValue, NumberStyles.Any, CultureInfo.InvariantCulture, out contentLength))
-            {
-                return 0;
-            }
-
-            return contentLength;
-        }
-
 
         static Message CreateOwinResponse(
             WebOperationContext webResponse,
