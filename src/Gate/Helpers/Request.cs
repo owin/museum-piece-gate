@@ -25,9 +25,20 @@ namespace Gate
             }
         }
 
-        public string Host  
+        public string Host
         {
-            get { return "Host"; }            
+            get
+            {
+                string hostHeader;
+                if (Headers != null && 
+                    Headers.TryGetValue("Host", out hostHeader) && 
+                    !string.IsNullOrWhiteSpace(hostHeader))
+                {
+                    var delimiter = hostHeader.IndexOf(':');
+                    return delimiter < 0 ? hostHeader : hostHeader.Substring(0, delimiter);
+                }
+                return Get<string>("server.SERVER_NAME");
+            }
         }
     }
 }
