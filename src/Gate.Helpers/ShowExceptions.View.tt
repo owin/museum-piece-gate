@@ -217,8 +217,8 @@ namespace Gate.Helpers
       <tbody>
           <% foreach(var kv in request.Query.OrderBy(kv => kv.Key)) { %>
           <tr>
-            <td><%:kv.Key%></td>
-            <td class=""code""><div><%:kv.Value%></div></td>
+            <td><%: kv.Key %></td>
+            <td class=""code""><div><%: kv.Value %></div></td>
           </tr>
           <% } %>
       </tbody>
@@ -228,7 +228,7 @@ namespace Gate.Helpers
   <% } %>
 
   <h3 id=""post-info"">POST</h3>
-  {% unless req.POST.empty? %}
+  <% if (request.Post.Any()) { %>
     <table class=""req"">
       <thead>
         <tr>
@@ -237,17 +237,17 @@ namespace Gate.Helpers
         </tr>
       </thead>
       <tbody>
-          {% req.POST.sort_by { |k, v| k.to_s }.each { |key, val| %}
+          <% foreach(var kv in request.Post.OrderBy(kv => kv.Key)) { %>
           <tr>
-            <td>{%=h key %}</td>
-            <td class=""code""><div>{%=h val.inspect %}</div></td>
+            <td><%: kv.Key %></td>
+            <td class=""code""><div><%: kv.Value %></div></td>
           </tr>
-          {% } %}
+          <% } %>
       </tbody>
     </table>
-  {% else %}
+  <% } else  { %>
     <p>No POST data.</p>
-  {% end %}
+  <% } %>
 
 
   <h3 id=""cookie-info"">COOKIES</h3>

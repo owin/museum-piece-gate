@@ -308,10 +308,10 @@ write(@"
 write(@"
           <tr>
             <td>");
-write(h(kv.Key));
+write(h( kv.Key ));
 write(@"</td>
             <td class=""code""><div>");
-write(h(kv.Value));
+write(h( kv.Value ));
 write(@"</div></td>
           </tr>
           ");
@@ -328,7 +328,9 @@ write(@"
 write(@"
 
   <h3 id=""post-info"">POST</h3>
-  {% unless req.POST.empty? %}
+  ");
+ if (request.Post.Any()) { 
+write(@"
     <table class=""req"">
       <thead>
         <tr>
@@ -337,17 +339,29 @@ write(@"
         </tr>
       </thead>
       <tbody>
-          {% req.POST.sort_by { |k, v| k.to_s }.each { |key, val| %}
+          ");
+ foreach(var kv in request.Post.OrderBy(kv => kv.Key)) { 
+write(@"
           <tr>
-            <td>{%=h key %}</td>
-            <td class=""code""><div>{%=h val.inspect %}</div></td>
+            <td>");
+write(h( kv.Key ));
+write(@"</td>
+            <td class=""code""><div>");
+write(h( kv.Value ));
+write(@"</div></td>
           </tr>
-          {% } %}
+          ");
+ } 
+write(@"
       </tbody>
     </table>
-  {% else %}
+  ");
+ } else  { 
+write(@"
     <p>No POST data.</p>
-  {% end %}
+  ");
+ } 
+write(@"
 
 
   <h3 id=""cookie-info"">COOKIES</h3>

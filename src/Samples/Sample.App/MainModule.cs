@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Nancy;
 using Sample.App.Models;
 
@@ -20,6 +21,11 @@ namespace Sample.App
                 var model = new Index() {Name = "Boss Hawg"};
 
                 model.Posted = this.Request.Form.posted.HasValue ? (string)this.Request.Form.posted.Value : "Nothing :-(";
+
+                if (model.Posted == "crash")
+                {
+                    throw new ApplicationException("Boom!");
+                }
 
                 return View["Index", model];
             };

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace Gate.Utils
 {
@@ -22,6 +23,31 @@ namespace Gate.Utils
 
                 return () => { };
             };
+        }
+
+
+        public static string ToText(this BodyAction body, Encoding encoding)
+        {
+            var sb = new StringBuilder();
+            var wait = new ManualResetEvent(false);
+            Exception exception = null;
+            body.Invoke(
+                (data, _) =>
+                {
+                    sb.Append(encoding.GetString(data.Array, data.Offset, data.Count));
+                    return false;
+                },
+                ex =>
+                {
+                    exception = ex;
+                    wait.Set();
+                },
+                () => wait.Set());
+
+            wait.WaitOne();
+            if (exception != null)
+                throw new AggregateException(exception);
+            return sb.ToString();
         }
 
         public static BodyAction FromStream(Stream stream)
