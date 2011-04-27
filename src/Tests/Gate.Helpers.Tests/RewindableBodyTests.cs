@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using Gate.Utils;
 using Nancy.Hosting.Owin.Tests.Fakes;
 using NUnit.Framework;
 
-namespace Gate.Tests
+namespace Gate.Helpers.Tests
 {
+// ReSharper disable InconsistentNaming
     [TestFixture]
     public class RewindableBodyTests
     {
@@ -26,7 +24,7 @@ namespace Gate.Tests
         [Test]
         public void Calling_wrap_should_return_null_delegate_if_argument_null()
         {
-            var wrapped = RewindableBody.Wrap((BodyDelegate)null);
+            var wrapped = RewindableBody.Wrap((BodyDelegate) null);
             Assert.That(wrapped, Is.Null);
         }
 
@@ -45,7 +43,7 @@ namespace Gate.Tests
 
             var consumer1 = new FakeConsumer(false);
             consumer1.InvokeBodyDelegate(wrapped, true);
-            
+
             var consumer2 = new FakeConsumer(false);
             consumer2.InvokeBodyDelegate(wrapped, true);
 

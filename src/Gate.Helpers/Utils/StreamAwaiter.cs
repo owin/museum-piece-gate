@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Gate.Utils
+namespace Gate.Helpers.Utils
 {
     internal class StreamAwaiter
     {

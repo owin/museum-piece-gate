@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Gate
 {
-    class Spool
+    public class Spool
     {
         readonly bool _eagerPull;
 

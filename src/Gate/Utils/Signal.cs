@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Gate.Utils
 {
-    internal class Signal
+    public class Signal
     {
         bool _signaled;
         Action _continuation;

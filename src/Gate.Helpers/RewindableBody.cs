@@ -3,12 +3,11 @@ using System.IO;
 using System.Reflection;
 using System.Security.AccessControl;
 using System.Threading;
+using Gate.Helpers.Utils;
 using Gate.Utils;
 
-namespace Gate
+namespace Gate.Helpers
 {
-    using BodyAction = Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>;
-
     /*
      * notes:
      * Should buffer something like 16*4k pages to memory before going into temp file.
@@ -33,7 +32,7 @@ namespace Gate
             };
         }
 
-        public static BodyAction Wrap(BodyAction body)
+        public static Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> Wrap(Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> body)
         {
             if (body == null)
             {
@@ -62,7 +61,7 @@ namespace Gate
 
         class Wrapper // : IDisposable
         {
-            readonly BodyAction _body;
+            readonly Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> _body;
             readonly Spool _spool;
             readonly Signal _spoolComplete;
 
@@ -70,7 +69,7 @@ namespace Gate
             string _tempFileName;
             FileStream _tempFile;
 
-            public Wrapper(BodyAction body)
+            public Wrapper(Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> body)
             {
                 _body = body;
                 _spool = new Spool();
