@@ -8,6 +8,8 @@ namespace Gate
 {
     public class Request : Environment
     {
+        static readonly char[] CommaSemicolon = new[] {',', ';'};
+
         public Request(IDictionary<string, object> env) : base(env)
         {
         }
@@ -27,46 +29,95 @@ namespace Gate
             }
         }
 
+        public bool HasFormData
+        {
+            get
+            {
+                var mediaType = MediaType;
+                return (Method == "POST" && string.IsNullOrEmpty(mediaType))
+                    || mediaType == "application/x-www-form-urlencoded"
+                        || mediaType == "multipart/form-data";
+            }
+        }
+
+        public bool HasParseableData
+        {
+            get
+            {
+                var mediaType = MediaType;
+                return mediaType == "application/x-www-form-urlencoded"
+                    || mediaType == "multipart/form-data";
+            }
+        }
+
+
+        public string ContentType
+        {
+            get
+            {
+                string value;
+                return (Headers != null && Headers.TryGetValue("Content-Type", out value)) ? value : null;
+            }
+        }
+
+        public string MediaType
+        {
+            get
+            {
+                var contentType = ContentType;
+                if (contentType == null)
+                    return null;
+                var delimiterPos = contentType.IndexOfAny(CommaSemicolon);
+                return delimiterPos < 0 ? contentType : contentType.Substring(0, delimiterPos);
+            }
+        }
+
+
         public IDictionary<string, string> Post
         {
             get
             {
-                //TEST TEST TEST!!!
-                var input = Body;
-                if (input == null)
+                if (HasFormData || HasParseableData)
                 {
-                    throw new InvalidOperationException("Missing input");
+                    var input = Body;
+                    if (input == null)
+                    {
+                        throw new InvalidOperationException("Missing input");
+                    }
+
+                    if (!ReferenceEquals(Get<object>("Gate.Helpers.Request.Post:input"), input) ||
+                        Get<IDictionary<string, string>>("Gate.Helpers.Request.Post") == null)
+                    {
+                        var text = input.ToText(Encoding.UTF8);
+                        Env["Gate.Helpers.Request.Post:input"] = input;
+                        Env["Gate.Helpers.Request.Post:text"] = text;
+                        Env["Gate.Helpers.Request.Post"] = ParamDictionary.Parse(text);
+                    }
+                    return Get<IDictionary<string, string>>("Gate.Helpers.Request.Post");
                 }
 
-                if (!ReferenceEquals(Get<object>("Gate.Helpers.Request.Post:input"), input) ||
-                    Get<IDictionary<string, string>>("Gate.Helpers.Request.Post") == null)
+                return ParamDictionary.Parse("");
+            }
+        }
+
+        public string HostWithPort
+        {
+            get
+            {
+                string hostHeader;
+                if (Headers != null &&
+                    Headers.TryGetValue("Host", out hostHeader) &&
+                        !string.IsNullOrWhiteSpace(hostHeader))
                 {
-                    Env["Gate.Helpers.Request.Post:input"] = input;
-                    Env["Gate.Helpers.Request.Post"] = ParamDictionary.Parse(input.ToText(Encoding.UTF8));
+                    return hostHeader;
                 }
-                return Get<IDictionary<string, string>>("Gate.Helpers.Request.Post");
 
-                //if @env["rack.input"].nil?
-                //       raise "Missing rack.input"
-                //     elsif @env["rack.request.form_input"].eql? @env["rack.input"]
-                //       @env["rack.request.form_hash"]
-                //     elsif form_data? || parseable_data?
-                //       @env["rack.request.form_input"] = @env["rack.input"]
-                //       unless @env["rack.request.form_hash"] = parse_multipart(env)
-                //         form_vars = @env["rack.input"].read
+                var serverName = Get<string>("server.SERVER_NAME");
+                if (string.IsNullOrWhiteSpace(serverName))
+                    serverName = Get<string>("server.SERVER_ADDRESS");
+                var serverPort = Get<string>("server.SERVER_PORT");
 
-                //         # Fix for Safari Ajax postings that always append \0
-                //         form_vars.sub!(/\0\z/, '')
-
-                //         @env["rack.request.form_vars"] = form_vars
-                //         @env["rack.request.form_hash"] = parse_query(form_vars)
-
-                //         @env["rack.input"].rewind
-                //       end
-                //       @env["rack.request.form_hash"]
-                //     else
-                //       {}
-                //     end
+                return serverName + ":" + serverPort;
             }
         }
 
@@ -82,7 +133,13 @@ namespace Gate
                     var delimiter = hostHeader.IndexOf(':');
                     return delimiter < 0 ? hostHeader : hostHeader.Substring(0, delimiter);
                 }
-                return Get<string>("server.SERVER_NAME");
+                var serverName = Get<string>("server.SERVER_NAME");
+                var serverAddress = Get<string>("server.SERVER_ADDRESS");
+                return string.IsNullOrWhiteSpace(serverName)
+                    ? serverName
+                    : string.IsNullOrWhiteSpace(serverAddress)
+                        ? serverAddress
+                        : null;
             }
         }
     }
