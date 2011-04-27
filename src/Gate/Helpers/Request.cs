@@ -134,12 +134,9 @@ namespace Gate
                     return delimiter < 0 ? hostHeader : hostHeader.Substring(0, delimiter);
                 }
                 var serverName = Get<string>("server.SERVER_NAME");
-                var serverAddress = Get<string>("server.SERVER_ADDRESS");
-                return string.IsNullOrWhiteSpace(serverName)
-                    ? serverName
-                    : string.IsNullOrWhiteSpace(serverAddress)
-                        ? serverAddress
-                        : null;
+                if (string.IsNullOrWhiteSpace(serverName))
+                    serverName = Get<string>("server.SERVER_ADDRESS");
+                return serverName;
             }
         }
     }

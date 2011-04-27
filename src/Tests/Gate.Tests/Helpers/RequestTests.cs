@@ -36,7 +36,7 @@ namespace Gate.Tests.Helpers
         public void Body_is_used_to_populate_Post_dictionary()
         {
             var env = new Dictionary<string, object>();
-            new Environment(env) {Method="POST", Body = Body.FromText("foo=bar")};
+            new Environment(env) {Method = "POST", Body = Body.FromText("foo=bar")};
 
             var request = new Request(env);
             Assert.That(request.Post["foo"], Is.EqualTo("bar"));
@@ -46,7 +46,7 @@ namespace Gate.Tests.Helpers
         public void Changing_Body_in_environment_reparses_Post_dictionary()
         {
             var env = new Dictionary<string, object>();
-            new Environment(env) {Body = Body.FromText("foo=bar")};
+            new Environment(env) {Method = "POST", Body = Body.FromText("foo=bar")};
 
             var request = new Request(env);
             Assert.That(request.Post["foo"], Is.EqualTo("bar"));
@@ -107,7 +107,7 @@ namespace Gate.Tests.Helpers
             Assert.That(request.ContentType, Is.EqualTo("text/plain"));
             Assert.That(request.MediaType, Is.EqualTo("text/plain"));
         }
-        
+
         [Test]
         public void MediaType_is_shorter_when_delimited()
         {
@@ -119,13 +119,13 @@ namespace Gate.Tests.Helpers
             Assert.That(request.ContentType, Is.EqualTo("text/html; charset=utf-8"));
             Assert.That(request.MediaType, Is.EqualTo("text/html"));
         }
-        
+
         [Test]
         public void ContentType_and_MediaType_are_null_when_missing()
         {
             var env = new Dictionary<string, object>
             {
-                {"owin.RequestHeaders", new Dictionary<string, string>() }
+                {"owin.RequestHeaders", new Dictionary<string, string>()}
             };
             var request = new Request(env);
             Assert.That(request.ContentType, Is.Null);
