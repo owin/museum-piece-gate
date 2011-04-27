@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Gate.Helpers;
 using Gate.TestHelpers;
 using NUnit.Framework;
 
-namespace Gate.Tests.Helpers
+namespace Gate.Tests
 {
     [TestFixture]
     public class UrlMapperTests

@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using NUnit.Framework;
 
-namespace Gate.Tests.Helpers
+namespace Gate.Tests
 {
     [TestFixture]
     public class InputStreamTests
