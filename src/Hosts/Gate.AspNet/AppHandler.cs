@@ -50,7 +50,7 @@ namespace Gate.AspNet
                 Path = path,
                 QueryString = serverVariables.QueryString,
                 Headers = requestHeaders,
-                Body = RewindableBody.Wrap(Body.FromStream(httpRequest.InputStream)),
+                Body = Body.FromStream(httpRequest.InputStream),
             };
             env["aspnet.HttpContextBase"] = httpContext;
             foreach (var kv in serverVariables.AddToEnvironment())

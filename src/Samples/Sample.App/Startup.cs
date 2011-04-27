@@ -1,4 +1,5 @@
-﻿using Gate.Helpers;
+﻿using Gate;
+using Gate.Helpers;
 using Gate.Startup;
 using Nancy.Hosting.Owin;
 
@@ -10,6 +11,7 @@ namespace Sample.App
         {
             var nancyOwinHost = new NancyOwinHost();
             builder
+                .Use(RewindableBody.Create)
                 .Use(ShowExceptions.Create)
                 .Map("/wilson", Wilson.Create)
                 .Map("/wilsonasync", Wilson.Create, true)
@@ -22,6 +24,7 @@ namespace Sample.App
         public void ConfigurationVariation(AppBuilder builder)
         {
             builder
+                .Use<RewindableBody>()
                 .Use<ShowExceptions>()
                 .Map("/wilson", map => map.Run<Wilson>())
                 .Map("/wilsonasync", map => map.Run<Wilson, bool>(true))

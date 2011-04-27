@@ -12,22 +12,25 @@ namespace Gate
     /*
      * notes:
      * Should buffer something like 16*4k pages to memory before going into temp file.
-     * Sink class can probably be folded up into main class
      */
 
-    public class RewindableBody
+    public class RewindableBody : IMiddleware
     {
-        readonly BodyAction _body;
-        readonly Spool _spool;
-
         static readonly MethodInfo RewindableBodyInvoke = typeof (RewindableBody).GetMethod("Invoke");
-        Sink _sink;
-        Action _cancel;
 
-        public RewindableBody(BodyAction body)
+        AppDelegate IMiddleware.Create(AppDelegate app)
         {
-            _body = body;
-            _spool = new Spool(true);
+            return Create(app);
+        }
+
+        public static AppDelegate Create(AppDelegate app)
+        {
+            return (env, result, fault) =>
+            {
+                var owin = new Environment(env);
+                owin.Body = Wrap(owin.Body);
+                app(env, result, fault);
+            };
         }
 
         public static BodyAction Wrap(BodyAction body)
@@ -40,7 +43,7 @@ namespace Gate
             {
                 return body;
             }
-            return new RewindableBody(body).Invoke;
+            return new Wrapper(body).Invoke;
         }
 
         public static BodyDelegate Wrap(BodyDelegate body)
@@ -53,54 +56,35 @@ namespace Gate
             {
                 return body;
             }
-            return new RewindableBody(body.ToAction()).Invoke;
+            return new Wrapper(body.ToAction()).Invoke;
         }
 
-        public Action Invoke(
-            Func<ArraySegment<byte>, Action, bool> next,
-            Action<Exception> error,
-            Action complete)
-        {
-            if (_sink == null)
-            {
-                _sink = new Sink(_spool);
-                var cancel1 = _sink.Start();
-                var cancel2 = _body(
-                    (data, continuation) =>
-                    {
-                        _spool.Push(data, null);
-                        return next(data, continuation);
-                    },
-                    ex =>
-                    {
-                        _spool.PushComplete();
-                        error(ex);
-                    },
-                    () =>
-                    {
-                        _spool.PushComplete();
-                        complete();
-                    });
-                return () =>
-                {
-                    cancel1();
-                    cancel2();
-                };
-            }
 
-            return _sink.Replay(next, error, complete);
-        }
-
-        class Sink // : IDisposable
+        class Wrapper // : IDisposable
         {
+            readonly BodyAction _body;
             readonly Spool _spool;
+            readonly Signal _spoolComplete;
+
+            int _invokeCount;
             string _tempFileName;
             FileStream _tempFile;
-            readonly ManualResetEvent _wait = new ManualResetEvent(false);
 
-            public Sink(Spool spool)
+            public Wrapper(BodyAction body)
             {
-                _spool = spool;
+                _body = body;
+                _spool = new Spool();
+                _spoolComplete = new Signal();
+            }
+
+            public Action Invoke(
+                Func<ArraySegment<byte>, Action, bool> next,
+                Action<Exception> error,
+                Action complete)
+            {
+                if (Interlocked.Increment(ref _invokeCount) == 1)
+                    return Start(next, error, complete);
+                return Replay(next, error, complete);
             }
 
             class State
@@ -109,13 +93,17 @@ namespace Gate
                 public Action<int> Go;
             }
 
-            public Action Start()
+            public Action Start(
+                Func<ArraySegment<byte>, Action, bool> next,
+                Action<Exception> error,
+                Action complete)
             {
-                const int size = 4096;
-                var buffer = new byte[size];
+                const int bufferSize = 4096;
+                var buffer = new byte[bufferSize];
                 var retval = new[] {0};
                 StreamAwaiter write = null;
 
+                // This machine moves data from the spool to the replay storage
                 var state = new State();
                 state.Go = mark =>
                 {
@@ -142,7 +130,7 @@ namespace Gate
 
                         // grab data from the spool
                         retval[0] = 0;
-                        if (_spool.Pull(new ArraySegment<byte>(buffer, 0, size), retval, () => state.Go(1)))
+                        if (_spool.Pull(new ArraySegment<byte>(buffer, 0, bufferSize), retval, () => state.Go(1)))
                             return;
                         mark1:
 
@@ -168,28 +156,49 @@ namespace Gate
                         goto mark0;
 
                         markreturn:
-                        _wait.Set();
+                        _spoolComplete.Set();
                     }
                     catch (Exception ex)
                     {
-                        _wait.Set();
+                        /* need to comminucate failures outward!!! */
+                        _spoolComplete.Set();
                     }
                 };
                 state.Go(0);
-                return () => state.Cancelled = true;
+
+                // This machine moves data from the source to the caller and the spool
+                var bodyCancel = _body(
+                    (data, continuation) =>
+                    {
+                        _spool.Push(data, null);
+                        return next(data, continuation);
+                    },
+                    ex =>
+                    {
+                        _spool.PushComplete();
+                        error(ex);
+                    },
+                    () =>
+                    {
+                        _spool.PushComplete();
+                        complete();
+                    });
+
+                // returns a cancellation of both machines
+                return () =>
+                {
+                    state.Cancelled = true;
+                    bodyCancel();
+                };
             }
 
             public Action Replay(Func<ArraySegment<byte>, Action, bool> next, Action<Exception> error, Action complete)
             {
-                if (!_wait.WaitOne(TimeSpan.FromMinutes(3)))
-                    throw new TimeoutException();
-
-                _tempFile.Seek(0, SeekOrigin.Begin);
-
-                const int size = 4096;
-                var buffer = new byte[size];
+                const int bufferSize = 4096;
+                var buffer = new byte[bufferSize];
                 StreamAwaiter read = null;
 
+                // This machine draws from the temp file and sends to the caller
                 var state = new State();
                 state.Go = mark =>
                 {
@@ -203,10 +212,12 @@ namespace Gate
                                 goto mark2;
                         }
 
+                        _tempFile.Seek(0, SeekOrigin.Begin);
+
                         mark0:
 
                         // read some data from the temp file
-                        read = StreamAwaiter.Read(_tempFile, buffer, 0, size);
+                        read = StreamAwaiter.Read(_tempFile, buffer, 0, bufferSize);
                         if (read.BeginAwait(() => state.Go(1)))
                             return;
                         mark1:
@@ -240,7 +251,10 @@ namespace Gate
                         error(ex);
                     }
                 };
-                state.Go(0);
+
+                // starts the machine only when the earlier transfer form spool to file is fully complete
+                _spoolComplete.Continue(() => state.Go(0));
+
                 return () => state.Cancelled = true;
             }
         }

@@ -46,6 +46,7 @@
     <Compile Include="Startup\ExtRunExtensions.cs" />
     <Compile Include="Startup\ExtUseExtensions.cs" />
     <Compile Include="Startup\ExtMapExtensions.cs" />
+    <Compile Include="Utils\Signal.cs" />
     <Compile Include="Utils\StreamAwaiter.cs" />
     <Compile Include="Utils\AsyncResult.cs" />
     <Compile Include="Response.cs" />
