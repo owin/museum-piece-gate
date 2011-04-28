@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Security.AccessControl;
@@ -16,6 +17,7 @@ namespace Gate.Helpers
     public class RewindableBody : IMiddleware
     {
         static readonly MethodInfo RewindableBodyInvoke = typeof (RewindableBody).GetMethod("Invoke");
+        const int DefaultTempFileThresholdBytes = 64 << 10; //64k
 
         AppDelegate IMiddleware.Create(AppDelegate app)
         {
@@ -42,7 +44,7 @@ namespace Gate.Helpers
             {
                 return body;
             }
-            return new Wrapper(body).Invoke;
+            return new Wrapper(body, DefaultTempFileThresholdBytes).Invoke;
         }
 
         public static BodyDelegate Wrap(BodyDelegate body)
@@ -55,25 +57,28 @@ namespace Gate.Helpers
             {
                 return body;
             }
-            return new Wrapper(body.ToAction()).Invoke;
+            return new Wrapper(body.ToAction(), DefaultTempFileThresholdBytes).Invoke;
         }
 
 
         class Wrapper // : IDisposable
         {
             readonly Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> _body;
-            readonly Spool _spool;
-            readonly Signal _spoolComplete;
+            readonly Spool _spool = new Spool();
+            readonly Signal _spoolComplete = new Signal();
 
             int _invokeCount;
+            readonly List<ArraySegment<byte>> _pages = new List<ArraySegment<byte>>();
+            int _tempFileThresholdBytes;
             string _tempFileName;
             FileStream _tempFile;
 
-            public Wrapper(Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> body)
+            public Wrapper(
+                Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> body,
+                int tempFileThresholdBytes)
             {
                 _body = body;
-                _spool = new Spool();
-                _spoolComplete = new Signal();
+                _tempFileThresholdBytes = tempFileThresholdBytes;
             }
 
             public Action Invoke(
@@ -101,6 +106,7 @@ namespace Gate.Helpers
                 var buffer = new byte[bufferSize];
                 var retval = new[] {0};
                 StreamAwaiter write = null;
+                long totalBytes = 0;
 
                 // This machine moves data from the spool to the replay storage
                 var state = new State();
@@ -114,8 +120,37 @@ namespace Gate.Helpers
                                 goto mark1;
                             case 2:
                                 goto mark2;
+                            case 3:
+                                goto mark3;
                         }
 
+                        //// MEMORY LOOP
+                        mark4:
+
+                        // grab data from the spool
+                        retval[0] = 0;
+                        if (_spool.Pull(new ArraySegment<byte>(buffer, 0, bufferSize), retval, () => state.Go(3)))
+                            return;
+                        mark3:
+
+                        if (retval[0] <= 0)
+                            goto markreturn;
+
+                        if (state.Cancelled)
+                            goto markreturn;
+
+                        // add to memory until threshold reached
+                        _pages.Add(new ArraySegment<byte>(buffer, 0, retval[0]));
+
+                        buffer = new byte[bufferSize]; // todo: get these from a page pool
+
+                        totalBytes += retval[0];
+
+                        if (totalBytes < _tempFileThresholdBytes)
+                            goto mark4;
+                        //// MEMORY LOOP
+
+                        // create temp file at this point
                         _tempFileName = Path.GetTempFileName();
                         _tempFile = new FileStream(
                             _tempFileName,
@@ -125,6 +160,7 @@ namespace Gate.Helpers
                             4096,
                             FileOptions.SequentialScan | FileOptions.Asynchronous | FileOptions.WriteThrough | FileOptions.DeleteOnClose);
 
+                        //// TEMPFILE LOOP
                         mark0:
 
                         // grab data from the spool
@@ -153,6 +189,8 @@ namespace Gate.Helpers
                             goto markreturn;
 
                         goto mark0;
+                        //// TEMPFILE LOOP
+
 
                         markreturn:
                         _spoolComplete.Set();
@@ -196,6 +234,7 @@ namespace Gate.Helpers
                 const int bufferSize = 4096;
                 var buffer = new byte[bufferSize];
                 StreamAwaiter read = null;
+                var pageEnumerator = _pages.GetEnumerator();
 
                 // This machine draws from the temp file and sends to the caller
                 var state = new State();
@@ -209,10 +248,35 @@ namespace Gate.Helpers
                                 goto mark1;
                             case 2:
                                 goto mark2;
+                            case 4:
+                                goto mark4;
                         }
+
+                        //// MEMORY LOOP
+                        mark5:
+                        // move to the next memory page
+                        if (!pageEnumerator.MoveNext())
+                            goto mark3;
+
+                        // send along to output
+                        if (next(pageEnumerator.Current, () => state.Go(4)))
+                            return;
+                        mark4:
+
+                        if (state.Cancelled)
+                            goto markreturn;
+                        goto mark5;
+                        //// MEMORY LOOP
+
+                        mark3:
+
+                        if (_tempFile == null)
+                            goto markreturn;
 
                         _tempFile.Seek(0, SeekOrigin.Begin);
 
+
+                        //// TEMPFILE LOOP
                         mark0:
 
                         // read some data from the temp file
@@ -241,6 +305,7 @@ namespace Gate.Helpers
 
                         // loop for more
                         goto mark0;
+                        //// TEMPFILE LOOP
 
                         markreturn:
                         complete();
