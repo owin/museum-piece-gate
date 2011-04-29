@@ -81,41 +81,33 @@ namespace Gate.AspNet
                         body(
                             (data, continuation) =>
                             {
-                                try
+                                if (continuation == null)
                                 {
-                                    if (continuation == null)
-                                    {
-                                        stream.Write(data.Array, data.Offset, data.Count);
-                                        return false;
-                                    }
-                                    var sr = stream.BeginWrite(data.Array, data.Offset, data.Count, ar =>
-                                    {
-                                        if (ar.CompletedSynchronously) return;
-                                        try
-                                        {
-                                            stream.EndWrite(ar);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            taskCompletionSource.SetException(ex);
-                                        }
-                                        continuation();
-                                    }, null);
-                                    if (sr.CompletedSynchronously)
-                                    {
-                                        stream.EndWrite(sr);
-                                        return false;
-                                    }
-
-                                    return true;
-                                }
-                                catch (Exception ex)
-                                {
-                                    taskCompletionSource.SetException(ex);
+                                    stream.Write(data.Array, data.Offset, data.Count);
                                     return false;
                                 }
+                                var sr = stream.BeginWrite(data.Array, data.Offset, data.Count, ar =>
+                                {
+                                    if (ar.CompletedSynchronously) return;
+                                    try
+                                    {
+                                        stream.EndWrite(ar);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        taskCompletionSource.SetException(ex);
+                                    }
+                                    continuation();
+                                }, null);
+                                if (sr.CompletedSynchronously)
+                                {
+                                    stream.EndWrite(sr);
+                                    return false;
+                                }
+
+                                return true;                                
                             },
-                            taskCompletionSource.SetException,
+                            ex=>taskCompletionSource.SetException(ex),
                             () => taskCompletionSource.SetResult(() => httpContext.Response.End()));
                     }
                     catch (Exception ex)
@@ -123,7 +115,7 @@ namespace Gate.AspNet
                         taskCompletionSource.SetException(ex);
                     }
                 },
-                taskCompletionSource.SetException);
+                ex=>taskCompletionSource.SetException(ex));
             return taskCompletionSource.Task;
         }
 

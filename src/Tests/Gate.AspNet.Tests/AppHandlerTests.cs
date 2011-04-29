@@ -199,7 +199,15 @@ namespace Gate.AspNet.Tests
         [Test]
         public void Remote_host_closed_connection_during_write()
         {
-            throw new NotImplementedException();
+            A.CallTo(() => _httpResponse.OutputStream).Returns(new RemoteHostClosedStream());
+            
+            SetRequestPaths("http://localhost/", "/");
+            _httpRequest.Headers["Content-Type"] = "text/plain";
+
+            var app = new FakeApp("200 OK", "Hello World");
+            var appHandler = new AppHandler(app.AppDelegate);
+            
+            ProcessRequest(appHandler);
         }
     }
 }

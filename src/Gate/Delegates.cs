@@ -42,9 +42,9 @@ namespace Gate
             ArraySegment<byte>, // data
             Action, // continuation
             bool> // continuation was or will be invoked
-            onNext,
-        Action<Exception> onError,
-        Action onComplete);
+            next,
+        Action<Exception> error,
+        Action complete);
 
 
 

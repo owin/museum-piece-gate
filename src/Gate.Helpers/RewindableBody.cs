@@ -9,11 +9,6 @@ using Gate.Utils;
 
 namespace Gate.Helpers
 {
-    /*
-     * notes:
-     * Should buffer something like 16*4k pages to memory before going into temp file.
-     */
-
     public class RewindableBody : IMiddleware
     {
         static readonly MethodInfo RewindableBodyInvoke = typeof (RewindableBody).GetMethod("Invoke");
@@ -69,7 +64,7 @@ namespace Gate.Helpers
 
             int _invokeCount;
             readonly List<ArraySegment<byte>> _pages = new List<ArraySegment<byte>>();
-            int _tempFileThresholdBytes;
+            readonly int _tempFileThresholdBytes;
             string _tempFileName;
             FileStream _tempFile;
 
