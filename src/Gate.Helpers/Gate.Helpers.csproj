@@ -40,6 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cascade.cs" />
+    <Compile Include="CascadeExtentions.cs" />
     <Compile Include="ContentType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RewindableBody.cs" />

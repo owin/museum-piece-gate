@@ -4,11 +4,9 @@ using System.Text;
 
 namespace Gate
 {
-    public class NotFound
+    public class NotFound : IApplication
     {
-        public static AppDelegate Create()
-        {
-            var body = new ArraySegment<byte>(Encoding.UTF8.GetBytes(@"
+        static readonly ArraySegment<byte> Body = new ArraySegment<byte>(Encoding.UTF8.GetBytes(@"
 <!DOCTYPE HTML PUBLIC ""-//IETF//DTD HTML 2.0//EN"">
 <html><head>
 <title>404 Not Found</title>
@@ -18,16 +16,27 @@ namespace Gate
 </body></html>
 "));
 
-            return (env, result, fault) =>
-                result(
-                    "404 Not Found",
-                    new Dictionary<string, string> {{"Content-Type", "text/html"}},
-                    (next, error, complete) =>
-                    {
-                        next(body, null);
-                        complete();
-                        return () => { };
-                    });
+        AppDelegate IApplication.Create()
+        {
+            return Create();
+        }
+
+        public static AppDelegate Create()
+        {
+            return Invoke;
+        }
+
+        public static void Invoke(IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault)
+        {
+            result(
+                "404 Not Found",
+                new Dictionary<string, string> {{"Content-Type", "text/html"}},
+                (next, error, complete) =>
+                {
+                    next(Body, null);
+                    complete();
+                    return () => { };
+                });
         }
     }
 }

@@ -9,14 +9,14 @@ namespace Sample.App
     {
         public MainModule()
         {
-            Get["/"] = x =>
+            Get["/nancy"] = x =>
             {
                 var model = new Index() {Name = "Boss Hawg"};
 
                 return View["Index", model];
             };
 
-            Post["/"] = x =>
+            Post["/nancy"] = x =>
             {
                 var model = new Index() {Name = "Boss Hawg"};
 

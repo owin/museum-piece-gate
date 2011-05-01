@@ -92,7 +92,12 @@ namespace Gate.Utils
             };
         }
 
-        public static Action ToStream(this BodyAction body, Stream stream, Action<Exception> error, Action complete)
+        public static Action WriteToStream(this BodyDelegate body, Stream stream, Action<Exception> error, Action complete)
+        {
+            return body.ToAction().WriteToStream(stream, error, complete);
+        }
+
+        public static Action WriteToStream(this BodyAction body, Stream stream, Action<Exception> error, Action complete)
         {
             Action[] cancel = {() => { }};
             int[] completion = {0};

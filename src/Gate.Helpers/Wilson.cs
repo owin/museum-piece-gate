@@ -109,7 +109,7 @@ namespace Gate.Helpers
             var timer = new Timer(interval);
             timer.Elapsed += (sender, e) =>
             {
-                if (iter.MoveNext())
+                if (iter != null && iter.MoveNext())
                 {
                     try
                     {
@@ -117,6 +117,7 @@ namespace Gate.Helpers
                     }
                     catch (Exception ex)
                     {
+                        iter = null;
                         timer.Stop();
                         fault(ex);
                     }

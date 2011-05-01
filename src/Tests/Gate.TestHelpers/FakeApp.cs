@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Nancy.Hosting.Owin.Tests.Fakes;
 
 namespace Gate.TestHelpers
@@ -37,6 +38,11 @@ namespace Gate.TestHelpers
         /// Indicates if AppDelegate method was called
         /// </summary>
         public bool AppDelegateInvoked { get; private set; }
+
+        /// <summary>
+        /// Indicates if result or fault should be called on a different thread
+        /// </summary>
+        public bool SendAsync { get; set; }
 
         /// <summary>
         /// Determines the status that will be passed to result delegate by Call
@@ -84,14 +90,22 @@ namespace Gate.TestHelpers
         {
             AppDelegateInvoked = true;
             Env = env;
-            if (FaultException != null)
+            Action call = () =>
             {
-                fault(FaultException);
-            }
+                if (FaultException != null)
+                {
+                    fault(FaultException);
+                }
+                else
+                {
+                    result(Status, Headers, Body);
+                }
+            };
+
+            if (SendAsync)
+                ThreadPool.QueueUserWorkItem(_ => call());
             else
-            {
-                result(Status, Headers, Body);
-            }
+                call();
         }
     }
 }

@@ -70,6 +70,14 @@ namespace Gate.Startup
             return Configure(configuration);
         }
 
+        public AppDelegate Branch(Action<AppBuilder> configuration)
+        {
+            return new AppBuilder(ConfigurationLoader)
+                .SetUrlMapper(_mapper)
+                .Configure(configuration)
+                .Build(); 
+        }
+
         public AppBuilderExt Ext
         {
             get {return new AppBuilderExt(this);}
@@ -97,10 +105,7 @@ namespace Gate.Startup
                 _stack.Add(app => _mapper(app, maps));
                 _maps = maps;
             }
-            _maps[path] = new AppBuilder(ConfigurationLoader)
-                .SetUrlMapper(_mapper)
-                .Configure(configuration)
-                .Build();
+            _maps[path] = Branch(configuration);
             return this;
         }
 

@@ -1,4 +1,5 @@
-﻿using Gate.Helpers;
+﻿using Gate;
+using Gate.Helpers;
 using Gate.Startup;
 using Nancy.Hosting.Owin;
 
@@ -12,12 +13,13 @@ namespace Sample.App
             builder
                 .Use(RewindableBody.Create)
                 .Use(ShowExceptions.Create)
+                .Use(ContentType.Create, "text/html")
                 .Map("/wilson", Wilson.Create)
                 .Map("/wilsonasync", Wilson.Create, true)
-                .Map("/nancy", map => map
-                    .Use(ContentType.Create, "text/html")
-                    .Ext.Run(nancyOwinHost.ProcessRequest))
-                .Run(DefaultPage.Create);
+                .Run(Cascade.Create(
+                    DefaultPage.Create(),
+                    Delegates.ToDelegate(nancyOwinHost.ProcessRequest))
+                );
         }
 
         public void ConfigurationVariation(AppBuilder builder)
@@ -25,12 +27,13 @@ namespace Sample.App
             builder
                 .Use<RewindableBody>()
                 .Use<ShowExceptions>()
+                .Use<ContentType, string>("text/html")
                 .Map("/wilson", map => map.Run<Wilson>())
                 .Map("/wilsonasync", map => map.Run<Wilson, bool>(true))
-                .Map("/nancy", map => map
-                    .Use<ContentType, string>("text/html")
-                    .Ext.Run(new NancyOwinHost().ProcessRequest))
-                .Run<DefaultPage>();
+                .Cascade(
+                    cascade => cascade.Run<DefaultPage>(),
+                    cascade => cascade.Ext.Run(new NancyOwinHost().ProcessRequest)
+                );
         }
     }
 }

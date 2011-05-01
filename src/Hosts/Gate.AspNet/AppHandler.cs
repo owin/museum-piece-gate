@@ -72,10 +72,9 @@ namespace Gate.AspNet
                             httpContext.Response.AddHeader(header.Key, header.Value);
                         }
 
-                        Body.ToStream(
-                            body.ToAction(),
-                            httpContext.Response.OutputStream,
-                            taskCompletionSource.SetException,
+                        body.WriteToStream(
+                            httpContext.Response.OutputStream, 
+                            taskCompletionSource.SetException, 
                             () => taskCompletionSource.SetResult(() => httpContext.Response.End()));
                     }
                     catch (Exception ex)
@@ -90,7 +89,15 @@ namespace Gate.AspNet
         public void EndProcessRequest(IAsyncResult asyncResult)
         {
             var task = ((Task<Action>) asyncResult);
-            task.Result.Invoke();
+            if (task.IsFaulted)
+            {
+                var exception = task.Exception;
+                exception.Handle(ex=>ex is HttpException);
+            }
+            else if (task.IsCompleted)
+            {
+                task.Result.Invoke();
+            }
         }
 
         class ServerVariables
