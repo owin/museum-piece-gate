@@ -71,43 +71,11 @@ namespace Gate.AspNet
                         {
                             httpContext.Response.AddHeader(header.Key, header.Value);
                         }
-                        if (body == null)
-                        {
-                            taskCompletionSource.SetResult(() => httpContext.Response.End());
-                            return;
-                        }
 
-                        var stream = httpContext.Response.OutputStream;
-                        body(
-                            (data, continuation) =>
-                            {
-                                if (continuation == null)
-                                {
-                                    stream.Write(data.Array, data.Offset, data.Count);
-                                    return false;
-                                }
-                                var sr = stream.BeginWrite(data.Array, data.Offset, data.Count, ar =>
-                                {
-                                    if (ar.CompletedSynchronously) return;
-                                    try
-                                    {
-                                        stream.EndWrite(ar);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        taskCompletionSource.SetException(ex);
-                                    }
-                                    continuation();
-                                }, null);
-                                if (sr.CompletedSynchronously)
-                                {
-                                    stream.EndWrite(sr);
-                                    return false;
-                                }
-
-                                return true;                                
-                            },
-                            ex=>taskCompletionSource.SetException(ex),
+                        Body.ToStream(
+                            body.ToAction(),
+                            httpContext.Response.OutputStream,
+                            taskCompletionSource.SetException,
                             () => taskCompletionSource.SetResult(() => httpContext.Response.End()));
                     }
                     catch (Exception ex)
@@ -115,7 +83,7 @@ namespace Gate.AspNet
                         taskCompletionSource.SetException(ex);
                     }
                 },
-                ex=>taskCompletionSource.SetException(ex));
+                taskCompletionSource.SetException);
             return taskCompletionSource.Task;
         }
 

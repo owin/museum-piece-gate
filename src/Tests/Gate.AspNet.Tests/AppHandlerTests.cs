@@ -207,7 +207,9 @@ namespace Gate.AspNet.Tests
             var app = new FakeApp("200 OK", "Hello World");
             var appHandler = new AppHandler(app.AppDelegate);
             
-            ProcessRequest(appHandler);
+            var ex = Assert.Throws<AggregateException>(()=>ProcessRequest(appHandler));
+            Assert.That(ex.Flatten().InnerExceptions.Count, Is.EqualTo(1));
+            Assert.That(ex.Flatten().InnerExceptions[0], Is.TypeOf<HttpException>());
         }
     }
 }

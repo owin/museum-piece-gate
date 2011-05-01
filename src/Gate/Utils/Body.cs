@@ -91,5 +91,60 @@ namespace Gate.Utils
                 return () => { stopped[0] = true; };
             };
         }
+
+        public static Action ToStream(this BodyAction body, Stream stream, Action<Exception> error, Action complete)
+        {
+            Action[] cancel = {() => { }};
+            int[] completion = {0};
+            Action<Exception> errorHandler = ex => { if (Interlocked.Increment(ref completion[0]) == 1) error(ex); };
+            cancel[0] = body(
+                (data, continuation) =>
+                {
+                    if (completion[0] != 0)
+                        return false;
+                    try
+                    {
+                        if (continuation == null)
+                        {
+                            stream.Write(data.Array, data.Offset, data.Count);
+                            return false;
+                        }
+                        var sr = stream.BeginWrite(data.Array, data.Offset, data.Count, ar =>
+                        {
+                            if (ar.CompletedSynchronously) return;
+                            try
+                            {
+                                stream.EndWrite(ar);
+                            }
+                            catch (Exception ex)
+                            {
+                                error(ex);
+                            }
+                            continuation();
+                        }, null);
+                        if (sr.CompletedSynchronously)
+                        {
+                            stream.EndWrite(sr);
+                            return false;
+                        }
+
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        errorHandler(ex);
+                        cancel[0]();
+                        return false;
+                    }
+                },
+                errorHandler,
+                () => { if (Interlocked.Increment(ref completion[0]) == 1) complete(); });
+
+            return () =>
+            {
+                Interlocked.Increment(ref completion[0]);
+                cancel[0]();
+            };
+        }
     }
 }
