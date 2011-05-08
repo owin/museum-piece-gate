@@ -3,12 +3,7 @@
     using System;
     using System.IO;
     using System.Threading;
-    using BodyDelegate = System.Func<System.Func<System.ArraySegment<byte>, // data
-        System.Action, // continuation
-        bool>, // continuation will be invoked
-        System.Action<System.Exception>, // onError
-        System.Action, // on Complete
-        System.Action>; // cancel
+    using Gate;
 
     /// <summary>
     /// Consumes a body delegate

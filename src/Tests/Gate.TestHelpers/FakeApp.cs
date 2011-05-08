@@ -60,8 +60,7 @@ namespace Gate.TestHelpers
          /// <summary>
         /// Gets an Owin property adapter arount the most recent environment
         /// </summary>
-        public Owin Owin { get {return new Owin(Env);} }
-
+        public Environment Owin { get {return new Environment(Env);} }
 
         /// <summary>
         /// The actual app delegate
@@ -71,7 +70,7 @@ namespace Gate.TestHelpers
         /// <param name="fault"></param>
         public void AppDelegate(
             IDictionary<string, object> env, 
-            Action<string, IDictionary<string, string>, Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>> result,
+            ResultDelegate result,
             Action<Exception> fault)
         {
             AppDelegateInvoked = true;

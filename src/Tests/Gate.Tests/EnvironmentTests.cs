@@ -5,21 +5,6 @@ using NUnit.Framework;
 
 namespace Gate.Tests
 {
-    using BodyDelegate = Func<
-        // on next
-        Func<
-            ArraySegment<byte>, // data
-            Action, // continuation
-            bool // continuation was or will be invoked
-            >,
-        // on error
-        Action<Exception>,
-        // on complete
-        Action,
-        // cancel 
-        Action
-        >;
-
     [TestFixture]
     public class OwinTests
     {
@@ -27,7 +12,7 @@ namespace Gate.Tests
         public void Version_property_provide_access_to_environment()
         {
             var env = new Dictionary<string, object> {{"owin.Version", "1.0"}};
-            var environment = new Owin(env);
+            var environment = new Environment(env);
             Assert.That(environment.Version, Is.EqualTo("1.0"));
         }
 
@@ -35,7 +20,7 @@ namespace Gate.Tests
         public void Envoronment_access_is_not_buffered_or_cached()
         {
             var env = new Dictionary<string, object> {{"owin.Version", "1.0"}};
-            var environment = new Owin(env);
+            var environment = new Environment(env);
             Assert.That(environment.Version, Is.EqualTo("1.0"));
 
             env["owin.Version"] = "1.1";
@@ -66,7 +51,7 @@ namespace Gate.Tests
                 {"owin.Version", "1.0"},
             };
 
-            var environment = new Owin(env);
+            var environment = new Environment(env);
             Assert.That(environment.Method, Is.EqualTo("GET"));
             Assert.That(environment.Path, Is.EqualTo("/foo"));
             Assert.That(environment.Headers, Is.SameAs(headers));
@@ -84,7 +69,7 @@ namespace Gate.Tests
             BodyDelegate body = (next, error, complete) => () => { };
 
             var env = new Dictionary<string, object>();
-            var environment = new Owin(env)
+            var environment = new Environment(env)
             {
                 Method = "GET",
                 Path = "/foo",

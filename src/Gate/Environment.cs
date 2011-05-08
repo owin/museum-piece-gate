@@ -3,26 +3,11 @@ using System.Collections.Generic;
 
 namespace Gate
 {
-    using BodyDelegate = Func<
-        // on next
-        Func<
-            ArraySegment<byte>, // data
-            Action, // continuation
-            bool // continuation was or will be invoked
-            >,
-        // on error
-        Action<Exception>,
-        // on complete
-        Action,
-        // cancel 
-        Action
-        >;
-
     /// <summary>
     /// Utility class providing strongly-typed get/set access to environment properties 
     /// defined by the OWIN spec.
     /// </summary>
-    public class Owin
+    public class Environment
     {
         public static readonly string RequestMethodKey = "owin.RequestMethod";
         public static readonly string RequestPathBaseKey = "owin.RequestPathBase";
@@ -42,7 +27,7 @@ namespace Gate
             return Env.TryGetValue(name, out value) ? (T) value : default(T);
         }
 
-        public Owin(IDictionary<string, object> env)
+        public Environment(IDictionary<string, object> env)
         {
             Env = env;
         }

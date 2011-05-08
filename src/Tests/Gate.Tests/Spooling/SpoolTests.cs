@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Gate.Spooling;
+using Gate;
 using NUnit.Framework;
 
 // ReSharper disable InconsistentNaming

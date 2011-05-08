@@ -6,21 +6,6 @@ using NUnit.Framework;
 
 namespace Gate.Tests.Helpers
 {
-    using AppDelegate = Action< // app
-        IDictionary<string, object>, // env
-        Action< // result
-            string, // status
-            IDictionary<string, string>, // headers
-            Func< // body
-                Func< // next
-                    ArraySegment<byte>, // data
-                    Action, // continuation
-                    bool>, // async                    
-                Action<Exception>, // error
-                Action, // complete
-                Action>>, // cancel
-        Action<Exception>>; // error
-
     [TestFixture]
     public class UrlMapperTests
     {
@@ -68,13 +53,13 @@ namespace Gate.Tests.Helpers
 
             var fooResult = AppUtils.Call(app, "/foo");
             Assert.That(fooResult.Status, Is.EqualTo("200 OK"));
-            Assert.That(fooResult.BodyXml.Element(Owin.RequestPathBaseKey).Value, Is.EqualTo("/foo"));
-            Assert.That(fooResult.BodyXml.Element(Owin.RequestPathKey).Value, Is.EqualTo(""));
+            Assert.That(fooResult.BodyXml.Element(Environment.RequestPathBaseKey).Value, Is.EqualTo("/foo"));
+            Assert.That(fooResult.BodyXml.Element(Environment.RequestPathKey).Value, Is.EqualTo(""));
 
             var fooBarResult = AppUtils.Call(app, "/foo/bar");
             Assert.That(fooBarResult.Status, Is.EqualTo("200 OK"));
-            Assert.That(fooBarResult.BodyXml.Element(Owin.RequestPathBaseKey).Value, Is.EqualTo("/foo"));
-            Assert.That(fooBarResult.BodyXml.Element(Owin.RequestPathKey).Value, Is.EqualTo("/bar"));
+            Assert.That(fooBarResult.BodyXml.Element(Environment.RequestPathBaseKey).Value, Is.EqualTo("/foo"));
+            Assert.That(fooBarResult.BodyXml.Element(Environment.RequestPathKey).Value, Is.EqualTo("/bar"));
         }
     }
 }
