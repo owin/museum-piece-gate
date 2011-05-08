@@ -8,7 +8,7 @@ let projectName = "Gate"
 let version = "0.1.0"  
 let projectSummary = "An OWIN utility library."
 let projectDescription = "An OWIN utility library."
-let authors = ["bvanderveen";"grumpydev";"jasonsirota";"loudej";"markrendle";"thecodejunkie"]
+let authors = ["bvanderveen";"grumpydev";"jasonsirota";"loudej";"markrendle";"thecodejunkie";"panesofglass"]
 let mail = "b@bvanderveen.com"
 let homepage = "http://github.com/owin/gate"
 
@@ -24,7 +24,9 @@ let nunitPath = "./packages/NUnit.2.5.9.10348/Tools"
 
 // files
 let appReferences =
-    !+ "./src/**/*.*sproj"
+    !+ "./src/Gate/**/*.*sproj"
+      ++ "./src/Gate.Helpers/**/*.*sproj"
+      ++ "./src/Hosts/**/*.*sproj"
       |> Scan
 
 let testReferences =
