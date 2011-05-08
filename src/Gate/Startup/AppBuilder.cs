@@ -1,26 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Gate.Helpers;
 using Gate.Startup.Loader;
 
 namespace Gate.Startup
 {
-    using AppDelegate = Action< // app
-        IDictionary<string, object>, // env
-        Action< // result
-            string, // status
-            IDictionary<string, string>, // headers
-            Func< // body
-                Func< // next
-                    ArraySegment<byte>, // data
-                    Action, // continuation
-                    bool>, // async                    
-                Action<Exception>, // error
-                Action, // complete
-                Action>>, // cancel
-        Action<Exception>>; // error
-
     public class AppBuilder
     {
         public IConfigurationLoader ConfigurationLoader { get; set; }
@@ -67,6 +51,11 @@ namespace Gate.Startup
             return this;
         }
 
+        public AppBuilder Configure()
+        {
+            return Configure(default(string));
+        }
+
         public AppBuilder Configure(Action<AppBuilder> configuration)
         {
             configuration(this);
@@ -79,6 +68,19 @@ namespace Gate.Startup
             if (configuration == null)
                 throw new ArgumentException("Configuration not loadable", "configurationString");
             return Configure(configuration);
+        }
+
+        public AppDelegate Branch(Action<AppBuilder> configuration)
+        {
+            return new AppBuilder(ConfigurationLoader)
+                .SetUrlMapper(_mapper)
+                .Configure(configuration)
+                .Build(); 
+        }
+
+        public AppBuilderExt Ext
+        {
+            get {return new AppBuilderExt(this);}
         }
 
         public AppBuilder Use(Func<AppDelegate, AppDelegate> factory)
@@ -103,10 +105,7 @@ namespace Gate.Startup
                 _stack.Add(app => _mapper(app, maps));
                 _maps = maps;
             }
-            _maps[path] = new AppBuilder(ConfigurationLoader)
-                .SetUrlMapper(_mapper)
-                .Configure(configuration)
-                .Build();
+            _maps[path] = Branch(configuration);
             return this;
         }
 

@@ -43,6 +43,9 @@
     <Compile Include="AppUtils.cs" />
     <Compile Include="FakeApp.cs" />
     <Compile Include="FakeConsumer.cs" />
+    <Compile Include="FakeHost.cs" />
+    <Compile Include="FakeHostRequest.cs" />
+    <Compile Include="FakeHostResponse.cs" />
     <Compile Include="FakeProducer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

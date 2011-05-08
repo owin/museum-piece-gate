@@ -1,28 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Gate.Utils;
 
 namespace Gate.AspNet
 {
-    using AppDelegate = Action< // app
-        IDictionary<string, object>, // env
-        Action< // result
-            string, // status
-            IDictionary<string, string>, // headers
-            Func< // body
-                Func< // next
-                    ArraySegment<byte>, // data
-                    Action, // continuation
-                    bool>, // async                    
-                Action<Exception>, // error
-                Action, // complete
-                Action>>, // cancel
-        Action<Exception>>; // fault
-
     public class AppHandler
     {
         readonly AppDelegate _app;
@@ -50,7 +37,11 @@ namespace Gate.AspNet
                 path = path.Substring(pathBase.Length);
 
             var env = new Dictionary<string, object>();
-            new Owin(env)
+
+            var requestHeaders = httpRequest.Headers.AllKeys
+                .ToDictionary(x => x, x => httpRequest.Headers.Get(x), StringComparer.OrdinalIgnoreCase);
+
+            new Environment(env)
             {
                 Version = "1.0",
                 Method = httpRequest.HttpMethod,
@@ -58,47 +49,15 @@ namespace Gate.AspNet
                 PathBase = pathBase,
                 Path = path,
                 QueryString = serverVariables.QueryString,
-                Headers = httpRequest.Headers.AllKeys.ToDictionary(x => x, x => httpRequest.Headers.Get(x)),
-                Body = (next, error, complete) =>
-                {
-                    var stream = httpContext.Request.InputStream;
-                    var buffer = new byte[4096];
-                    var continuation = new AsyncCallback[1];
-                    bool[] stopped = {false};
-                    continuation[0] = result =>
-                    {
-                        if (result != null && result.CompletedSynchronously) return;
-                        try
-                        {
-                            for (;;)
-                            {
-                                if (result != null)
-                                {
-                                    var count = stream.EndRead(result);
-                                    if (stopped[0]) return;
-                                    if (count <= 0)
-                                    {
-                                        complete();
-                                        return;
-                                    }
-                                    var data = new ArraySegment<byte>(buffer, 0, count);
-                                    if (next(data, () => continuation[0](null))) return;
-                                }
-
-                                if (stopped[0]) return;
-                                result = stream.BeginRead(buffer, 0, buffer.Length, continuation[0], null);
-                                if (!result.CompletedSynchronously) return;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            error(ex);
-                        }
-                    };
-                    continuation[0](null);
-                    return () => { stopped[0] = true; };
-                },
+                Headers = requestHeaders,
+                Body = Body.FromStream(httpRequest.InputStream),
             };
+            env["aspnet.HttpContextBase"] = httpContext;
+            foreach (var kv in serverVariables.AddToEnvironment())
+            {
+                env["server." + kv.Key] = kv.Value;
+            }
+
             _app.Invoke(
                 env,
                 (status, headers, body) =>
@@ -112,51 +71,10 @@ namespace Gate.AspNet
                         {
                             httpContext.Response.AddHeader(header.Key, header.Value);
                         }
-                        if (body == null)
-                        {
-                            taskCompletionSource.SetResult(() => httpContext.Response.End());
-                            return;
-                        }
 
-                        var stream = httpContext.Response.OutputStream;
-                        body(
-                            (data, continuation) =>
-                            {
-                                try
-                                {
-                                    if (continuation == null)
-                                    {
-                                        stream.Write(data.Array, data.Offset, data.Count);
-                                        return false;
-                                    }
-                                    var sr = stream.BeginWrite(data.Array, data.Offset, data.Count, ar =>
-                                    {
-                                        if (ar.CompletedSynchronously) return;
-                                        try
-                                        {
-                                            stream.EndWrite(ar);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            taskCompletionSource.SetException(ex);
-                                        }
-                                        continuation();
-                                    }, null);
-                                    if (sr.CompletedSynchronously)
-                                    {
-                                        stream.EndWrite(sr);
-                                        return false;
-                                    }
-
-                                    return true;
-                                }
-                                catch (Exception ex)
-                                {
-                                    taskCompletionSource.SetException(ex);
-                                    return false;
-                                }
-                            },
-                            taskCompletionSource.SetException,
+                        body.WriteToStream(
+                            httpContext.Response.OutputStream, 
+                            taskCompletionSource.SetException, 
                             () => taskCompletionSource.SetResult(() => httpContext.Response.End()));
                     }
                     catch (Exception ex)
@@ -171,7 +89,15 @@ namespace Gate.AspNet
         public void EndProcessRequest(IAsyncResult asyncResult)
         {
             var task = ((Task<Action>) asyncResult);
-            task.Result.Invoke();
+            if (task.IsFaulted)
+            {
+                var exception = task.Exception;
+                exception.Handle(ex=>ex is HttpException);
+            }
+            else if (task.IsCompleted)
+            {
+                task.Result.Invoke();
+            }
         }
 
         class ServerVariables
@@ -196,6 +122,14 @@ namespace Gate.AspNet
             public string ServerPort
             {
                 get { return _serverVariables.Get("SERVER_PORT"); }
+            }
+
+            public IEnumerable<KeyValuePair<string, object>> AddToEnvironment()
+            {
+                return _serverVariables
+                    .AllKeys
+                    .Where(key => !key.StartsWith("HTTP_"))
+                    .Select(key => new KeyValuePair<string, object>(key, _serverVariables.Get(key)));
             }
         }
     }

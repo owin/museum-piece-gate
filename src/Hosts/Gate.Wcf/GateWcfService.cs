@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -13,24 +12,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gate.Helpers;
 using Gate.Startup;
+using Gate.Utils;
 
 namespace Gate.Wcf
 {
-    using AppDelegate = Action< // app
-        IDictionary<string, object>, // env
-        Action< // result
-            string, // status
-            IDictionary<string, string>, // headers
-            Func< // body
-                Func< // next
-                    ArraySegment<byte>, // data
-                    Action, // continuation
-                    bool>, // async                    
-                Action<Exception>, // error
-                Action, // complete
-                Action>>, // cancel
-        Action<Exception>>; // fault
-
     [ServiceContract]
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class GateWcfService
@@ -103,12 +88,9 @@ namespace Gate.Wcf
             var headers = incomingRequest.Headers.AllKeys
                 .ToDictionary(key => key, incomingRequest.Headers.Get);
 
-            var expectedRequestLength =
-                GetExpectedRequestLength(headers);
-
             var env = new Dictionary<string, object>();
 
-            new Owin(env)
+            new Environment(env)
             {
                 Version = "1.0",
                 Method = incomingRequest.Method,
@@ -117,45 +99,16 @@ namespace Gate.Wcf
                 Path = path,
                 QueryString = queryString,
                 Headers = headers,
-                Body = null, // TODO - request body
+                Body = Body.FromStream(requestBody),
             };
             return env;
         }
-
-        static long GetExpectedRequestLength(IDictionary<string, string> incomingHeaders)
-        {
-            if (incomingHeaders == null)
-            {
-                return 0;
-            }
-
-            if (!incomingHeaders.ContainsKey("Content-Length"))
-            {
-                return 0;
-            }
-
-            var headerValue = incomingHeaders["Content-Length"];
-
-            if (headerValue == null)
-            {
-                return 0;
-            }
-
-            long contentLength;
-            if (!long.TryParse(headerValue, NumberStyles.Any, CultureInfo.InvariantCulture, out contentLength))
-            {
-                return 0;
-            }
-
-            return contentLength;
-        }
-
 
         static Message CreateOwinResponse(
             WebOperationContext webResponse,
             string status,
             IDictionary<string, string> headers,
-            Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> body)
+            BodyDelegate body)
         {
             //TODO: hardenning
 

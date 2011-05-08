@@ -6,23 +6,24 @@ using Timer = System.Timers.Timer;
 
 namespace Gate.Helpers
 {
-    using AppDelegate = Action< // app
-        IDictionary<string, object>, // env
-        Action< // result
-            string, // status
-            IDictionary<string, string>, // headers
-            Func< // body
-                Func< // next
-                    ArraySegment<byte>, // data
-                    Action, // continuation
-                    bool>, // async                    
-                Action<Exception>, // error
-                Action, // complete
-                Action>>, // cancel
-        Action<Exception>>; // error
 
-    public class Wilson
+    public class Wilson : IApplication, IApplication<bool>
     {
+        AppDelegate IApplication.Create()
+        {
+            return Create();
+        }
+
+        AppDelegate IApplication<bool>.Create(bool async)
+        {
+            return async ? CreateAsync() : Create();
+        }
+
+        public static AppDelegate Create(bool async)
+        {
+            return async ? CreateAsync() : Create();
+        }
+
         public static AppDelegate Create()
         {
             return (env, result, fault) =>
@@ -54,12 +55,12 @@ namespace Gate.Helpers
             };
         }
 
-        public static AppDelegate AppAsync()
+        public static AppDelegate CreateAsync()
         {
             return (env, result, fault) =>
             {
                 var request = new Request(env);
-                var response = new Response(result) 
+                var response = new Response(result)
                 {
                     ContentType = "text/html",
                 };
@@ -108,7 +109,7 @@ namespace Gate.Helpers
             var timer = new Timer(interval);
             timer.Elapsed += (sender, e) =>
             {
-                if (iter.MoveNext())
+                if (iter != null && iter.MoveNext())
                 {
                     try
                     {
@@ -116,6 +117,7 @@ namespace Gate.Helpers
                     }
                     catch (Exception ex)
                     {
+                        iter = null;
                         timer.Stop();
                         fault(ex);
                     }
