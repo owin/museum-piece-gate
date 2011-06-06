@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Gate.Utils;
 using NUnit.Framework;
+using Gate.Helpers;
 
-namespace Gate.Tests
+namespace Gate.Helpers.Tests
 {
     // ReSharper disable InconsistentNaming
     [TestFixture]

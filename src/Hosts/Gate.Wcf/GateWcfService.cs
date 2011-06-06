@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gate.Helpers;
 using Gate.Startup;
-using Gate.Utils;
 
 namespace Gate.Wcf
 {

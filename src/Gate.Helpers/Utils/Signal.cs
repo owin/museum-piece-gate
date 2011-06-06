@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Gate.Utils
+namespace Gate.Helpers
 {
     public class Signal
     {

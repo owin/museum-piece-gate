@@ -45,14 +45,7 @@
     <Compile Include="Startup\ExtRunExtensions.cs" />
     <Compile Include="Startup\ExtUseExtensions.cs" />
     <Compile Include="Startup\ExtMapExtensions.cs" />
-    <Compile Include="Utils\Signal.cs" />
-    <Compile Include="Utils\AsyncResult.cs" />
-    <Compile Include="Response.cs" />
-    <Compile Include="InputStream.cs" />
-    <Compile Include="OutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Request.cs" />
-    <Compile Include="Spooling\Spool.cs" />
     <Compile Include="Startup\AppBuilder.cs" />
     <Compile Include="Startup\Loader\DefaultConfigurationLoader.cs" />
     <Compile Include="Startup\Loader\IConfigurationLoader.cs" />
@@ -60,8 +53,6 @@
     <Compile Include="Startup\RunExtensions.cs" />
     <Compile Include="UrlMapper.cs" />
     <Compile Include="Startup\UseExtensions.cs" />
-    <Compile Include="Utils\Body.cs" />
-    <Compile Include="Utils\ParamDictionary.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

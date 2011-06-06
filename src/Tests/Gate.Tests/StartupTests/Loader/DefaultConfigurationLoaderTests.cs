@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using DifferentNamespace;
 using Gate.Startup;
-using Gate.Startup.Loader;
 using NUnit.Framework;
 
 namespace Gate.Tests.StartupTests.Loader

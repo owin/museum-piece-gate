@@ -43,7 +43,11 @@
     <Compile Include="Cascade.cs" />
     <Compile Include="CascadeExtentions.cs" />
     <Compile Include="ContentType.cs" />
+    <Compile Include="InputStream.cs" />
+    <Compile Include="OutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Request.cs" />
+    <Compile Include="Response.cs" />
     <Compile Include="RewindableBody.cs" />
     <Compile Include="ShowExceptions.cs" />
     <Compile Include="ShowExceptions.View.cs">
@@ -51,6 +55,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ShowExceptions.View.tt</DependentUpon>
     </Compile>
+    <Compile Include="Spool.cs" />
+    <Compile Include="Utils\AsyncResult.cs" />
+    <Compile Include="Utils\Body.cs" />
+    <Compile Include="Utils\ParamDictionary.cs" />
+    <Compile Include="Utils\Signal.cs" />
     <Compile Include="Utils\StreamAwaiter.cs" />
     <Compile Include="Wilson.cs" />
   </ItemGroup>

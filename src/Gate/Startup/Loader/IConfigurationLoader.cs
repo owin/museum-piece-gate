@@ -1,6 +1,6 @@
 using System;
 
-namespace Gate.Startup.Loader
+namespace Gate.Startup
 {
     public interface IConfigurationLoader
     {

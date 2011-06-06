@@ -6,7 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using Gate.Utils;
+using Gate;
+using Gate.Helpers;
 
 namespace Gate.AspNet
 {

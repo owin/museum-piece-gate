@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Gate.Utils;
 
 namespace Gate
 {
-    public class UrlMapper
+    internal class UrlMapper
     {
         readonly AppDelegate _app;
         IEnumerable<Tuple<string, AppDelegate>> _map = Enumerable.Empty<Tuple<string, AppDelegate>>();

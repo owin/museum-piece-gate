@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Gate.Helpers;
 using Gate.Startup;
 using Gate.TestHelpers;
-using Gate.Utils;
 using NUnit.Framework;
 
 namespace Gate.Tests.StartupTests

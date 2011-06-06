@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Gate.Startup.Loader
+namespace Gate.Startup
 {
     using AppAction = Action< // app
         IDictionary<string, object>, // env

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace Gate
+namespace Gate.Helpers
 {
     public class Spool
     {

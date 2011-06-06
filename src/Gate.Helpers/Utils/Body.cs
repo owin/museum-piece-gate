@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 
-namespace Gate.Utils
+namespace Gate.Helpers
 {
     using BodyAction = Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>;
 
@@ -24,7 +24,6 @@ namespace Gate.Utils
                 return () => { };
             };
         }
-
 
         public static string ToText(this BodyAction body, Encoding encoding)
         {
