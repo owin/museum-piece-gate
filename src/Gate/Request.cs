@@ -10,6 +10,7 @@ namespace Gate
     {
         static readonly char[] CommaSemicolon = new[] {',', ';'};
 
+        public Request() : base() { }
         public Request(IDictionary<string, object> env) : base(env)
         {
         }

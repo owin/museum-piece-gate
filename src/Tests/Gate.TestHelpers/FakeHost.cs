@@ -28,7 +28,7 @@ namespace Gate.TestHelpers
             return GET(path, request => { });
         }
 
-        public FakeHostResponse GET(string path, Action<FakeHostRequest> requestSetup)
+        public FakeHostResponse GET(string path, Action<Environment> requestSetup)
         {
             var pathParts = path.Split("?".ToArray(), 2);
             return Invoke(request =>
@@ -41,17 +41,16 @@ namespace Gate.TestHelpers
             });
         }
 
-        FakeHostResponse Invoke(Action<FakeHostRequest> requestSetup)
+        FakeHostResponse Invoke(Action<Environment> requestSetup)
         {
-            var env = new Dictionary<string, object>();
-
-            var request = new FakeHostRequest(env)
+            var env = new Environment()
             {
                 Version = "1.0",
                 Scheme = "http",
                 Headers = new Dictionary<string, string>(),
             };
-            requestSetup(request);
+
+            requestSetup(env);
 
             var wait = new ManualResetEvent(false);
             var response = new FakeHostResponse();
