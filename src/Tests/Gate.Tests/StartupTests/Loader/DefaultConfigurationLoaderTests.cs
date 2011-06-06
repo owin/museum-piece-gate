@@ -156,10 +156,8 @@ namespace Gate.Tests.StartupTests.Loader
         [Test]
         public void Method_that_returns_app_action_may_also_be_called()
         {
-            var loader = new DefaultConfigurationLoader();
-            var configuration = loader.Load("Gate.Tests.StartupTests.Loader.DefaultConfigurationLoaderTests.Alpha");
+            var app = AppBuilder.BuildFromConfiguration("Gate.Tests.StartupTests.Loader.DefaultConfigurationLoaderTests.Alpha");
 
-            var app = new AppBuilder(configuration).Build();
             _alphaCalls = 0;
             app(null, null, null);
             Assert.That(_alphaCalls, Is.EqualTo(1));
