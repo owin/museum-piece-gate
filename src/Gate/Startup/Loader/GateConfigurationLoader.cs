@@ -131,7 +131,7 @@ namespace Gate
             }
         }
 
-        public static IEnumerable<string> DotByDot(string text)
+        static IEnumerable<string> DotByDot(string text)
         {
             if (text == null)
                 yield break;
