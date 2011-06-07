@@ -41,13 +41,9 @@
     <Compile Include="IApplication.cs" />
     <Compile Include="IMiddleware.cs" />
     <Compile Include="Startup\AppBuilderArgs.cs" />
-    <Compile Include="Startup\AppBuilderExt.cs" />
     <Compile Include="Startup\Builder\AppBuilder.cs" />
     <Compile Include="Startup\Builder\BaseBuilder.cs" />
     <Compile Include="Startup\Builder\MapBuilder.cs" />
-    <Compile Include="Startup\ExtRunExtensions.cs" />
-    <Compile Include="Startup\ExtUseExtensions.cs" />
-    <Compile Include="Startup\ExtMapExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup\Builder\IAppBuilder.cs" />
     <Compile Include="Startup\Loader\DefaultConfigurationLoader.cs" />
