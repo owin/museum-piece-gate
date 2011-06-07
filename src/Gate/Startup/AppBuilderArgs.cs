@@ -27,21 +27,21 @@ namespace Gate.Startup
 
     public class AppBuilderArgs<T1>
     {
-        public AppBuilderArgs(AppBuilder builder, Tuple<T1> args)
+        public AppBuilderArgs(IAppBuilder builder, Tuple<T1> args)
         {
             Builder = builder;
             Args = args;
         }
 
-        public AppBuilder Builder { get; set; }
+        public IAppBuilder Builder { get; set; }
         public Tuple<T1> Args { get; private set; }
 
-        public AppBuilder Run<TApp>() where TApp : IApplication<T1>, new()
+        public IAppBuilder Run<TApp>() where TApp : IApplication<T1>, new()
         {
             return Builder.Run(() => new TApp().Create(Args.Item1));
         }
 
-        public AppBuilder Use<TMiddleware>() where TMiddleware : IMiddleware<T1>, new()
+        public IAppBuilder Use<TMiddleware>() where TMiddleware : IMiddleware<T1>, new()
         {
             return Builder.Use(app => new TMiddleware().Create(app, Args.Item1));
         }
@@ -49,21 +49,21 @@ namespace Gate.Startup
 
     public class AppBuilderArgs<T1, T2>
     {
-        public AppBuilderArgs(AppBuilder builder, Tuple<T1, T2> args)
+        public AppBuilderArgs(IAppBuilder builder, Tuple<T1, T2> args)
         {
             Builder = builder;
             Args = args;
         }
 
-        public AppBuilder Builder { get; set; }
+        public IAppBuilder Builder { get; set; }
         public Tuple<T1, T2> Args { get; private set; }
 
-        public AppBuilder Run<TApp>() where TApp : IApplication<T1, T2>, new()
+        public IAppBuilder Run<TApp>() where TApp : IApplication<T1, T2>, new()
         {
             return Builder.Run(() => new TApp().Create(Args.Item1, Args.Item2));
         }
 
-        public AppBuilder Use<TMiddleware>() where TMiddleware : IMiddleware<T1, T2>, new()
+        public IAppBuilder Use<TMiddleware>() where TMiddleware : IMiddleware<T1, T2>, new()
         {
             return Builder.Use(app => new TMiddleware().Create(app, Args.Item1, Args.Item2));
         }
@@ -71,21 +71,21 @@ namespace Gate.Startup
 
     public class AppBuilderArgs<T1, T2, T3>
     {
-        public AppBuilderArgs(AppBuilder builder, Tuple<T1, T2, T3> args)
+        public AppBuilderArgs(IAppBuilder builder, Tuple<T1, T2, T3> args)
         {
             Builder = builder;
             Args = args;
         }
 
-        public AppBuilder Builder { get; set; }
+        public IAppBuilder Builder { get; set; }
         public Tuple<T1, T2, T3> Args { get; private set; }
 
-        public AppBuilder Run<TApp>() where TApp : IApplication<T1, T2, T3>, new()
+        public IAppBuilder Run<TApp>() where TApp : IApplication<T1, T2, T3>, new()
         {
             return Builder.Run(() => new TApp().Create(Args.Item1, Args.Item2, Args.Item3));
         }
 
-        public AppBuilder Use<TMiddleware>() where TMiddleware : IMiddleware<T1, T2, T3>, new()
+        public IAppBuilder Use<TMiddleware>() where TMiddleware : IMiddleware<T1, T2, T3>, new()
         {
             return Builder.Use(app => new TMiddleware().Create(app, Args.Item1, Args.Item2, Args.Item3));
         }
@@ -93,21 +93,21 @@ namespace Gate.Startup
 
     public class AppBuilderArgs<T1, T2, T3, T4>
     {
-        public AppBuilderArgs(AppBuilder builder, Tuple<T1, T2, T3, T4> args)
+        public AppBuilderArgs(IAppBuilder builder, Tuple<T1, T2, T3, T4> args)
         {
             Builder = builder;
             Args = args;
         }
 
-        public AppBuilder Builder { get; set; }
+        public IAppBuilder Builder { get; set; }
         public Tuple<T1, T2, T3, T4> Args { get; private set; }
 
-        public AppBuilder Run<TApp>() where TApp : IApplication<T1, T2, T3, T4>, new()
+        public IAppBuilder Run<TApp>() where TApp : IApplication<T1, T2, T3, T4>, new()
         {
             return Builder.Run(() => new TApp().Create(Args.Item1, Args.Item2, Args.Item3, Args.Item4));
         }
 
-        public AppBuilder Use<TMiddleware>() where TMiddleware : IMiddleware<T1, T2, T3, T4>, new()
+        public IAppBuilder Use<TMiddleware>() where TMiddleware : IMiddleware<T1, T2, T3, T4>, new()
         {
             return Builder.Use(app => new TMiddleware().Create(app, Args.Item1, Args.Item2, Args.Item3, Args.Item4));
         }

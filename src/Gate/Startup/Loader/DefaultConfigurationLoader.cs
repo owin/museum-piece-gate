@@ -23,7 +23,7 @@ namespace Gate.Startup
 
     public class DefaultConfigurationLoader : IConfigurationLoader
     {
-        public Action<AppBuilder> Load(string configurationString)
+        public Action<IAppBuilder> Load(string configurationString)
         {
             var typeAndMethod = TypeAndMethodNameForConfiguration(configurationString);
 
@@ -145,14 +145,14 @@ namespace Gate.Startup
             }
         }
 
-        static Action<AppBuilder> MakeDelegate(Type type, MethodInfo methodInfo)
+        static Action<IAppBuilder> MakeDelegate(Type type, MethodInfo methodInfo)
         {
             if (methodInfo == null)
             {
                 return null;
             }
 
-            if (Matches(methodInfo, typeof (void), typeof (AppBuilder)))
+            if (Matches(methodInfo, typeof (void), typeof (IAppBuilder)))
             {
                 var instance = methodInfo.IsStatic ? null : Activator.CreateInstance(type);
                 return builder => methodInfo.Invoke(instance, new[] {builder});

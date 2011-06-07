@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Gate.Startup;
 
 namespace Gate
 {
-    internal class UrlMapper
+    class UrlMapper
     {
         readonly AppDelegate _app;
         IEnumerable<Tuple<string, AppDelegate>> _map = Enumerable.Empty<Tuple<string, AppDelegate>>();
@@ -17,12 +18,15 @@ namespace Gate
 
         public static AppDelegate Create(IDictionary<string, AppDelegate> map)
         {
-            return Create(null, map);
+            return Create(NotFound.Create(), map);
         }
 
         public static AppDelegate Create(AppDelegate app, IDictionary<string, AppDelegate> map)
         {
-            var mapper = new UrlMapper(app ?? NotFound.Create());
+            if (app == null)
+                throw new ArgumentNullException("app");
+
+            var mapper = new UrlMapper(app);
             mapper.Remap(map);
             return mapper.Call;
         }

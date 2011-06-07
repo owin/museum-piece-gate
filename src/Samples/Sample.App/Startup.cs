@@ -30,10 +30,11 @@ namespace Sample.App
                 .Use<ContentType, string>("text/html")
                 .Map("/wilson", map => map.Run<Wilson>())
                 .Map("/wilsonasync", map => map.Run<Wilson, bool>(true))
-                .Cascade(
-                    cascade => cascade.Run<DefaultPage>(),
-                    cascade => cascade.Ext.Run(new NancyOwinHost().ProcessRequest)
-                );
+                ;
+                //.Cascade(
+                //    cascade => cascade.Run<DefaultPage>(),
+                //    cascade => cascade.Ext.Run(new NancyOwinHost().ProcessRequest)
+                //);
         }
     }
 }
