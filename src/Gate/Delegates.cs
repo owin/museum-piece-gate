@@ -46,8 +46,6 @@ namespace Gate
         Action<Exception> error,
         Action complete);
 
-
-
     public static class Delegates
     {
         public static AppAction ToAction(this AppDelegate app)
