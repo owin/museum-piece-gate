@@ -3,26 +3,10 @@ using System.Collections.Generic;
 
 namespace Gate.Startup
 {
-     using AppAction = Action< // app
-         IDictionary<string, object>, // env
-         Action< // result
-             string, // status
-             IDictionary<string, string>, // headers
-             Func< // body
-                 Func< // next
-                     ArraySegment<byte>, // data
-                     Action, // continuation
-                     bool>, // async                    
-                 Action<Exception>, // error
-                 Action, // complete
-                 Action>>, // cancel
-         Action<Exception>>; // error
-
-
     public static class MapExtensions
     {
         /*
-         * Basic definition of Map.
+         * Fundamental definition of Map.
          */
         public static IAppBuilder Map(this IAppBuilder builder, string path, AppDelegate app)
         {
@@ -31,10 +15,18 @@ namespace Gate.Startup
             return mapBuilder;
         }
 
+        /*
+         * Extension to allow branching of AppBuilder.
+         */
+
         public static IAppBuilder Map(this IAppBuilder builder, string path, Action<IAppBuilder> app)
         {
             return builder.Map(path, AppBuilder.BuildFromConfiguration(app));
         }
+
+        /*
+         * Extensions to map AppDelegate factory func to a given path, with optional parameters.
+         */
 
         public static IAppBuilder Map(this IAppBuilder builder, string path, Func<AppDelegate> factory)
         {

@@ -3,25 +3,10 @@ using System.Collections.Generic;
 
 namespace Gate.Startup
 {
-    using AppAction = Action< // app
-         IDictionary<string, object>, // env
-         Action< // result
-             string, // status
-             IDictionary<string, string>, // headers
-             Func< // body
-                 Func< // next
-                     ArraySegment<byte>, // data
-                     Action, // continuation
-                     bool>, // async                    
-                 Action<Exception>, // error
-                 Action, // complete
-                 Action>>, // cancel
-         Action<Exception>>; // error
-
     public static class RunExtensions
     {
         /*
-         * basic definition of Run
+         * Fundamental definition of Run.
          */
 
         public static IAppBuilder Run(this IAppBuilder builder, Func<AppDelegate> appFactory)
@@ -30,7 +15,7 @@ namespace Gate.Startup
         }
 
         /* 
-         * extension method to support passing in an already-built delegate
+         * Extension method to support passing in an already-built delegate.
          */
 
         public static IAppBuilder Run(this IAppBuilder builder, AppDelegate app)
@@ -39,7 +24,7 @@ namespace Gate.Startup
         }
 
         /* 
-         * extension methods take an AppDelegate factory func and it's associated parameters
+         * Extension methods take an AppDelegate factory func and its associated parameters.
          */
 
         public static IAppBuilder Run<T1>(this IAppBuilder builder, Func<T1, AppDelegate> factory, T1 arg1)
@@ -91,6 +76,5 @@ namespace Gate.Startup
         {
             return builder.Run(() => new TApplication().Create(arg1, arg2, arg3, arg4));
         }
-
     }
 }
