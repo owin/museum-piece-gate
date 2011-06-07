@@ -6,7 +6,7 @@ namespace Gate.Startup
     {
         public static AppDelegate BuildFromConfiguration(string configurationString)
         {
-            var configuration = new DefaultConfigurationLoader().Load(configurationString);
+            var configuration = new GateConfigurationLoader().Load(configurationString);
             return BuildFromConfiguration(configuration);
         }
 
