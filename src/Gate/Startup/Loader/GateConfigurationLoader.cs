@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Gate.Startup
+namespace Gate
 {
     using AppAction = Action< // app
         IDictionary<string, object>, // env
@@ -145,7 +145,7 @@ namespace Gate.Startup
             }
         }
 
-        static Action<IAppBuilder> MakeDelegate(Type type, MethodInfo methodInfo)
+        Action<IAppBuilder> MakeDelegate(Type type, MethodInfo methodInfo)
         {
             if (methodInfo == null)
             {
@@ -172,7 +172,7 @@ namespace Gate.Startup
             return null;
         }
 
-        static bool Matches(MethodInfo methodInfo, Type returnType, params Type[] parameterTypes)
+        bool Matches(MethodInfo methodInfo, Type returnType, params Type[] parameterTypes)
         {
             if (methodInfo.ReturnType != returnType)
                 return false;

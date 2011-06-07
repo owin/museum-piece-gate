@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Gate.Startup
+namespace Gate
 {
     class BaseBuilder : IAppBuilder
     {

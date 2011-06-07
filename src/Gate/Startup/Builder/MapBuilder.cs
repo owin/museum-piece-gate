@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Gate.Startup
+namespace Gate
 {
     class MapBuilder : IAppBuilder
     {
@@ -16,7 +16,7 @@ namespace Gate.Startup
             _builder = builder.Use(a => _mapper(a, _map));
         }
 
-        public void MapInternal(string path, AppDelegate app)
+        internal void MapInternal(string path, AppDelegate app)
         {
             _map[path] = app;
         }

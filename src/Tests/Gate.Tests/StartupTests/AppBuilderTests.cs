@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Gate.Startup;
+﻿using System.Collections.Generic;
 using Gate.TestHelpers;
 using NUnit.Framework;
 

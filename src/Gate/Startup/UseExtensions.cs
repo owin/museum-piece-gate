@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Gate.Startup
+namespace Gate
 {
     public static class UseExtensions
     {

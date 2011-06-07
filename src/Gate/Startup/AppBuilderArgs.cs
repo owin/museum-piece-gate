@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Gate.Startup
+namespace Gate
 {
     public static class AppBuilderArgs
     {
