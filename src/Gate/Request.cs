@@ -10,6 +10,7 @@ namespace Gate
     {
         static readonly char[] CommaSemicolon = new[] {',', ';'};
 
+        public Request() : base() { }
         public Request(IDictionary<string, object> env) : base(env)
         {
         }
@@ -22,8 +23,8 @@ namespace Gate
                 if (Get<string>("Gate.Helpers.Request.Query:text") != text ||
                     Get<IDictionary<string, string>>("Gate.Helpers.Request.Query") == null)
                 {
-                    Env["Gate.Helpers.Request.Query:text"] = text;
-                    Env["Gate.Helpers.Request.Query"] = ParamDictionary.Parse(text);
+                    this["Gate.Helpers.Request.Query:text"] = text;
+                    this["Gate.Helpers.Request.Query"] = ParamDictionary.Parse(text);
                 }
                 return Get<IDictionary<string, string>>("Gate.Helpers.Request.Query");
             }
@@ -89,9 +90,9 @@ namespace Gate
                         Get<IDictionary<string, string>>("Gate.Helpers.Request.Post") == null)
                     {
                         var text = input.ToText(Encoding.UTF8);
-                        Env["Gate.Helpers.Request.Post:input"] = input;
-                        Env["Gate.Helpers.Request.Post:text"] = text;
-                        Env["Gate.Helpers.Request.Post"] = ParamDictionary.Parse(text);
+                        this["Gate.Helpers.Request.Post:input"] = input;
+                        this["Gate.Helpers.Request.Post:text"] = text;
+                        this["Gate.Helpers.Request.Post"] = ParamDictionary.Parse(text);
                     }
                     return Get<IDictionary<string, string>>("Gate.Helpers.Request.Post");
                 }
