@@ -23,38 +23,58 @@ namespace Gate.Startup.Loader
 
     public class DefaultConfigurationLoader : IConfigurationLoader
     {
+        public static Action<AppBuilder> LoadConfiguration(string configurationString)
+        {
+            return new DefaultConfigurationLoader().Load(configurationString);
+        }
+
         public Action<AppBuilder> Load(string configurationString)
         {
             if (string.IsNullOrWhiteSpace(configurationString))
             {
-                return LoadDefault();
+                configurationString = GetDefaultConfigurationString(
+                    assembly => new[] { "Startup", assembly.GetName().Name + ".Startup" });
             }
+
+            var typeAndMethod = GetTypeAndMethodNameForConfigurationString(configurationString);
+
+            if (typeAndMethod == null)
+                return null;
+
+            var type = typeAndMethod.Item1;
+            // default to the "Configuration" method if only the type name was provided
+            var methodName = typeAndMethod.Item2 ?? "Configuration";
+            var methodInfo = type.GetMethod(methodName);
+
+            return MakeDelegate(type, methodInfo);
+        }
+
+        public static Tuple<Type, string> GetTypeAndMethodNameForConfigurationString(string configurationString)
+        {
             foreach (var hit in HuntForAssemblies(configurationString))
             {
-                var longestPossibleName = hit.Item1;
+                var longestPossibleName = hit.Item1; // method or type name
                 var assembly = hit.Item2;
 
                 // try the longest 2 possibilities at most (because you can't have a dot in the method name)
+                // so, typeName could specify a method or a type. we're looking for a type.
                 foreach (var typeName in DotByDot(longestPossibleName).Take(2))
                 {
                     var type = assembly.GetType(typeName, false);
-                    if (type == null)
+                    if (type == null) // must have been a method name (or doesn't exist), next!
                         continue;
 
-                    // default to the "Configuration" method if only the type name was provided
                     var methodName = typeName == longestPossibleName
-                        ? "Configuration"
+                        ? null
                         : longestPossibleName.Substring(typeName.Length + 1);
 
-                    var methodInfo = type.GetMethod(methodName);
-
-                    return MakeDelegate(type, methodInfo);
+                    return new Tuple<Type, string>(type, methodName);
                 }
             }
             return null;
         }
 
-        Action<AppBuilder> LoadDefault()
+        static string GetDefaultConfigurationString(Func<Assembly, string[]> defaultTypeNames)
         {
             var info = AppDomain.CurrentDomain.SetupInformation;
             var assembliesPath = Path.Combine(info.ApplicationBase, info.PrivateBinPath ?? "");
@@ -69,11 +89,11 @@ namespace Gate.Startup.Loader
                 var assemblyName = reflectionOnlyAssembly.GetName().Name;
                 var assemblyFullName = reflectionOnlyAssembly.FullName;
 
-                foreach (var possibleType in new[] {"Startup", assemblyName + ".Startup"})
+                foreach (var possibleType in defaultTypeNames(reflectionOnlyAssembly))
                 {
                     var startupType = reflectionOnlyAssembly.GetType(possibleType, false);
                     if (startupType != null)
-                        return Load(possibleType + ", " + assemblyFullName);
+                        return possibleType + ", " + assemblyFullName;
                 }
             }
             return null;
@@ -82,25 +102,25 @@ namespace Gate.Startup.Loader
         static IEnumerable<Tuple<string, Assembly>> HuntForAssemblies(string configurationString)
         {
             var commaIndex = configurationString.IndexOf(',');
-            if (commaIndex >= 0)
+            if (commaIndex >= 0) // assembly is given
             {
                 // break the type and assembly apart
-                var longestPossibleName = DotByDot(configurationString.Substring(0, commaIndex)).FirstOrDefault();
+                var methodOrTypeName = DotByDot(configurationString.Substring(0, commaIndex)).FirstOrDefault();
                 var assemblyName = configurationString.Substring(commaIndex + 1).Trim();
                 var assembly = TryAssemblyLoad(assemblyName);
                 if (assembly != null)
-                    yield return Tuple.Create(longestPossibleName, assembly);
+                    yield return Tuple.Create(methodOrTypeName, assembly);
             }
-            else
+            else // assembly is inferred from type name
             {
-                var longestPossibleName = DotByDot(configurationString).FirstOrDefault();
+                var methodOrTypeName = DotByDot(configurationString).FirstOrDefault();
 
-                // go through each segment except the first (assuming the last segment is a class name at a minimum))
-                foreach (var assemblyName in DotByDot(longestPossibleName).Skip(1))
+                // go through each segment except the first (assuming the last segment is a type name at a minimum))
+                foreach (var assemblyName in DotByDot(methodOrTypeName).Skip(1))
                 {
                     var assembly = TryAssemblyLoad(assemblyName);
                     if (assembly != null)
-                        yield return Tuple.Create(longestPossibleName, assembly);
+                        yield return Tuple.Create(methodOrTypeName, assembly);
                 }
             }
         }
@@ -117,7 +137,7 @@ namespace Gate.Startup.Loader
             }
         }
 
-        public static IEnumerable<string> DotByDot(string text)
+        internal static IEnumerable<string> DotByDot(string text)
         {
             if (text == null)
                 yield break;
