@@ -31,7 +31,7 @@ namespace Gate.Wcf
 
         public static WebServiceHost Create(Uri baseUri, string configurationString)
         {
-            var app = AppBuilder.BuildFromConfiguration(configurationString);
+            var app = AppBuilder.BuildConfiguration(configurationString);
             return Create(baseUri, app);
         }
 

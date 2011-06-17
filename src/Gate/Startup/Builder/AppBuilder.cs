@@ -4,13 +4,12 @@ namespace Gate
 {
     public class AppBuilder : IAppBuilder
     {
-        public static AppDelegate BuildFromConfiguration(string configurationString)
+        public static AppDelegate BuildConfiguration(string configurationString)
         {
-            var configuration = new GateConfigurationLoader().Load(configurationString);
-            return BuildFromConfiguration(configuration);
+            return BuildConfiguration(ConfigurationLoader.LoadConfiguration(configurationString));
         }
 
-        public static AppDelegate BuildFromConfiguration(Action<IAppBuilder> configuration)
+        public static AppDelegate BuildConfiguration(Action<IAppBuilder> configuration)
         {
             var builder = new AppBuilder();
             configuration(builder);

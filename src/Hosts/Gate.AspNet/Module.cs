@@ -17,7 +17,7 @@ namespace Gate.AspNet
         public void Init(HttpApplication init)
         {
             var configurationString = ConfigurationManager.AppSettings["Gate.Startup"];
-            var app = AppBuilder.BuildFromConfiguration(configurationString);
+            var app = AppBuilder.BuildConfiguration(configurationString);
             var appHandler = new AppHandler(app);
 
             init.AddOnBeginRequestAsync(

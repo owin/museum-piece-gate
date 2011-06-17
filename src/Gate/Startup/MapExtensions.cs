@@ -21,7 +21,7 @@ namespace Gate
 
         public static IAppBuilder Map(this IAppBuilder builder, string path, Action<IAppBuilder> app)
         {
-            return builder.Map(path, AppBuilder.BuildFromConfiguration(app));
+            return builder.Map(path, AppBuilder.BuildConfiguration(app));
         }
 
         /*
