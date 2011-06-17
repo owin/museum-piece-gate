@@ -37,17 +37,17 @@ namespace Gate
         }
 
         public void Call(
-            IDictionary<string, object> env,
+            IDictionary<string, object> envDict,
             ResultDelegate result,
             Action<Exception> fault)
         {
-            var owin = new Environment(env);
-            var path = owin.Path;
-            var pathBase = owin.PathBase;
+            var env = envDict as Environment ?? new Environment(envDict);
+            var path = env.Path;
+            var pathBase = env.PathBase;
             Action finish = () =>
             {
-                owin.Path = path;
-                owin.PathBase = pathBase;
+                env.Path = path;
+                env.PathBase = pathBase;
             };
             var match = _map.FirstOrDefault(m => path.StartsWith(m.Item1));
             if (match == null)
@@ -56,8 +56,8 @@ namespace Gate
                 _app(env, result, fault);
                 return;
             }
-            owin.PathBase = pathBase + match.Item1;
-            owin.Path = path.Substring(match.Item1.Length);
+            env.PathBase = pathBase + match.Item1;
+            env.Path = path.Substring(match.Item1.Length);
             match.Item2.Invoke(env, result, fault);
         }
     }

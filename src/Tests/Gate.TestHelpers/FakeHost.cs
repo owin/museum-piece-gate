@@ -43,9 +43,7 @@ namespace Gate.TestHelpers
 
         FakeHostResponse Invoke(Action<FakeHostRequest> requestSetup)
         {
-            var env = new Dictionary<string, object>();
-
-            var request = new FakeHostRequest(env)
+            var request = new FakeHostRequest()
             {
                 Version = "1.0",
                 Scheme = "http",
@@ -56,7 +54,7 @@ namespace Gate.TestHelpers
             var wait = new ManualResetEvent(false);
             var response = new FakeHostResponse();
             _app(
-                env,
+                request,
                 (status, headers, body) =>
                 {
                     response.Status = status;

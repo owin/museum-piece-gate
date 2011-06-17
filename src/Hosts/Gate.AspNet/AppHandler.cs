@@ -36,12 +36,10 @@ namespace Gate.AspNet
             if (path.StartsWith(pathBase))
                 path = path.Substring(pathBase.Length);
 
-            var env = new Dictionary<string, object>();
-
             var requestHeaders = httpRequest.Headers.AllKeys
                 .ToDictionary(x => x, x => httpRequest.Headers.Get(x), StringComparer.OrdinalIgnoreCase);
 
-            new Environment(env)
+            var env = new Environment()
             {
                 Version = "1.0",
                 Method = httpRequest.HttpMethod,
@@ -89,6 +87,8 @@ namespace Gate.AspNet
         public void EndProcessRequest(IAsyncResult asyncResult)
         {
             var task = ((Task<Action>) asyncResult);
+            // XXX should wait for task? seems to be a race.
+            //task.Wait();
             if (task.IsFaulted)
             {
                 var exception = task.Exception;
