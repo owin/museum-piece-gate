@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Gate;
+using Gate.Helpers;
 using NUnit.Framework;
 
 // ReSharper disable InconsistentNaming
 
-namespace Gate.Tests.Spooling
+namespace Gate.Helpers.Tests
 {
     [TestFixture]
     public class SpoolTests

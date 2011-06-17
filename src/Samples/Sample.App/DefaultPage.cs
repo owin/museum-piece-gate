@@ -1,4 +1,5 @@
 ﻿using Gate;
+using Gate.Helpers;
 
 namespace Sample.App
 {

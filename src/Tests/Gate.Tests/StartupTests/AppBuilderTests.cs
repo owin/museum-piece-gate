@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Gate.Helpers;
-using Gate.Startup;
+﻿using System.Collections.Generic;
 using Gate.TestHelpers;
-using Gate.Utils;
 using NUnit.Framework;
 
 namespace Gate.Tests.StartupTests
@@ -53,9 +49,10 @@ namespace Gate.Tests.StartupTests
         [Test]
         public void Calling_Configure_passes_control_to_a_builder_configuration_method()
         {
-            var app = new AppBuilder()
-                .Configure(MyConfig)
-                .Build();
+            var builder = new AppBuilder();
+            MyConfig(builder);
+            var app = builder.Build();
+
             var stat = "";
             app(null, (status, headers, body) => stat = status, ex => { });
             Assert.That(stat, Is.EqualTo("200 Foo"));
@@ -64,28 +61,15 @@ namespace Gate.Tests.StartupTests
         [Test]
         public void Overloaded_constructor_calls_Configure()
         {
-            var app = new AppBuilder(MyConfig).Build();
+            var builder = new AppBuilder();
+            MyConfig(builder);
+            var app = builder.Build();
+
             var stat = "";
             app(null, (status, headers, body) => stat = status, ex => { });
             Assert.That(stat, Is.EqualTo("200 Foo"));
         }
-
-        public void NoWay(AppBuilder builder)
-        {
-            builder.Run((a, b, c) => b("200 Way", null, null));
-        }
-
-        [Test]
-        public void String_constructor_overload_also_eventually_calls_Configure()
-        {
-            var builder = new AppBuilder("Gate.Tests.StartupTests.AppBuilderTests.NoWay");
-            var app = builder.Build();
-            var stat = "";
-            app(null, (status, headers, body) => stat = status, ex => { });
-            Assert.That(stat, Is.EqualTo("200 Way"));
-        }
-
-
+        
         static string Execute(AppDelegate app)
         {
             var stat = "";
@@ -143,31 +127,29 @@ namespace Gate.Tests.StartupTests
             Assert.That(status, Is.EqualTo("[1][2][3]"));
         }
 
-        [Test]
-        public void UrlMapper_is_called_only_when_Map_is_used()
-        {
-            IDictionary<string, AppDelegate> mapsArg = null;
-            Func<IDictionary<string, AppDelegate>, AppDelegate> mapper = maps =>
-            {
-                mapsArg = maps;
-                return (a, b, c) => { };
-            };
+        //[Test]
+        //public void UrlMapper_is_called_only_when_Map_is_used()
+        //{
+        //    IDictionary<string, AppDelegate> mapsArg = null;
+        //    Func<IDictionary<string, AppDelegate>, AppDelegate> mapper = maps =>
+        //    {
+        //        mapsArg = maps;
+        //        return (a, b, c) => { };
+        //    };
 
-            var app1 = new AppBuilder()
-                .SetUrlMapper(mapper)
-                .Run(ReturnStatus, "[1]")
-                .Build();
-            Assert.That(app1, Is.Not.Null);
-            Assert.That(mapsArg, Is.Null);
+        //    var app1 = new AppBuilder((_, maps) => mapper(maps))
+        //        .Run(ReturnStatus, "[1]")
+        //        .Build();
+        //    Assert.That(app1, Is.Not.Null);
+        //    Assert.That(mapsArg, Is.Null);
 
-            var app2 = new AppBuilder()
-                .SetUrlMapper(mapper)
-                .Map("/foo", ReturnStatus, "[1]")
-                .Build();
+        //    var app2 = new AppBuilder((_, maps) => mapper(maps))
+        //        .Map("/foo", ReturnStatus, "[1]")
+        //        .Build();
 
-            Assert.That(app2, Is.Not.Null);
-            Assert.That(mapsArg, Is.Not.Null);
-        }
+        //    Assert.That(app2, Is.Not.Null);
+        //    Assert.That(mapsArg, Is.Not.Null);
+        //}
 
         [Test]
         public void Class_with_IApplication_can_be_used_by_AppBuilder()

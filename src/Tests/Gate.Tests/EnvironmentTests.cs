@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace Gate.Tests
 {
     [TestFixture]
-    public class OwinTests
+    public class EnvironmentTests
     {
         [Test]
         public void Version_property_provide_access_to_environment()
@@ -17,19 +17,18 @@ namespace Gate.Tests
         }
 
         [Test]
-        public void Envoronment_access_is_not_buffered_or_cached()
+        public void Environment_access_is_not_buffered_or_cached()
         {
-            var env = new Dictionary<string, object> {{"owin.Version", "1.0"}};
-            var environment = new Environment(env);
+            var environment = new Environment() {{"owin.Version", "1.0"}};
             Assert.That(environment.Version, Is.EqualTo("1.0"));
 
-            env["owin.Version"] = "1.1";
+            environment["owin.Version"] = "1.1";
             Assert.That(environment.Version, Is.EqualTo("1.1"));
 
-            env["owin.Version"] = null;
+            environment["owin.Version"] = null;
             Assert.That(environment.Version, Is.Null);
 
-            env.Remove("owin.Version");
+            environment.Remove("owin.Version");
             Assert.That(environment.Version, Is.Null);
         }
 
@@ -68,8 +67,7 @@ namespace Gate.Tests
             var headers = new Dictionary<string, string>();
             var body = new BodyDelegate((next, error, complete) => () => { }).ToAction();
 
-            var env = new Dictionary<string, object>();
-            var environment = new Environment(env)
+            var environment = new Environment()
             {
                 Method = "GET",
                 Path = "/foo",
@@ -80,6 +78,7 @@ namespace Gate.Tests
                 Scheme = "https",
                 Version = "1.0"
             };
+            IDictionary<string, object> env = environment;
 
             Assert.That(environment.Method, Is.EqualTo("GET"));
             Assert.That(environment.Path, Is.EqualTo("/foo"));

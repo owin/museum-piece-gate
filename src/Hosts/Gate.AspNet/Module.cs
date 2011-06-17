@@ -5,7 +5,6 @@ using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
-using Gate.Startup;
 
 namespace Gate.AspNet
 {
@@ -18,11 +17,8 @@ namespace Gate.AspNet
         public void Init(HttpApplication init)
         {
             var configurationString = ConfigurationManager.AppSettings["Gate.Startup"];
-
-            var builder = new AppBuilder();
-            builder.Configure(configurationString);
-
-            var appHandler = new AppHandler(builder.Build());
+            var app = AppBuilder.BuildConfiguration(configurationString);
+            var appHandler = new AppHandler(app);
 
             init.AddOnBeginRequestAsync(
                 (sender, args, callback, state) =>

@@ -16,7 +16,7 @@ namespace Gate
     /// Utility class providing strongly-typed get/set access to environment properties 
     /// defined by the OWIN spec.
     /// </summary>
-    public class Environment
+    public class Environment : Dictionary<string, object>
     {
         public static readonly string RequestMethodKey = "owin.RequestMethod";
         public static readonly string RequestPathBaseKey = "owin.RequestPathBase";
@@ -27,18 +27,20 @@ namespace Gate
         public static readonly string RequestSchemeKey = "owin.RequestScheme";
         public static readonly string VersionKey = "owin.Version";
 
-        protected readonly IDictionary<string, object> Env;
-
 
         protected T Get<T>(string name)
         {
             object value;
-            return Env.TryGetValue(name, out value) ? (T) value : default(T);
+            return TryGetValue(name, out value) ? (T) value : default(T);
         }
 
+        public Environment() { }
         public Environment(IDictionary<string, object> env)
         {
-            Env = env;
+            foreach (var pair in env)
+            {
+                this[pair.Key] = pair.Value;
+            }
         }
 
         /// <summary>
@@ -47,7 +49,7 @@ namespace Gate
         public string Version
         {
             get { return Get<string>(VersionKey); }
-            set { Env[VersionKey] = value; }
+            set { this[VersionKey] = value; }
         }
 
         /// <summary>
@@ -56,7 +58,7 @@ namespace Gate
         public string Method
         {
             get { return Get<string>(RequestMethodKey); }
-            set { Env[RequestMethodKey] = value; }
+            set { this[RequestMethodKey] = value; }
         }
 
         /// <summary>
@@ -65,7 +67,7 @@ namespace Gate
         public IDictionary<string, string> Headers
         {
             get { return Get<IDictionary<string, string>>(RequestHeadersKey); }
-            set { Env[RequestHeadersKey] = value; }
+            set { this[RequestHeadersKey] = value; }
         }
 
         /// <summary>
@@ -74,7 +76,7 @@ namespace Gate
         public string PathBase
         {
             get { return Get<string>(RequestPathBaseKey); }
-            set { Env[RequestPathBaseKey] = value; }
+            set { this[RequestPathBaseKey] = value; }
         }
 
         /// <summary>
@@ -83,7 +85,7 @@ namespace Gate
         public string Path
         {
             get { return Get<string>(RequestPathKey); }
-            set { Env[RequestPathKey] = value; }
+            set { this[RequestPathKey] = value; }
         }
 
         /// <summary>
@@ -92,7 +94,7 @@ namespace Gate
         public string Scheme
         {
             get { return Get<string>(RequestSchemeKey); }
-            set { Env[RequestSchemeKey] = value; }
+            set { this[RequestSchemeKey] = value; }
         }
 
         /// <summary>
@@ -101,7 +103,7 @@ namespace Gate
         public BodyAction Body
         {
             get { return Get<BodyAction>(RequestBodyKey); }
-            set { Env[RequestBodyKey] = value; }
+            set { this[RequestBodyKey] = value; }
         }
 
         /// <summary>
@@ -110,7 +112,7 @@ namespace Gate
         public string QueryString
         {
             get { return Get<string>(RequestQueryStringKey); }
-            set { Env[RequestQueryStringKey] = value; }
+            set { this[RequestQueryStringKey] = value; }
         }
     }
 }

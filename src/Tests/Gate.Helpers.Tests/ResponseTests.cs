@@ -4,8 +4,9 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using NUnit.Framework;
+using Gate.Helpers;
 
-namespace Gate.Tests
+namespace Gate.Helpers.Tests
 {
     [TestFixture]
     public class ResponseTests

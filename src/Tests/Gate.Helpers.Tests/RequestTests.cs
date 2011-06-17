@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Gate.Utils;
 using NUnit.Framework;
+using Gate.Helpers;
 
-namespace Gate.Tests
+namespace Gate.Helpers.Tests
 {
     // ReSharper disable InconsistentNaming
     [TestFixture]
@@ -11,46 +11,34 @@ namespace Gate.Tests
         [Test]
         public void QueryString_is_used_to_populate_Query_dictionary()
         {
-            var env = new Dictionary<string, object>();
-            new Environment(env) {QueryString = "foo=bar"};
-
-            var request = new Request(env);
+            var request = new Request() { QueryString = "foo=bar" };
             Assert.That(request.Query["foo"], Is.EqualTo("bar"));
         }
 
         [Test]
         public void Changing_QueryString_in_environment_reparses_Query_dictionary()
         {
-            var env = new Dictionary<string, object>();
-            new Environment(env) {QueryString = "foo=bar"};
-
-            var request = new Request(env);
+            var request = new Request() { QueryString = "foo=bar" };
             Assert.That(request.Query["foo"], Is.EqualTo("bar"));
 
-            new Environment(env) {QueryString = "foo=quux"};
+            request.QueryString = "foo=quux";
             Assert.That(request.Query["foo"], Is.EqualTo("quux"));
         }
 
         [Test]
         public void Body_is_used_to_populate_Post_dictionary()
         {
-            var env = new Dictionary<string, object>();
-            new Environment(env) {Method = "POST", Body = Body.FromText("foo=bar")};
-
-            var request = new Request(env);
+            var request = new Request() {Method = "POST", Body = Body.FromText("foo=bar")};
             Assert.That(request.Post["foo"], Is.EqualTo("bar"));
         }
 
         [Test]
         public void Changing_Body_in_environment_reparses_Post_dictionary()
         {
-            var env = new Dictionary<string, object>();
-            new Environment(env) {Method = "POST", Body = Body.FromText("foo=bar")};
-
-            var request = new Request(env);
+            var request = new Request() {Method = "POST", Body = Body.FromText("foo=bar")};
             Assert.That(request.Post["foo"], Is.EqualTo("bar"));
 
-            new Environment(env) {Body = Body.FromText("foo=quux")};
+            request.Body = Body.FromText("foo=quux");
             Assert.That(request.Post["foo"], Is.EqualTo("quux"));
         }
 

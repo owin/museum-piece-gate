@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace Gate.Utils
+namespace Gate.Helpers
 {
     // shamelessly lifted from http://msdn.microsoft.com/en-us/magazine/cc163467.aspx
     internal class AsyncResult : IAsyncResult

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Gate.Utils;
 
 namespace Gate
 {
-    public class UrlMapper
+    class UrlMapper
     {
         readonly AppDelegate _app;
         IEnumerable<Tuple<string, AppDelegate>> _map = Enumerable.Empty<Tuple<string, AppDelegate>>();
@@ -18,12 +16,15 @@ namespace Gate
 
         public static AppDelegate Create(IDictionary<string, AppDelegate> map)
         {
-            return Create(null, map);
+            return Create(NotFound.Create(), map);
         }
 
         public static AppDelegate Create(AppDelegate app, IDictionary<string, AppDelegate> map)
         {
-            var mapper = new UrlMapper(app ?? NotFound.Create());
+            if (app == null)
+                throw new ArgumentNullException("app");
+
+            var mapper = new UrlMapper(app);
             mapper.Remap(map);
             return mapper.Call;
         }
@@ -37,17 +38,17 @@ namespace Gate
         }
 
         public void Call(
-            IDictionary<string, object> env,
+            IDictionary<string, object> envDict,
             ResultDelegate result,
             Action<Exception> fault)
         {
-            var owin = new Environment(env);
-            var path = owin.Path;
-            var pathBase = owin.PathBase;
+            var env = envDict as Environment ?? new Environment(envDict);
+            var path = env.Path;
+            var pathBase = env.PathBase;
             Action finish = () =>
             {
-                owin.Path = path;
-                owin.PathBase = pathBase;
+                env.Path = path;
+                env.PathBase = pathBase;
             };
             var match = _map.FirstOrDefault(m => path.StartsWith(m.Item1));
             if (match == null)
@@ -56,8 +57,8 @@ namespace Gate
                 _app(env, result, fault);
                 return;
             }
-            owin.PathBase = pathBase + match.Item1;
-            owin.Path = path.Substring(match.Item1.Length);
+            env.PathBase = pathBase + match.Item1;
+            env.Path = path.Substring(match.Item1.Length);
             match.Item2.Invoke(env, result, fault);
         }
     }

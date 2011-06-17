@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{CF3647E1-E3CD-472D-96E2-7B44497D52D8}</ProjectGuid>
+    <ProjectGuid>{B7DF684A-139C-458F-9524-3045A2B08AA3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Gate.Helpers.Tests</RootNamespace>
-    <AssemblyName>Gate.Helpers.Tests</AssemblyName>
+    <RootNamespace>Gate.Kayak</RootNamespace>
+    <AssemblyName>Gate.Kayak</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,50 +31,24 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework">
-      <HintPath>..\..\..\packages\NUnit.2.5.9.10348\lib\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.mocks">
-      <HintPath>..\..\..\packages\NUnit.2.5.9.10348\lib\nunit.mocks.dll</HintPath>
-    </Reference>
-    <Reference Include="pnunit.framework">
-      <HintPath>..\..\..\packages\NUnit.2.5.9.10348\lib\pnunit.framework.dll</HintPath>
+    <Reference Include="Kayak">
+      <HintPath>lib\Kayak.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CascadeTests.cs" />
-    <Compile Include="ContentTypeTests.cs" />
-    <Compile Include="InputStreamTests.cs" />
-    <Compile Include="OutputStreamTests.cs" />
+    <Compile Include="DataConsumer.cs" />
+    <Compile Include="DataProducer.cs" />
+    <Compile Include="Disposable.cs" />
+    <Compile Include="KayakHost.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RequestTests.cs" />
-    <Compile Include="ResponseTests.cs" />
-    <Compile Include="RewindableBodyTests.cs" />
-    <Compile Include="ShowExceptionsTests.cs" />
-    <Compile Include="Spooling\SpoolTests.cs" />
+    <Compile Include="RequestDelegate.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Gate.Helpers\Gate.Helpers.csproj">
-      <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
-      <Name>Gate.Helpers</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Gate\Gate.csproj">
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Gate.TestHelpers\Gate.TestHelpers.csproj">
-      <Project>{E4256EDF-0B54-4715-8E66-8D4D4887E15F}</Project>
-      <Name>Gate.TestHelpers</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

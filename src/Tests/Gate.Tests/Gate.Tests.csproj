@@ -51,13 +51,7 @@
   <ItemGroup>
     <Compile Include="EnvironmentTests.cs" />
     <Compile Include="NotFoundTests.cs" />
-    <Compile Include="RequestTests.cs" />
-    <Compile Include="ResponseTests.cs" />
-    <Compile Include="InputStreamTests.cs" />
-    <Compile Include="OutputStreamTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Spooling\SpoolTests.cs" />
-    <Compile Include="StartupTests\AppBuilderExtTests.cs" />
     <Compile Include="StartupTests\AppBuilderTests.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="StartupTests\Loader\DefaultConfigurationLoaderTests.cs" />

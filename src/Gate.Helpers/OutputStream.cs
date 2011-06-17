@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
-using Gate.Utils;
 
-namespace Gate
+namespace Gate.Helpers
 {
     public class OutputStream : Stream
     {
