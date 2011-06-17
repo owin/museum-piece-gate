@@ -62,7 +62,7 @@ namespace Gate.Helpers.Tests
             BodyDelegate body = (next, error, complete) =>
             {
                 ++bodyCallCount;
-                foreach (var line in Enumerable.Range(0, 40000))
+                foreach (var line in Enumerable.Range(0, 4000))
                 {
                     var bytes = Encoding.UTF8.GetBytes("Hello line " + line);
                     totalBytes += bytes.Length;

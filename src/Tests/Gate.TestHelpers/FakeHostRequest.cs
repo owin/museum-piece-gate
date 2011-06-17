@@ -4,6 +4,7 @@ namespace Gate.TestHelpers
 {
     public class FakeHostRequest : Environment
     {
+        public FakeHostRequest() : base() { }
         public FakeHostRequest(IDictionary<string, object> env) : base(env)
         {
         }
