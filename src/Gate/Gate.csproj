@@ -46,7 +46,7 @@
     <Compile Include="Startup\Builder\MapBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup\Builder\IAppBuilder.cs" />
-    <Compile Include="Startup\Loader\GateConfigurationLoader.cs" />
+    <Compile Include="Startup\Loader\ConfigurationLoader.cs" />
     <Compile Include="Startup\Loader\IConfigurationLoader.cs" />
     <Compile Include="Startup\MapExtensions.cs" />
     <Compile Include="Startup\RunExtensions.cs" />
