@@ -160,7 +160,10 @@ namespace Gate.Tests.StartupTests.Loader
             var loader = new DefaultConfigurationLoader();
             var configuration = loader.Load("Gate.Tests.StartupTests.Loader.DefaultConfigurationLoaderTests.Alpha");
 
-            var app = new AppBuilder(configuration).Build();
+            var builder = new AppBuilder();
+            configuration(builder);
+            var app = builder.Build();
+
             _alphaCalls = 0;
             app(null, null, null);
             Assert.That(_alphaCalls, Is.EqualTo(1));

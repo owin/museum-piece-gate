@@ -21,12 +21,6 @@ namespace Gate.Startup
 
     public static class MapExtensions
     {
-        public static AppBuilder SetUrlMapper(this AppBuilder builder, Func<IDictionary<string, AppDelegate>, AppDelegate> mapper)
-        {
-            return builder.SetUrlMapper((_, maps) => mapper(maps));
-        }
-
-
         public static AppBuilder Map(this AppBuilder builder, string path, AppDelegate app)
         {
             return builder.Map(path, b2 => b2.Run(app));

@@ -7,75 +7,33 @@ namespace Gate.Startup
 {
     public class AppBuilder
     {
+        public static AppDelegate BuildFromConfiguration(string configurationString)
+        {
+            var builder = new AppBuilder();
+            new DefaultConfigurationLoader().Load(configurationString)(builder);
+            return builder.Build();
+        }
+
         public IConfigurationLoader ConfigurationLoader { get; set; }
         readonly IList<Func<AppDelegate, AppDelegate>> _stack = new List<Func<AppDelegate, AppDelegate>>();
 
         Func<AppDelegate, IDictionary<string, AppDelegate>, AppDelegate> _mapper = UrlMapper.Create;
         IDictionary<string, AppDelegate> _maps;
 
-        public AppBuilder()
-            : this(new DefaultConfigurationLoader())
-        {
-        }
 
-        public AppBuilder(string configurationString)
-            : this(new DefaultConfigurationLoader(), configurationString)
-        {
-        }
+        public AppBuilder() : this(UrlMapper.Create) { }
 
-        public AppBuilder(Action<AppBuilder> configuration)
-            : this(new DefaultConfigurationLoader(), configuration)
-        {
-        }
-
-        public AppBuilder(IConfigurationLoader configurationLoader)
-        {
-            ConfigurationLoader = configurationLoader;
-        }
-
-        public AppBuilder(IConfigurationLoader configurationLoader, string configurationString)
-            : this(configurationLoader)
-        {
-            Configure(configurationString);
-        }
-
-        public AppBuilder(IConfigurationLoader configurationLoader, Action<AppBuilder> configuration)
-            : this(configurationLoader)
-        {
-            Configure(configuration);
-        }
-
-        public AppBuilder SetUrlMapper(Func<AppDelegate, IDictionary<string, AppDelegate>, AppDelegate> mapper)
+        public AppBuilder(
+            Func<AppDelegate, IDictionary<string, AppDelegate>, AppDelegate> mapper)
         {
             _mapper = mapper;
-            return this;
-        }
-
-        public AppBuilder Configure()
-        {
-            return Configure(default(string));
-        }
-
-        public AppBuilder Configure(Action<AppBuilder> configuration)
-        {
-            configuration(this);
-            return this;
-        }
-
-        public AppBuilder Configure(string configurationString)
-        {
-            var configuration = ConfigurationLoader.Load(configurationString);
-            if (configuration == null)
-                throw new ArgumentException("Configuration not loadable", "configurationString");
-            return Configure(configuration);
         }
 
         public AppDelegate Branch(Action<AppBuilder> configuration)
         {
-            return new AppBuilder(ConfigurationLoader)
-                .SetUrlMapper(_mapper)
-                .Configure(configuration)
-                .Build(); 
+            var builder = new AppBuilder(_mapper);
+            configuration(builder);
+            return builder.Build();
         }
 
         public AppBuilderExt Ext

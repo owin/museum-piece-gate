@@ -18,11 +18,8 @@ namespace Gate.AspNet
         public void Init(HttpApplication init)
         {
             var configurationString = ConfigurationManager.AppSettings["Gate.Startup"];
-
-            var builder = new AppBuilder();
-            builder.Configure(configurationString);
-
-            var appHandler = new AppHandler(builder.Build());
+            var app = AppBuilder.BuildFromConfiguration(configurationString);
+            var appHandler = new AppHandler(app);
 
             init.AddOnBeginRequestAsync(
                 (sender, args, callback, state) =>
