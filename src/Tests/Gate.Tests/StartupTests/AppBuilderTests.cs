@@ -132,30 +132,6 @@ namespace Gate.Tests.StartupTests
         }
 
         [Test]
-        public void UrlMapper_is_called_only_when_Map_is_used()
-        {
-            IDictionary<string, AppDelegate> mapsArg = null;
-            Func<IDictionary<string, AppDelegate>, AppDelegate> mapper = maps =>
-            {
-                mapsArg = maps;
-                return (a, b, c) => { };
-            };
-
-            var app1 = new AppBuilder((_, maps) => mapper(maps))
-                .Run(ReturnStatus, "[1]")
-                .Build();
-            Assert.That(app1, Is.Not.Null);
-            Assert.That(mapsArg, Is.Null);
-
-            var app2 = new AppBuilder((_, maps) => mapper(maps))
-                .Map("/foo", ReturnStatus, "[1]")
-                .Build();
-
-            Assert.That(app2, Is.Not.Null);
-            Assert.That(mapsArg, Is.Not.Null);
-        }
-
-        [Test]
         public void Class_with_IApplication_can_be_used_by_AppBuilder()
         {
             var withIApplication = new WithIApplication();

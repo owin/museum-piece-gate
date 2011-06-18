@@ -8,7 +8,7 @@ namespace Gate.Tests
 {
     public class Startup
     {
-        public static void Configuration(AppBuilder builder)
+        public static void Configuration(IAppBuilder builder)
         {
             ++ConfigurationCalls;
         }

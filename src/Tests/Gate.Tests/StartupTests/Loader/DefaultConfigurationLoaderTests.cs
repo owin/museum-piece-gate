@@ -5,6 +5,7 @@ using DifferentNamespace;
 using Gate.Startup;
 using Gate.Startup.Loader;
 using NUnit.Framework;
+using Gate;
 
 namespace Gate.Tests.StartupTests.Loader
 {
@@ -66,7 +67,7 @@ namespace Gate.Tests.StartupTests.Loader
 
         static int _helloCalls;
 
-        public static void Hello(AppBuilder builder)
+        public static void Hello(IAppBuilder builder)
         {
             _helloCalls += 1;
         }
@@ -189,21 +190,21 @@ namespace Gate.Tests.StartupTests.Loader
     {
         public static int FooCalls;
 
-        public static void Foo(AppBuilder builder)
+        public static void Foo(IAppBuilder builder)
         {
             FooCalls += 1;
         }
 
         public static int BarCalls;
 
-        public static void Bar(AppBuilder builder)
+        public static void Bar(IAppBuilder builder)
         {
             BarCalls += 1;
         }
 
         public static int ConfigurationCalls;
 
-        public static void Configuration(AppBuilder builder)
+        public static void Configuration(IAppBuilder builder)
         {
             ConfigurationCalls += 1;
         }
@@ -216,7 +217,7 @@ namespace DifferentNamespace
     {
         public static int ConfigurationCalls;
 
-        public static void Configuration(AppBuilder builder)
+        public static void Configuration(IAppBuilder builder)
         {
             ConfigurationCalls += 1;
         }

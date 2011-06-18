@@ -4,6 +4,6 @@ namespace Gate.Startup.Loader
 {
     public interface IConfigurationLoader
     {
-        Action<AppBuilder> Load(string configurationString);
+        Action<IAppBuilder> Load(string configurationString);
     }
 }
