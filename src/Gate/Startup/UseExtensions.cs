@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace Gate.Startup
+namespace Gate
 {
     public static class UseExtensions
     {
         /* 
-         * extension methods take an AppDelegate factory func and it's associated parameters
+         * extension methods take an AppDelegate factory func and its associated parameters
          */
 
         public static IAppBuilder Use<T1>(this IAppBuilder builder, Func<AppDelegate, T1, AppDelegate> factory, T1 arg1)

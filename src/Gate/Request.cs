@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Gate.Helpers.Utils;
 using Gate.Utils;
 
-namespace Gate
+namespace Gate.Helpers
 {
     public class Request : Environment
     {

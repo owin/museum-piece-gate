@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Gate
+﻿namespace Gate
 {    
     public interface IApplication
     {

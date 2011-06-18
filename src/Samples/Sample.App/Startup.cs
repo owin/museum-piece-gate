@@ -32,7 +32,7 @@ namespace Sample.App
                 .Map("/wilsonasync", map => map.Run<Wilson, bool>(true))
                 .Cascade(
                     cascade => cascade.Run<DefaultPage>(),
-                    cascade => cascade.Ext.Run(new NancyOwinHost().ProcessRequest)
+                    cascade => cascade.GetExt().Run(new NancyOwinHost().ProcessRequest)
                 );
         }
     }
