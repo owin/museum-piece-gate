@@ -5,7 +5,7 @@ using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
-using Gate.Startup;
+using Gate;
 
 namespace Gate.AspNet
 {

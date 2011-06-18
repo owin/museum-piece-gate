@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using Gate.Helpers;
 using NUnit.Framework;
 
 namespace Gate.Tests
