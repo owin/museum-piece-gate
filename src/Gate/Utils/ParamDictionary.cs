@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Gate.Helpers.Utils
+namespace Gate.Helpers
 {
     public class ParamDictionary : IDictionary<string, string>
     {

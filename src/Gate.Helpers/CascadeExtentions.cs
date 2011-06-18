@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Linq;
-using Gate.Startup;
 
 namespace Gate.Helpers
 {
-    public static class CascadeExtentions 
+    public static class CascadeExtentions
     {
-        public static AppBuilder Cascade(this AppBuilder builder, params AppDelegate[] apps)
+        public static IAppBuilder Cascade(this IAppBuilder builder, params AppDelegate[] apps)
         {
             return builder.Run(Helpers.Cascade.Create(apps));
         }
-        public static AppBuilder Cascade(this AppBuilder builder, params Action<AppBuilder>[] apps)
+
+        public static IAppBuilder Cascade(this IAppBuilder builder, params Action<IAppBuilder>[] apps)
         {
-            return builder.Run(Helpers.Cascade.Create(apps.Select(builder.Branch)));
+            return builder.Cascade(apps.Select(config => AppBuilder.BuildConfiguration(config)).ToArray());
         }
     }
 }

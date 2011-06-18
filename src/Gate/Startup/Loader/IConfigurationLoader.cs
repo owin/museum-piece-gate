@@ -1,9 +1,9 @@
 using System;
 
-namespace Gate.Startup.Loader
+namespace Gate
 {
     public interface IConfigurationLoader
     {
-        Action<AppBuilder> Load(string configurationString);
+        Action<IAppBuilder> Load(string configurationString);
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Gate;
 using Gate.Helpers;
-using Gate.Startup;
 using Nancy.Hosting.Owin;
 
 namespace Sample.App
@@ -32,7 +31,7 @@ namespace Sample.App
                 .Map("/wilsonasync", map => map.Run<Wilson, bool>(true))
                 .Cascade(
                     cascade => cascade.Run<DefaultPage>(),
-                    cascade => cascade.Ext.Run(new NancyOwinHost().ProcessRequest)
+                    cascade => cascade.GetExt().Run(new NancyOwinHost().ProcessRequest)
                 );
         }
     }

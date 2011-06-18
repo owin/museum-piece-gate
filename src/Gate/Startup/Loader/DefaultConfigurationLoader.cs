@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Gate.Startup.Loader
+namespace Gate
 {
     using AppAction = Action< // app
         IDictionary<string, object>, // env
@@ -23,12 +23,12 @@ namespace Gate.Startup.Loader
 
     public class DefaultConfigurationLoader : IConfigurationLoader
     {
-        public static Action<AppBuilder> LoadConfiguration(string configurationString)
+        public static Action<IAppBuilder> LoadConfiguration(string configurationString)
         {
             return new DefaultConfigurationLoader().Load(configurationString);
         }
 
-        public Action<AppBuilder> Load(string configurationString)
+        public Action<IAppBuilder> Load(string configurationString)
         {
             if (string.IsNullOrWhiteSpace(configurationString))
             {
@@ -151,14 +151,14 @@ namespace Gate.Startup.Loader
             }
         }
 
-        static Action<AppBuilder> MakeDelegate(Type type, MethodInfo methodInfo)
+        static Action<IAppBuilder> MakeDelegate(Type type, MethodInfo methodInfo)
         {
             if (methodInfo == null)
             {
                 return null;
             }
 
-            if (Matches(methodInfo, typeof (void), typeof (AppBuilder)))
+            if (Matches(methodInfo, typeof (void), typeof (IAppBuilder)))
             {
                 var instance = methodInfo.IsStatic ? null : Activator.CreateInstance(type);
                 return builder => methodInfo.Invoke(instance, new[] {builder});

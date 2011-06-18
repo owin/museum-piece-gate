@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Gate.Startup;
 using Gate.TestHelpers;
-using Nancy.Hosting.Owin.Tests.Fakes;
 using NUnit.Framework;
 
 namespace Gate.Helpers.Tests

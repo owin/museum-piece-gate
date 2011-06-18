@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Gate.Startup;
-using Gate.TestHelpers;
+﻿using Gate.TestHelpers;
 using NUnit.Framework;
 
 namespace Sample.App.Tests
