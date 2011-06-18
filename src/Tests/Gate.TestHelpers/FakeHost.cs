@@ -15,7 +15,7 @@ namespace Gate.TestHelpers
 
         public FakeHost(string configurationString)
         {
-            _app = AppBuilder.BuildFromConfiguration(configurationString);
+            _app = AppBuilder.BuildConfiguration(configurationString);
         }
 
         public FakeHost(AppDelegate app)

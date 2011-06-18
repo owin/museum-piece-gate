@@ -6,7 +6,7 @@ namespace Gate
     public static class RunExtensions
     {
         /*
-         * basic definition of Run
+         * Fundamental definition of Run.
          */
 
         public static IAppBuilder Run(this IAppBuilder builder, Func<AppDelegate> appFactory)
@@ -15,7 +15,7 @@ namespace Gate
         }
 
         /* 
-         * extension method to support passing in an already-built delegate
+         * Extension method to support passing in an already-built delegate.
          */
 
         public static IAppBuilder Run(this IAppBuilder builder, AppDelegate app)
@@ -24,7 +24,7 @@ namespace Gate
         }
 
         /* 
-         * extension methods take an AppDelegate factory func and it's associated parameters
+         * Extension methods take an AppDelegate factory func and its associated parameters.
          */
 
         public static IAppBuilder Run<T1>(this IAppBuilder builder, Func<T1, AppDelegate> factory, T1 arg1)
@@ -47,9 +47,8 @@ namespace Gate
             return builder.Run(() => factory(arg1, arg2, arg3, arg4));
         }
 
-
         /* 
-         * extension methods take an IApplication type and its associated parameters
+         * Extension methods take a type implementing IApplication and its associated parameters.
          */
 
         public static IAppBuilder Run<TApplication>(this IAppBuilder builder) where TApplication : IApplication, new()

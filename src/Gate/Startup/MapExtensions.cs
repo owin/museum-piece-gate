@@ -6,8 +6,9 @@ namespace Gate
     public static class MapExtensions
     {
         /*
-         * Basic definition of Map.
+         * Fundamental definition of Map.
          */
+
         public static IAppBuilder Map(this IAppBuilder builder, string path, AppDelegate app)
         {
             var mapBuilder = builder as MapBuilder ?? new MapBuilder(builder, UrlMapper.Create);
@@ -15,10 +16,18 @@ namespace Gate
             return mapBuilder;
         }
 
+        /*
+         * Extension to allow branching of AppBuilder.
+         */
+
         public static IAppBuilder Map(this IAppBuilder builder, string path, Action<IAppBuilder> app)
         {
-            return builder.Map(path, AppBuilder.BuildFromConfiguration(app));
+            return builder.Map(path, AppBuilder.BuildConfiguration(app));
         }
+
+        /*
+         * Extensions to map AppDelegate factory func to a given path, with optional parameters.
+         */
 
         public static IAppBuilder Map(this IAppBuilder builder, string path, Func<AppDelegate> factory)
         {

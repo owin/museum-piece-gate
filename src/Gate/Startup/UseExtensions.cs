@@ -5,7 +5,7 @@ namespace Gate
     public static class UseExtensions
     {
         /* 
-         * extension methods take an AppDelegate factory func and its associated parameters
+         * Extension methods take an AppDelegate factory func and its associated parameters.
          */
 
         public static IAppBuilder Use<T1>(this IAppBuilder builder, Func<AppDelegate, T1, AppDelegate> factory, T1 arg1)
@@ -28,9 +28,8 @@ namespace Gate
             return builder.Use(app => factory(app, arg1, arg2, arg3, arg4));
         }
 
-        
         /* 
-         * extension methods take a type implemeting IMiddleware and it's associated parameters
+         * Extension methods take a type implementing IMiddleware and its associated parameters.
          */
 
         public static IAppBuilder Use<TMiddleware>(this IAppBuilder builder) where TMiddleware : IMiddleware, new()
