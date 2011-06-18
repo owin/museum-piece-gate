@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml.Linq;
-using Gate.Startup;
 using Nancy.Hosting.Owin.Tests.Fakes;
 
 namespace Gate.TestHelpers
@@ -15,7 +14,7 @@ namespace Gate.TestHelpers
 
         public FakeHost(string configurationString)
         {
-            _app = new AppBuilder().Configure(configurationString).Build();
+            _app = AppBuilder.BuildConfiguration(configurationString);
         }
 
         public FakeHost(AppDelegate app)

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using Gate.Startup;
 using Gate.TestHelpers;
 using NUnit.Framework;
 
@@ -52,7 +50,7 @@ namespace Gate.Tests.StartupTests
         {
             var builder = new AppBuilder();
             var app = builder
-                .Ext.Run(TwoHundredFoo)
+                .GetExt().Run(TwoHundredFoo)
                 .Build();
 
             var result = AppUtils.Call(app);
@@ -65,8 +63,8 @@ namespace Gate.Tests.StartupTests
         {
             var builder = new AppBuilder();
             var app = builder
-                .Ext.Use(AddStatus, "Yarg")
-                .Ext.Run(TwoHundredFoo)
+                .GetExt().Use(AddStatus, "Yarg")
+                .GetExt().Run(TwoHundredFoo)
                 .Build();
 
             var result = AppUtils.Call(app);

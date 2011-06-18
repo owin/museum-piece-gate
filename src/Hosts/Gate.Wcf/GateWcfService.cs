@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
@@ -10,8 +9,6 @@ using System.ServiceModel.Channels;
 using System.ServiceModel.Web;
 using System.Threading;
 using System.Threading.Tasks;
-using Gate.Helpers;
-using Gate.Startup;
 using Gate.Utils;
 
 namespace Gate.Wcf
@@ -34,9 +31,8 @@ namespace Gate.Wcf
 
         public static WebServiceHost Create(Uri baseUri, string configurationString)
         {
-            var builder = new AppBuilder();
-            builder.Configure(configurationString);
-            return Create(baseUri, builder.Build());
+            var app = AppBuilder.BuildConfiguration(configurationString);
+            return Create(baseUri, app);
         }
 
         public static WebServiceHost Create(Uri baseUri, AppDelegate app)
