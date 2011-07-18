@@ -26,22 +26,13 @@ namespace Gate.Kayak
             env.QueryString = ""; // XXX
             env.Scheme = "http"; // XXX
             env.Version = "1.0";
-            env.Body = null;
-
-            if (head.Headers != null && head.Headers.ContainsKey("Content-Length"))
-            {
-                var cl = -1;
-
-                if (int.TryParse(head.Headers["Content-Length"], out cl))
+            
+            if (body != null)
+                env.Body = (onData, onError, onEnd) =>
                 {
-                    if (cl > 0)
-                        env.Body = (onData, onError, onEnd) =>
-                        {
-                            var d = body.Connect(new DataConsumer(onData, onError, onEnd));
-                            return () => d.Dispose();
-                        };
-                }
-            }
+                    var d = body.Connect(new DataConsumer(onData, onError, onEnd));
+                    return () => d.Dispose();
+                };
 
             appDelegate(env, HandleResponse(response), HandleError(response));
         }
@@ -50,6 +41,9 @@ namespace Gate.Kayak
         {
             return (status, headers, body) =>
             {
+                if (headers == null)
+                    headers = new Dictionary<string, string>();
+
                 if (body != null &&
                     !headers.ContainsKey("Content-Length") &&
                     !(headers.ContainsKey("Transfer-Encoding") && headers["Transfer-Encoding"] == "chunked"))
@@ -122,7 +116,11 @@ namespace Gate.Kayak
 
                 response.OnResponse(new HttpResponseHead()
                 {
-                    Status = "503 Internal Server Error"
+                    Status = "503 Internal Server Error",
+                    Headers = new Dictionary<string, string>()
+                    {
+                        { "Connection", "close" }
+                    }
                 }, null);
             };
         }
