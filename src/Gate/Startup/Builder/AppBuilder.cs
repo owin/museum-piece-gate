@@ -4,6 +4,11 @@ namespace Gate
 {
     public class AppBuilder : IAppBuilder
     {
+        public static AppDelegate BuildConfiguration()
+        {
+            return BuildConfiguration(default(string));
+        }
+
         public static AppDelegate BuildConfiguration(string configurationString)
         {
             var configuration = new DefaultConfigurationLoader().Load(configurationString);
