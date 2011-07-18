@@ -125,7 +125,7 @@ namespace Gate.Kayak.Tests
                         write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")), null);
                         end();
                         return () => { };
-                    })));
+                    })), null);
 
             requestDelegate.OnRequest(new HttpRequestHead() { }, null, mockResponseDelegate);
 
@@ -150,7 +150,7 @@ namespace Gate.Kayak.Tests
                         write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")), null);
                         end();
                         return () => { };
-                    })));
+                    })), null);
 
             requestDelegate.OnRequest(new HttpRequestHead() { }, null, mockResponseDelegate);
 

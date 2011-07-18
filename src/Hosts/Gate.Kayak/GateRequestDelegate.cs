@@ -10,15 +10,17 @@ namespace Gate.Kayak
     class GateRequestDelegate : IHttpRequestDelegate
     {
         AppDelegate appDelegate;
+        IDictionary<string, object> context;
 
-        public GateRequestDelegate(AppDelegate appDelegate)
+        public GateRequestDelegate(AppDelegate appDelegate, IDictionary<string, object> context)
         {
             this.appDelegate = appDelegate;
+            this.context = context;
         }
 
         public void OnRequest(HttpRequestHead head, IDataProducer body, IHttpResponseDelegate response)
         {
-            var env = new Environment();
+            var env = new Environment(context);
             env.Headers = head.Headers;
             env.Method = head.Method;
             env.Path = head.Uri;

@@ -37,10 +37,11 @@ namespace Gate
         public Environment() { }
         public Environment(IDictionary<string, object> env)
         {
-            foreach (var pair in env)
-            {
-                this[pair.Key] = pair.Value;
-            }
+            if (env != null)
+                foreach (var pair in env)
+                {
+                    this[pair.Key] = pair.Value;
+                }
         }
 
         /// <summary>

@@ -11,14 +11,15 @@ namespace Gate.Kayak
 {
     public static class HttpServerExtensions
     {
-        public static IServer CreateGate(this IServerFactory factory, string configurationString, IScheduler scheduler)
+        public static IServer CreateGate(this IServerFactory factory, AppDelegate app, IScheduler scheduler, IDictionary<string, object> context)
         {
-            var app = AppBuilder.BuildConfiguration(configurationString);
+            if (context == null)
+                context = new Dictionary<string, object>();
 
-            if (app == null)
-                throw new Exception("Could not load Gate configuration from configuration string '" + configurationString + "'");
+            if (!context.ContainsKey("kayak.Scheduler"))
+                context["kayak.Scheduler"] = scheduler;
 
-            return KayakServer.Factory.CreateHttp(new GateRequestDelegate(app), scheduler);
+            return factory.CreateHttp(new GateRequestDelegate(app, context), scheduler);
         }
     }
 }
