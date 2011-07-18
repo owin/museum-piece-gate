@@ -29,11 +29,13 @@ namespace Gate.Kayak
             env.Scheme = "http"; // XXX
             env.Version = "1.0";
             
-            if (body != null)
+            if (body == null)
+                env.Body = null;
+            else
                 env.Body = (onData, onError, onEnd) =>
                 {
                     var d = body.Connect(new DataConsumer(onData, onError, onEnd));
-                    return () => d.Dispose();
+                    return () => { if (d != null) d.Dispose(); };
                 };
 
             appDelegate(env, HandleResponse(response), HandleError(response));
@@ -77,10 +79,7 @@ namespace Gate.Kayak
                     buffer.AddLast(new ArraySegment<byte>(copy));
                     return false;
                 },
-                error =>
-                {
-                    HandleError(response)(error);
-                },
+                HandleError(response),
                 () =>
                 {
                     headers["Content-Length"] = buffer.Aggregate(0, (r, i) => r + i.Count).ToString();
@@ -100,6 +99,8 @@ namespace Gate.Kayak
                             buffer.RemoveFirst();
                             onData(next.Value, null);
                         }
+
+                        onComplete();
 
                         buffer = null;
 

@@ -37,6 +37,13 @@ namespace Gate.Kayak.Tests
             producer.Connect(c);
             return c;
         }
+
+        public static BufferingConsumer Consume(this BodyDelegate del)
+        {
+            var c = new BufferingConsumer();
+            del((data, ct) => c.OnData(data, ct), e => c.OnError(e), () => c.OnEnd());
+            return c;
+        }
     }
 
     class BufferingConsumer : IDataConsumer
@@ -70,6 +77,21 @@ namespace Gate.Kayak.Tests
         }
     }
 
+    class MockDataProducer : IDataProducer
+    {
+        Func<IDataConsumer, Action> subscribe;
+
+        public MockDataProducer(Func<IDataConsumer, Action> subscribe)
+        {
+            this.subscribe = subscribe;
+        }
+
+        public IDisposable Connect(IDataConsumer channel)
+        {
+            return new Disposable(subscribe(channel));
+        }
+    }
+
     class MockResponseDelegate : IHttpResponseDelegate
     {
         public HttpResponseHead Head;
@@ -88,6 +110,8 @@ namespace Gate.Kayak.Tests
         IDictionary<string, string> headers;
         BodyDelegate body;
 
+        public IDictionary<string, object> Env;
+
         public StaticApp(string status, IDictionary<string, string> headers, BodyDelegate body)
         {
             this.status = status;
@@ -97,6 +121,7 @@ namespace Gate.Kayak.Tests
 
         public void Invoke(IDictionary<string, object> env, ResultDelegate response, Action<Exception> fault)
         {
+            Env = env;
             response(status, headers, body);
         }
     }
@@ -115,8 +140,7 @@ namespace Gate.Kayak.Tests
         [Test]
         public void Adds_content_length_response_header_if_none()
         {
-            var requestDelegate = new GateRequestDelegate(
-                CreateApp(
+            var app = new StaticApp(
                     "200 OK", 
                     new Dictionary<string, string>(), 
                     Delegates.ToDelegate((write, fault, end) =>
@@ -125,20 +149,25 @@ namespace Gate.Kayak.Tests
                         write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")), null);
                         end();
                         return () => { };
-                    })), null);
+                    }));
+
+            var requestDelegate = new GateRequestDelegate(app.Invoke, null);
 
             requestDelegate.OnRequest(new HttpRequestHead() { }, null, mockResponseDelegate);
 
+            Assert.That(new Environment(app.Env).Body, Is.Null);
             Assert.That(mockResponseDelegate.Head.Headers.Keys, Contains.Item("Content-Length"));
             Assert.That(mockResponseDelegate.Head.Headers["Content-Length"], Is.EqualTo("10"));
-            Assert.That(mockResponseDelegate.Body.Consume().Buffer.GetString(), Is.EqualTo("1234567890"));
+
+            var body = mockResponseDelegate.Body.Consume();
+            Assert.That(body.Buffer.GetString(), Is.EqualTo("1234567890"));
+            Assert.That(body.GotEnd, Is.True);
         }
 
         [Test]
         public void Does_not_add_content_length_response_header_if_transfer_encoding_chunked()
         {
-            var requestDelegate = new GateRequestDelegate(
-                CreateApp(
+            var app = new StaticApp(
                     "200 OK",
                     new Dictionary<string, string>()
                     {
@@ -150,18 +179,40 @@ namespace Gate.Kayak.Tests
                         write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")), null);
                         end();
                         return () => { };
-                    })), null);
+                    }));
+
+            var requestDelegate = new GateRequestDelegate(app.Invoke, null);
 
             requestDelegate.OnRequest(new HttpRequestHead() { }, null, mockResponseDelegate);
 
+            Assert.That(new Environment(app.Env).Body, Is.Null);
             Assert.IsFalse(mockResponseDelegate.Head.Headers.Keys.Contains("Content-Length"), "should not contain Content-Length");
             // chunks are not chunked-encoded at this level. eventually kayak will do this automatically.
-            Assert.That(mockResponseDelegate.Body.Consume().Buffer.GetString(), Is.EqualTo("1234567890"));
+            var body = mockResponseDelegate.Body.Consume();
+            Assert.That(body.Buffer.GetString(), Is.EqualTo("1234567890"));
+            Assert.That(body.GotEnd, Is.True);
         }
 
-        public AppDelegate CreateApp(string status, IDictionary<string, string> headers, BodyDelegate body)
+        [Test]
+        public void Request_body_is_passed_through()
         {
-            return new StaticApp(status, headers, body).Invoke;
+            var app = new StaticApp(null, null, null);
+
+            var requestDelegate = new GateRequestDelegate(app.Invoke, null);
+
+            requestDelegate.OnRequest(new HttpRequestHead() { }, new MockDataProducer(c =>
+            {
+                c.OnData(new ArraySegment<byte>(Encoding.ASCII.GetBytes("12345")), null);
+                c.OnData(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")), null);
+                c.OnEnd();
+                return () => { };
+            }), mockResponseDelegate);
+            
+            var bodyAction = new Environment(app.Env).Body; 
+            Assert.That(bodyAction, Is.Not.Null);
+            var body = Delegates.ToDelegate(bodyAction).Consume();
+            Assert.That(body.Buffer.GetString(), Is.EqualTo("1234567890"));
+            Assert.That(body.GotEnd, Is.True);
         }
     }
 }
