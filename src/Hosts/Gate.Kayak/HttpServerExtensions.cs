@@ -15,6 +15,16 @@ namespace Gate.Kayak
         {
             Start(schedulerDelegate, listenEP, AppBuilder.BuildConfiguration());
         }
+		
+        public static void Start(ISchedulerDelegate schedulerDelegate, IPEndPoint listenEP, string configurationString)
+		{
+			Start(schedulerDelegate, listenEP, AppBuilder.BuildConfiguration(configurationString));
+		}
+		
+        public static void Start(ISchedulerDelegate schedulerDelegate, IPEndPoint listenEP, Action<IAppBuilder> configuration)
+		{
+			Start(schedulerDelegate, listenEP, AppBuilder.BuildConfiguration(configuration));
+		}
 
         public static void Start(ISchedulerDelegate schedulerDelegate, IPEndPoint listenEP, AppDelegate app)
         {
@@ -25,8 +35,9 @@ namespace Gate.Kayak
         {
             var scheduler = KayakScheduler.Factory.Create(schedulerDelegate);
             var server = KayakServer.Factory.CreateGate(app, scheduler, context);
-            scheduler.Post(() => server.Listen(listenEP));
-            scheduler.Start();
+            
+			using (server.Listen(listenEP))
+            	scheduler.Start();
         }
     }
 
