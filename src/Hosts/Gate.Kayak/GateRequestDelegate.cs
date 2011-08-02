@@ -82,30 +82,37 @@ namespace Gate.Kayak
                 HandleError(response),
                 () =>
                 {
-                    headers["Content-Length"] = buffer.Aggregate(0, (r, i) => r + i.Count).ToString();
+                    var contentLength = buffer.Aggregate(0, (r, i) => r + i.Count);
+
+                    IDataProducer responseBody = null;
+
+                    if (contentLength > 0)
+                    {
+                        headers["Content-Length"] = contentLength.ToString();
+                        responseBody = new DataProducer((onData, onError, onComplete) =>
+                        {
+                            bool cancelled = false;
+
+                            while (!cancelled && buffer.Count > 0)
+                            {
+                                var next = buffer.First;
+                                buffer.RemoveFirst();
+                                onData(next.Value, null);
+                            }
+
+                            onComplete();
+
+                            buffer = null;
+
+                            return () => cancelled = true;
+                        });
+                    }
 
                     response.OnResponse(new HttpResponseHead()
                     {
                         Status = status,
                         Headers = headers
-                    },
-                    new DataProducer((onData, onError, onComplete) =>
-                    {
-                        bool cancelled = false;
-
-                        while (!cancelled && buffer.Count > 0)
-                        {
-                            var next = buffer.First;
-                            buffer.RemoveFirst();
-                            onData(next.Value, null);
-                        }
-
-                        onComplete();
-
-                        buffer = null;
-
-                        return () => cancelled = true;
-                    }));
+                    }, responseBody);
                 });
             };
         }
