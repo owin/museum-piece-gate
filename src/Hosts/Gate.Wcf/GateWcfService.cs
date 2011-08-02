@@ -9,7 +9,7 @@ using System.ServiceModel.Channels;
 using System.ServiceModel.Web;
 using System.Threading;
 using System.Threading.Tasks;
-using Gate.Utils;
+using Gate.Helpers;
 
 namespace Gate.Wcf
 {

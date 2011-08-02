@@ -54,15 +54,6 @@
     <Compile Include="Startup\ExtRunExtensions.cs" />
     <Compile Include="Startup\ExtUseExtensions.cs" />
     <Compile Include="Startup\ExtMapExtensions.cs" />
-    <Compile Include="Utils\AsyncResult.cs" />
-    <Compile Include="Utils\Body.cs" />
-    <Compile Include="Utils\ParamDictionary.cs" />
-    <Compile Include="Utils\Signal.cs" />
-    <Compile Include="Response.cs" />
-    <Compile Include="InputStream.cs" />
-    <Compile Include="OutputStream.cs" />
-    <Compile Include="Request.cs" />
-    <Compile Include="Spooling\Spool.cs" />
     <Compile Include="UrlMapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
