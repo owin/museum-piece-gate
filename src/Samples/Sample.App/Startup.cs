@@ -6,7 +6,7 @@ namespace Sample.App
 {
     public class Startup
     {
-        public void Configuration(AppBuilder builder)
+        public void Configuration(IAppBuilder builder)
         {
             var nancyOwinHost = new NancyOwinHost();
             builder
@@ -21,7 +21,7 @@ namespace Sample.App
                 );
         }
 
-        public void ConfigurationVariation(AppBuilder builder)
+        public void ConfigurationVariation(IAppBuilder builder)
         {
             builder
                 .Use<RewindableBody>()
