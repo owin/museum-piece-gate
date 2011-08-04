@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Gate.Utils
+namespace Gate.Helpers
 {
     public class Signal
     {
