@@ -5,7 +5,7 @@
     <version></version>
     <authors>Benjamin van der Veen</authors>
     <owners></owners>
-    <description>Gate.Kayak provides OWIN support for Kayak.</description>
+    <description>Gate.Kayak provides OWIN hosting support for Kayak.</description>
     <language>en-US</language>
     <projectUrl></projectUrl>
     <licenseUrl></licenseUrl>

@@ -3,12 +3,15 @@
   <metadata>
     <id></id>
     <version></version>
-    <authors>Louis DeJardin, Benjamin van der Veen, and contributors</authors>
+    <authors>Louis DeJardin</authors>
     <owners></owners>
-    <description>Gate is a utility library for locating, manufacturing, and hosting OWIN applications.</description>
+    <description>Gate.AspNet provides OWIN hosting support for ASP.NET.</description>
     <language>en-US</language>
     <projectUrl></projectUrl>
     <licenseUrl></licenseUrl>
     <tags></tags>
+    <dependencies>
+        <dependency id="Gate" version=""/>
+    </dependencies>
   </metadata>
 </package>
