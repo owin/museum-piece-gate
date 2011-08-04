@@ -17,6 +17,9 @@ namespace Gate
 
         public static AppDelegate BuildConfiguration(Action<IAppBuilder> configuration)
         {
+            if (configuration == null)
+                throw new ArgumentNullException("configuration");
+
             var builder = new AppBuilder();
             configuration(builder);
             return builder.Build();
