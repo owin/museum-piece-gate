@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Gate
@@ -16,7 +17,7 @@ namespace Gate
     /// Utility class providing strongly-typed get/set access to environment properties 
     /// defined by the OWIN spec.
     /// </summary>
-    public class Environment : Dictionary<string, object>
+    public class Environment : IDictionary<string, object>
     {
         public static readonly string RequestMethodKey = "owin.RequestMethod";
         public static readonly string RequestPathBaseKey = "owin.RequestPathBase";
@@ -27,6 +28,7 @@ namespace Gate
         public static readonly string RequestSchemeKey = "owin.RequestScheme";
         public static readonly string VersionKey = "owin.Version";
 
+        public IDictionary<string, object> Env { get; set; }
 
         protected T Get<T>(string name)
         {
@@ -34,14 +36,14 @@ namespace Gate
             return TryGetValue(name, out value) ? (T) value : default(T);
         }
 
-        public Environment() { }
+        public Environment()
+        {
+            Env = new Dictionary<string,object>();
+        }
+
         public Environment(IDictionary<string, object> env)
         {
-            if (env != null)
-                foreach (var pair in env)
-                {
-                    this[pair.Key] = pair.Value;
-                }
+            Env = env;
         }
 
         /// <summary>
@@ -115,5 +117,100 @@ namespace Gate
             get { return Get<string>(RequestQueryStringKey); }
             set { this[RequestQueryStringKey] = value; }
         }
+
+
+
+        #region Implementation of IEnumerable
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return Env.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion
+
+        #region Implementation of ICollection<KeyValuePair<string,object>>
+
+        public void Add(KeyValuePair<string, object> item)
+        {
+            Env.Add(item);
+        }
+
+        public void Clear()
+        {
+            Env.Clear();
+        }
+
+        public bool Contains(KeyValuePair<string, object> item)
+        {
+            return Env.Contains(item);
+        }
+
+        public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+        {
+            Env.CopyTo(array,arrayIndex);
+        }
+
+        public bool Remove(KeyValuePair<string, object> item)
+        {
+            return Env.Remove(item);
+        }
+
+        public int Count
+        {
+            get { return Env.Count; }
+        }
+
+        public bool IsReadOnly
+        {
+            get { return Env.IsReadOnly; }
+        }
+
+        #endregion
+
+        #region Implementation of IDictionary<string,object>
+
+        public bool ContainsKey(string key)
+        {
+            return Env.ContainsKey(key);
+        }
+
+        public void Add(string key, object value)
+        {
+            Env.Add(key, value);
+        }
+
+        public bool Remove(string key)
+        {
+            return Env.Remove(key);
+        }
+
+        public bool TryGetValue(string key, out object value)
+        {
+            return Env.TryGetValue(key, out value);
+        }
+
+        public object this[string key]
+        {
+            get { return Env[key]; }
+            set { Env[key] = value; }
+        }
+
+        public ICollection<string> Keys
+        {
+            get { return Env.Keys; }
+        }
+
+        public ICollection<object> Values
+        {
+            get { return Env.Values; }
+        }
+
+        #endregion
     }
 }
