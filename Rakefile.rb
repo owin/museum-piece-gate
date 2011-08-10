@@ -135,7 +135,12 @@ xbuild :build_xbuild do |b|
 end
 
 task :build => :clean do
-  PROJECT_FILES.each { |p| update_assemblyinfo(p, VERSION)  } 
+  PROJECT_FILES
+    .reject { |f| 
+      f.include? ".Tests" or 
+      f.include? "Sample" or 
+      f.include? "Helpers" }
+    .each { |p| update_assemblyinfo(p, VERSION)  } 
   
   build_task = is_nix() ? "build_xbuild" : "build_msbuild"
   Rake::Task[build_task].invoke
@@ -145,7 +150,7 @@ task :test => :build do
   nunit = invoke_runtime("packages/NUnit.2.5.9.10348/tools/nunit-console.exe")
   
   PROJECT_FILES
-    .reject { |f|  not f.include? ".Tests" or f.include? "Wcf" } # no WCF tests!
+    .reject { |f| not f.include? ".Tests" or f.include? "Wcf" } # no WCF tests!
     .map { |project_file| File.basename(project_file).chomp(".csproj") }
     .each { |project_name| sh "#{nunit} -labels #{OUTPUT_DIR}/#{project_name}.dll" }
 end
