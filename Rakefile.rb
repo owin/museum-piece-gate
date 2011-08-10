@@ -131,7 +131,7 @@ end
 xbuild :build_xbuild do |b|
   b.properties :configuration => CONFIGURATION, "OutputPath" => OUTPUT_DIR
   b.targets :Build
-  b.solution = "Gate.sln"
+  b.solution = "Gate.Mono.sln"
 end
 
 task :build => :clean do
@@ -145,7 +145,7 @@ task :test => :build do
   nunit = invoke_runtime("packages/NUnit.2.5.9.10348/tools/nunit-console.exe")
   
   PROJECT_FILES
-    .reject { |f| f.include? "Wcf" } # no WCF tests!
+    .reject { |f|  not f.include? ".Tests" or f.include? "Wcf" } # no WCF tests!
     .map { |project_file| File.basename(project_file).chomp(".csproj") }
     .each { |project_name| sh "#{nunit} -labels #{OUTPUT_DIR}/#{project_name}.dll" }
 end

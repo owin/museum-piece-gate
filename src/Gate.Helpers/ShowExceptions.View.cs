@@ -8,6 +8,10 @@ namespace Gate.Helpers
     {
         static void ErrorPage(IDictionary<string,object> env, Exception ex, Action<string> write)
         {
+            // XXX test this more thoroughly on mono, it shouldn't throw NullRef,
+            // but rather, branch gracefully if something comes up null
+            try {
+
             var request = new Request(env);
             var path = request.PathBase + request.Path;
             var frames = StackFrames(ex);
@@ -423,6 +427,9 @@ write(@"
 </body>
 </html>
             ");
+            } catch {
+                return;
+            }
         }
     }
 }
