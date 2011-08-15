@@ -28,9 +28,9 @@ namespace Gate.Kayak
 
             env.Headers = head.Headers;
             env.Method = head.Method;
-            env.Path = head.Uri;
+            env.Path = head.Path;
             env.PathBase = "";
-            env.QueryString = ""; // XXX
+            env.QueryString = head.QueryString;
             env.Scheme = "http"; // XXX
             env.Version = "1.0";
             
