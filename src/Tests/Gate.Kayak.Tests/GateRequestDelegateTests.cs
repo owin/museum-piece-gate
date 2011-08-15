@@ -110,6 +110,7 @@ namespace Gate.Kayak.Tests
         IDictionary<string, string> headers;
         BodyDelegate body;
 
+        public Action OnRequest;
         public IDictionary<string, object> Env;
 
         public StaticApp(string status, IDictionary<string, string> headers, BodyDelegate body)
@@ -122,6 +123,8 @@ namespace Gate.Kayak.Tests
         public void Invoke(IDictionary<string, object> env, ResultDelegate response, Action<Exception> fault)
         {
             Env = env;
+            if (OnRequest != null)
+                OnRequest();
             response(status, headers, body);
         }
     }
@@ -213,6 +216,37 @@ namespace Gate.Kayak.Tests
             var body = Delegates.ToDelegate(bodyAction).Consume();
             Assert.That(body.Buffer.GetString(), Is.EqualTo("1234567890"));
             Assert.That(body.GotEnd, Is.True);
+        }
+
+        [Test]
+        public void Context_passed_to_constructor_is_passed_through_and_not_modified_by_requests()
+        {
+            var context = new Dictionary<string, object>() 
+            {
+                { "Key", "Value" }
+            };
+
+            var app = new StaticApp(null, null, null);
+
+            IDictionary<string, object> appContext = null;
+
+            app.OnRequest = () =>
+            {
+                app.Env["OtherKey"] = "OtherValue";
+                appContext = app.Env;
+            };
+
+            var requestDelegate = new GateRequestDelegate(app.Invoke, context);
+            requestDelegate.OnRequest(new HttpRequestHead() { }, null, mockResponseDelegate);
+
+            Assert.That(context.ContainsKey("Key"), Is.True);
+            Assert.That(context["Key"], Is.EqualTo("Value"));
+            Assert.That(context.ContainsKey("OtherKey"), Is.False);
+
+            Assert.That(appContext.ContainsKey("Key"), Is.True);
+            Assert.That(appContext["Key"], Is.EqualTo("Value"));
+            Assert.That(appContext.ContainsKey("OtherKey"), Is.True);
+            Assert.That(appContext["OtherKey"], Is.EqualTo("OtherValue"));
         }
     }
 }

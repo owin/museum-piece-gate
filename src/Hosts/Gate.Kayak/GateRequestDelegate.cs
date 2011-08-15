@@ -20,7 +20,12 @@ namespace Gate.Kayak
 
         public void OnRequest(HttpRequestHead head, IDataProducer body, IHttpResponseDelegate response)
         {
-            var env = new Environment(context);
+            var env = new Environment();
+
+            if (context != null)
+                foreach (var kv in context)
+                    env[kv.Key] = kv.Value;
+
             env.Headers = head.Headers;
             env.Method = head.Method;
             env.Path = head.Uri;
