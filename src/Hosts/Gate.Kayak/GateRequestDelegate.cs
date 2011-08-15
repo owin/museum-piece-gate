@@ -26,7 +26,7 @@ namespace Gate.Kayak
                 foreach (var kv in context)
                     env[kv.Key] = kv.Value;
 
-            env.Headers = head.Headers;
+            env.Headers = head.Headers ?? new Dictionary<string, string>();
             env.Method = head.Method ?? "";
             env.Path = head.Path ?? "";
             env.PathBase = "";

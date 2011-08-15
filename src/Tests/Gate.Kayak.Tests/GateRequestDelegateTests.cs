@@ -248,5 +248,32 @@ namespace Gate.Kayak.Tests
             Assert.That(appContext.ContainsKey("OtherKey"), Is.True);
             Assert.That(appContext["OtherKey"], Is.EqualTo("OtherValue"));
         }
+
+        [Test]
+        public void Environment_items_conform_to_spec_by_default()
+        {
+            var app = new StaticApp(null, null, null);
+
+            IDictionary<string, object> appContext = null;
+
+            app.OnRequest = () =>
+            {
+                appContext = app.Env;
+            };
+
+            var requestDelegate = new GateRequestDelegate(app.Invoke, null);
+            requestDelegate.OnRequest(new HttpRequestHead() { }, null, mockResponseDelegate);
+
+            var env = new Environment(appContext);
+
+            Assert.That(env.Body, Is.Null);
+            Assert.That(env.Headers, Is.Not.Null);
+            Assert.That(env.Method, Is.Not.Null);
+            Assert.That(env.Path, Is.Not.Null);
+            Assert.That(env.PathBase, Is.Not.Null);
+            Assert.That(env.QueryString, Is.Not.Null);
+            Assert.That(env.Scheme, Is.EqualTo("http"));
+            Assert.That(env.Version, Is.EqualTo("1.0"));
+        }
     }
 }
