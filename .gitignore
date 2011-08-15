@@ -7,3 +7,7 @@ build
 test
 deploy
 docs
+*.DS_Store
+*.userprefs
+*.pidb
+TestResult.xml
