@@ -154,7 +154,7 @@ namespace Gate.Kayak.Tests
                         return () => { };
                     }));
 
-            var requestDelegate = new GateRequestDelegate(app.Invoke, null);
+            var requestDelegate = new GateRequestDelegate(app.Invoke, new Dictionary<string, object>());
 
             requestDelegate.OnRequest(new HttpRequestHead() { }, null, mockResponseDelegate);
 
@@ -184,7 +184,7 @@ namespace Gate.Kayak.Tests
                         return () => { };
                     }));
 
-            var requestDelegate = new GateRequestDelegate(app.Invoke, null);
+            var requestDelegate = new GateRequestDelegate(app.Invoke, new Dictionary<string, object>());
 
             requestDelegate.OnRequest(new HttpRequestHead() { }, null, mockResponseDelegate);
 
@@ -201,7 +201,7 @@ namespace Gate.Kayak.Tests
         {
             var app = new StaticApp(null, null, null);
 
-            var requestDelegate = new GateRequestDelegate(app.Invoke, null);
+            var requestDelegate = new GateRequestDelegate(app.Invoke, new Dictionary<string, object>());
 
             requestDelegate.OnRequest(new HttpRequestHead() { }, new MockDataProducer(c =>
             {
