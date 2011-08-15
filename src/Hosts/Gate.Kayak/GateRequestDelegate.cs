@@ -27,10 +27,10 @@ namespace Gate.Kayak
                     env[kv.Key] = kv.Value;
 
             env.Headers = head.Headers;
-            env.Method = head.Method;
-            env.Path = head.Path;
+            env.Method = head.Method ?? "";
+            env.Path = head.Path ?? "";
             env.PathBase = "";
-            env.QueryString = head.QueryString;
+            env.QueryString = head.QueryString ?? "";
             env.Scheme = "http"; // XXX
             env.Version = "1.0";
             
