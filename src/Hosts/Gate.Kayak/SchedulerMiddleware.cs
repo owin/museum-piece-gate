@@ -47,7 +47,8 @@ namespace Gate.Kayak
                                 onComplete);
                         });
 
-                        // you're giving up your ability to sever the input stream. sucks for you.
+                        // XXX could properly provide this if the scheduler post above was hot.
+                        // or could wait/block.
                         return () => { };
                     };
 
@@ -56,14 +57,18 @@ namespace Gate.Kayak
                         {
                             return body(
                                 (data, _) => { 
-                                    // all of your writes must be re-buffered at thread boundaries. sucks for you.
-                                    // although, this could be optimized a bit.
+                                    
+                                    // if the writer is async (continuation non-null)
+                                    // then we could keep track of the number of outstanding
+                                    // buffers and apply back pressure if it's > 0. invoke
+                                    // continuation when drained.
+
+                                    // XXX pool buffers
+
                                     var buf = new byte[data.Count];
                                     Buffer.BlockCopy(data.Array, data.Offset, buf, 0, buf.Length);
-                                    
                                     theScheduler.Post(() => onNext(new ArraySegment<byte>(buf), null));
-                                    // you're giving up your ability to limit output buffer size. sucks for you.
-                                    
+                                   
                                     return false;
                                 },
                                 bodyError => theScheduler.Post(() => onError(bodyError)),
