@@ -1,4 +1,4 @@
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 LICENSE_URL = "https://raw.github.com/owin/gate/HEAD/LICENSE.txt"
 PROJECT_URL = "https://github.com/owin/gate"
 PROJECT_FILES = FileList["src/**/*.csproj"]
@@ -8,6 +8,7 @@ BUILD_DIR = File.expand_path("build")
 OUTPUT_DIR = "#{BUILD_DIR}/out"
 BIN_DIR = "#{BUILD_DIR}/bin"
 NUGET_DIR = "#{BUILD_DIR}/nug"
+NUGET_EXE = "tools/NuGet.exe"
 
 require 'albacore'
 
@@ -111,7 +112,7 @@ def build_nuspec(project_file)
   FileUtils.cp_r FileList["#{BIN_DIR}/#{project_name}{.dll,.pdb}"], nuget_lib_dir
 
   nuget = NuGetPack.new
-  nuget.command = "tools/NuGet.exe"
+  nuget.command = NUGET_EXE
   nuget.nuspec = output_nuspec
   nuget.output = BUILD_DIR
   #using base_folder throws as there are two options that begin with b in nuget 1.4
@@ -120,7 +121,6 @@ def build_nuspec(project_file)
 end
 
 task :default => [:build, :test]
-
 
 msbuild :build_msbuild do |b|
   b.properties :configuration => CONFIGURATION, "OutputPath" => OUTPUT_DIR
@@ -186,7 +186,24 @@ end
 task :dist => [:dist_nuget, :dist_zip] do
 end
 
+task :nuget_push do
+  nugets = FileList["build/**.nupkg"].reject { |f| f.include? ".symbols.nupkg" }
+  apikey = IO.read("nugetkey")
+  
+  nugets.each do |n|
+    puts "publishing #{n}"
+    nuget = NuGetPush.new
+    nuget.command = NUGET_EXE
+    nuget.package = n
+    nuget.apikey = apikey
+    begin
+      nuget.execute
+    rescue
+      puts "failed to publish #{n}"
+    end
+  end
+end
+
 task :clean do
   FileUtils.rm_rf BUILD_DIR
-  FileUtils.rm_rf FileList["src/**/obj", "src/**/bin"]
 end

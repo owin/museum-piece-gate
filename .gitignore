@@ -11,3 +11,4 @@ docs
 *.userprefs
 *.pidb
 TestResult.xml
+nugetkey
