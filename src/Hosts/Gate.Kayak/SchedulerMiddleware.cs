@@ -56,8 +56,14 @@ namespace Gate.Kayak
                         {
                             return body(
                                 (data, _) => { 
+                                    // all of your writes must be re-buffered at thread boundaries. sucks for you.
+                                    // although, this could be optimized a bit.
+                                    var buf = new byte[data.Count];
+                                    Buffer.BlockCopy(data.Array, data.Offset, buf, 0, buf.Length);
+                                    
+                                    theScheduler.Post(() => onNext(new ArraySegment<byte>(buf), null));
                                     // you're giving up your ability to limit output buffer size. sucks for you.
-                                    theScheduler.Post(() => onNext(data, null));
+                                    
                                     return false;
                                 },
                                 bodyError => theScheduler.Post(() => onError(bodyError)),
