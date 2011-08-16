@@ -5,8 +5,8 @@ using System.Text;
 using Gate;
 using Gate.Kayak;
 using NUnit.Framework;
-using Kayak;
 using Kayak.Http;
+using Kayak;
 
 namespace Gate.Kayak.Tests
 {

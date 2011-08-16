@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="GateRequestDelegateTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SchedulerMiddlewareTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
