@@ -89,5 +89,72 @@ namespace Gate.Kayak.Tests
 
             Assert.That(bodyString, Is.EqualTo("kanye west is a pussy."));
         }
+
+        [Test]
+        public void Wrapped_apps_onNext_gets_rescheduled_continuation_iff_wrapping_app_provides_continuation()
+        {
+            var app = new StaticApp(null, null, null);
+
+            bool gotComplete = false;
+            int gotOnNext = 0;
+            Action ack0 = null;
+            Action ack1 = null;
+
+            var scheduler = new MockScheduler();
+
+            app.OnRequest = () => {
+                var env = new Environment(app.Env);
+
+                env.Body((data, ack) => {
+                    gotOnNext++;
+
+                    if (gotOnNext == 1)
+                        ack0 = ack;
+                    if (gotOnNext == 2)
+                        ack1 = ack;
+
+                    if (ack == null)
+                        return false;
+                    else
+                    {
+                        return true;
+                    }
+                },
+                e => {
+                },
+                () => { gotComplete = true; });
+            };
+
+            var middleware = new RescheduleCallbacksMiddleware(app.Invoke, scheduler);
+
+            scheduler.Post(() =>
+            {
+                middleware.Invoke(new Environment() {
+                    Body = (onNext, onError, onComplete) => {
+                        onNext(default(ArraySegment<byte>), null);
+                        onNext(default(ArraySegment<byte>), () => onComplete());
+                        return () => { };
+                    }
+                }, (status, headers, body) =>
+                {
+
+                },
+                e => { });
+            });
+
+            scheduler.Start();
+
+            Assert.That(gotOnNext, Is.EqualTo(2));
+            Assert.That(ack0, Is.Null);
+            Assert.That(ack1, Is.Not.Null);
+
+            // queues the continuation (which invokes onComplete) on the scheduler. onComplete should not be called yet.
+            ack1();
+            Assert.That(gotComplete, Is.False);
+
+            // now run the scheduler more. after its done onComplete should have been called.
+            scheduler.Start();
+            Assert.That(gotComplete, Is.True);
+        }
     }
 }

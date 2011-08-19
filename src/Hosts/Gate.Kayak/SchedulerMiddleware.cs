@@ -43,7 +43,7 @@ namespace Gate.Kayak
                     theScheduler.Post(() =>
                     {
                         oldBody(
-                            (data, ack) => onNext(data, () => scheduler.Post(ack)), 
+                            (data, ack) => onNext(data, ack == null ? (Action)ack : () => theScheduler.Post(ack)), 
                             onError, 
                             onComplete);
                     });
