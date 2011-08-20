@@ -1,4 +1,4 @@
-VERSION = "0.1.3"
+VERSION = "0.1.4"
 LICENSE_URL = "https://raw.github.com/owin/gate/HEAD/LICENSE.txt"
 PROJECT_URL = "https://github.com/owin/gate"
 PROJECT_FILES = FileList["src/**/*.csproj"]
