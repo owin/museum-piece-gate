@@ -50,7 +50,7 @@ namespace Gate.Tests.StartupTests
         {
             var builder = new AppBuilder();
             var app = builder
-                .GetExt().Run(TwoHundredFoo)
+                .Run(TwoHundredFoo)
                 .Build();
 
             var result = AppUtils.Call(app);
@@ -63,8 +63,8 @@ namespace Gate.Tests.StartupTests
         {
             var builder = new AppBuilder();
             var app = builder
-                .GetExt().Use(AddStatus, "Yarg")
-                .GetExt().Run(TwoHundredFoo)
+                .Use(AddStatus, "Yarg")
+                .Run(TwoHundredFoo)
                 .Build();
 
             var result = AppUtils.Call(app);
