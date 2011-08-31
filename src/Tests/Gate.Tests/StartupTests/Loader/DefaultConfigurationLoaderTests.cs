@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 namespace Gate.Tests.StartupTests.Loader
 {
-    using AppDelegate = Action< // app
+    using AppAction = Action< // app
         IDictionary<string, object>, // env
         Action< // result
             string, // status
@@ -148,7 +148,7 @@ namespace Gate.Tests.StartupTests.Loader
 
         static int _alphaCalls;
 
-        public static AppDelegate Alpha()
+        public static AppAction Alpha()
         {
             return (env, result, fault) => ++_alphaCalls;
         }
