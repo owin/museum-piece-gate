@@ -38,6 +38,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHandler.cs" />
+    <Compile Include="AppHandlerSingleton.cs" />
+    <Compile Include="Handler.cs" />
     <Compile Include="Module.cs" />
     <Compile Include="..\..\Gate.Helpers\Body.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
