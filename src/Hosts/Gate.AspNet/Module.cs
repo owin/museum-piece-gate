@@ -11,23 +11,31 @@ namespace Gate.AspNet
 {
     public class Module : IHttpModule
     {
+        private static AppHandler _appHandler;
+
         public void Dispose()
         {
         }
 
         public void Init(HttpApplication init)
         {
-            var configurationString = ConfigurationManager.AppSettings["Gate.Startup"];
-            var app = AppBuilder.BuildConfiguration(configurationString);
-            var appHandler = new AppHandler(app);
+            lock(typeof(Module))
+            {
+                if (_appHandler == null)
+                {
+                    var configurationString = ConfigurationManager.AppSettings["Gate.Startup"];
+                    var app = AppBuilder.BuildConfiguration(configurationString);
+                    _appHandler = new AppHandler(app);
+                }
+            }
 
             init.AddOnBeginRequestAsync(
                 (sender, args, callback, state) =>
                 {
                     var httpContext = ((HttpApplication) sender).Context;
-                    return appHandler.BeginProcessRequest(new HttpContextWrapper(httpContext), callback, state);
+                    return _appHandler.BeginProcessRequest(new HttpContextWrapper(httpContext), callback, state);
                 },
-                appHandler.EndProcessRequest);
+                _appHandler.EndProcessRequest);
         }
 
     }
