@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Configuration;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Web;
-using Gate;
+﻿using System.Web;
 
 namespace Gate.AspNet
 {
@@ -17,10 +10,8 @@ namespace Gate.AspNet
 
         public void Init(HttpApplication init)
         {
-            var configurationString = ConfigurationManager.AppSettings["Gate.Startup"];
-            var app = AppBuilder.BuildConfiguration(configurationString);
-            var appHandler = new AppHandler(app);
-
+            var appHandler = AppHandlerSingleton.Instance;
+            
             init.AddOnBeginRequestAsync(
                 (sender, args, callback, state) =>
                 {
@@ -29,6 +20,5 @@ namespace Gate.AspNet
                 },
                 appHandler.EndProcessRequest);
         }
-
     }
 }

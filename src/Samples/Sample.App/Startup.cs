@@ -15,10 +15,8 @@ namespace Sample.App
                 .Use(ContentType.Create, "text/html")
                 .Map("/wilson", Wilson.Create)
                 .Map("/wilsonasync", Wilson.Create, true)
-                .Run(Cascade.Create(
-                    DefaultPage.Create(),
-                    Delegates.ToDelegate(nancyOwinHost.ProcessRequest))
-                );
+                .Use(Cascade.Try, DefaultPage.Create())
+                .Run(nancyOwinHost.ProcessRequest);
         }
 
         public void ConfigurationVariation(IAppBuilder builder)
@@ -31,7 +29,7 @@ namespace Sample.App
                 .Map("/wilsonasync", map => map.Run<Wilson, bool>(true))
                 .Cascade(
                     cascade => cascade.Run<DefaultPage>(),
-                    cascade => cascade.GetExt().Run(new NancyOwinHost().ProcessRequest)
+                    cascade => cascade.Run(new NancyOwinHost().ProcessRequest)
                 );
         }
     }
