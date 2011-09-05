@@ -3,6 +3,21 @@ using System.Collections.Generic;
 
 namespace Gate
 {
+    using AppAction = Action< // app
+        IDictionary<string, object>, // env
+        Action< // result
+            string, // status
+            IDictionary<string, string>, // headers
+            Func< // body
+                Func< // next
+                    ArraySegment<byte>, // data
+                    Action, // continuation
+                    bool>, // async                    
+                Action<Exception>, // error
+                Action, // complete
+                Action>>, // cancel
+        Action<Exception>>; // error
+
     public static class RunExtensions
     {
         /*
@@ -46,6 +61,16 @@ namespace Gate
         {
             return builder.Run(() => factory(arg1, arg2, arg3, arg4));
         }
+
+        /* 
+         * Extension method to support passing in an already-built action.
+         */
+
+        public static IAppBuilder Run(this IAppBuilder builder, AppAction app)
+        {
+            return builder.Run(() => app.ToDelegate());
+        }
+
 
         /* 
          * Extension methods take a type implementing IApplication and its associated parameters.

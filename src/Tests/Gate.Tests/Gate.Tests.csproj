@@ -52,7 +52,6 @@
     <Compile Include="EnvironmentTests.cs" />
     <Compile Include="NotFoundTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StartupTests\AppBuilderExtTests.cs" />
     <Compile Include="StartupTests\AppBuilderTests.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="StartupTests\Loader\DefaultConfigurationLoaderTests.cs" />

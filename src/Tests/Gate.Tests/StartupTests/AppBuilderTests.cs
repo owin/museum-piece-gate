@@ -1,14 +1,41 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Text;
+using System.Collections.Generic;
 using Gate.TestHelpers;
 using NUnit.Framework;
 
 namespace Gate.Tests.StartupTests
 {
+    using AppAction = Action< // app
+        IDictionary<string, object>, // env
+        Action< // result
+            string, // status
+            IDictionary<string, string>, // headers
+            Func< // body
+                Func< // next
+                    ArraySegment<byte>, // data
+                    Action, // continuation
+                    bool>, // async                    
+                Action<Exception>, // error
+                Action, // complete
+                Action>>, // cancel
+        Action<Exception>>; // error
+
     [TestFixture]
     public class AppBuilderTests
     {
         // ReSharper disable InconsistentNaming
         static readonly AppDelegate TwoHundredFoo = (env, result, fault) => result("200 Foo", null, null);
+        
+        static readonly AppAction TwoHundredFooAction = (env, result, fault) => result(
+            "200 Foo",
+            new Dictionary<string, string> {{"Content-Type", "text/plain"}},
+            (next, error, complete) =>
+            {
+                next(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")), null);
+                complete();
+                return () => { };
+            });
 
         [Test]
         public void Build_returns_404_by_default()
@@ -234,6 +261,45 @@ namespace Gate.Tests.StartupTests
                 .Build();
             var callResult = AppUtils.Call(app);
             Assert.That(callResult.Status, Is.EqualTo("200 OKCustomStatus2"));
+        }
+        
+        static AppAction AddStatus(AppAction app, string append)
+        {
+            return (env, result, fault) =>
+                app(
+                    env,
+                    (status, headers, body) =>
+                        result(status + append, headers, body),
+                    fault);
+        }
+
+        [Test]
+        public void AppBuilder_has_action_overloads_to_support_pure_system_namespace_delegates()
+        {
+            var builder = new AppBuilder();
+            var app = builder
+                .Run(TwoHundredFooAction)
+                .Build();
+
+            Assert.That(app, Is.Not.Null);
+            var result = AppUtils.Call(app);
+            Assert.That(result.Status, Is.EqualTo("200 Foo"));
+            Assert.That(result.BodyText, Is.EqualTo("Hello Foo"));
+        }
+
+        [Test]
+        public void AppBuilder_has_action_overloads_which_support_use_and_parameters()
+        {
+            var builder = new AppBuilder();
+            var app = builder
+                .Use(AddStatus, "Yarg")
+                .Run(TwoHundredFooAction)
+                .Build();
+
+            Assert.That(app, Is.Not.Null);
+            var result = AppUtils.Call(app);
+            Assert.That(result.Status, Is.EqualTo("200 FooYarg"));
+            Assert.That(result.BodyText, Is.EqualTo("Hello Foo"));
         }
     }
 
