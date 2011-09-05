@@ -15,10 +15,8 @@ namespace Sample.App
                 .Use(ContentType.Create, "text/html")
                 .Map("/wilson", Wilson.Create)
                 .Map("/wilsonasync", Wilson.Create, true)
-                .Run(Cascade.Create(
-                    DefaultPage.Create(),
-                    Delegates.ToDelegate(nancyOwinHost.ProcessRequest))
-                );
+                .Use(Cascade.Try, DefaultPage.Create())
+                .Run(nancyOwinHost.ProcessRequest);
         }
 
         public void ConfigurationVariation(IAppBuilder builder)

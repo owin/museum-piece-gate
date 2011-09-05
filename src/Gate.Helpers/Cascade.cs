@@ -12,6 +12,15 @@ namespace Gate.Helpers
             return Create(apps);
         }
 
+        public static AppDelegate Try(AppDelegate fallback, AppDelegate app1)
+        {
+            return Create(new[] { app1, fallback});
+        }
+        public static AppDelegate Try(AppDelegate fallback, AppDelegate app1, AppDelegate app2)
+        {
+            return Create(new[] { app1, app2, fallback });
+        }
+
         public static AppDelegate Create(params AppDelegate[] apps)
         {
             return Create((IEnumerable<AppDelegate>) apps);
