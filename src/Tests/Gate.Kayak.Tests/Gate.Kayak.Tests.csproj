@@ -58,6 +58,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Gate.Builder\Gate.Builder.csproj">
+      <Project>{58DE0B07-29E3-4FDD-A516-F1296450B178}</Project>
+      <Name>Gate.Builder</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Gate.Owin\Gate.Owin.csproj">
       <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
       <Name>Gate.Owin</Name>

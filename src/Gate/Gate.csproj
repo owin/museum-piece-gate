@@ -35,19 +35,8 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Delegates.cs" />
     <Compile Include="Environment.cs" />
     <Compile Include="NotFound.cs" />
-    <Compile Include="Startup\Builder\AppBuilder.cs" />
-    <Compile Include="Startup\Builder\BaseBuilder.cs" />
-    <Compile Include="Startup\Builder\MapBuilder.cs" />
-    <Compile Include="Startup\Builder\IAppBuilder.cs" />
-    <Compile Include="Startup\Loader\DefaultConfigurationLoader.cs" />
-    <Compile Include="Startup\Loader\IConfigurationLoader.cs" />
-    <Compile Include="Startup\MapExtensions.cs" />
-    <Compile Include="Startup\RunExtensions.cs" />
-    <Compile Include="Startup\UseExtensions.cs" />
-    <Compile Include="UrlMapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
