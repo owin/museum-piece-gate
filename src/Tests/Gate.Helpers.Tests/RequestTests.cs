@@ -11,14 +11,14 @@ namespace Gate.Helpers.Tests
         [Test]
         public void QueryString_is_used_to_populate_Query_dictionary()
         {
-            var request = new Request() { QueryString = "foo=bar" };
+            var request = new Request(new Environment()) { QueryString = "foo=bar" };
             Assert.That(request.Query["foo"], Is.EqualTo("bar"));
         }
 
         [Test]
         public void Changing_QueryString_in_environment_reparses_Query_dictionary()
         {
-            var request = new Request() { QueryString = "foo=bar" };
+            var request = new Request(new Environment()) { QueryString = "foo=bar" };
             Assert.That(request.Query["foo"], Is.EqualTo("bar"));
 
             request.QueryString = "foo=quux";
@@ -28,14 +28,14 @@ namespace Gate.Helpers.Tests
         [Test]
         public void Body_is_used_to_populate_Post_dictionary()
         {
-            var request = new Request() {Method = "POST", Body = Body.FromText("foo=bar")};
+            var request = new Request(new Environment()) { Method = "POST", Body = Body.FromText("foo=bar") };
             Assert.That(request.Post["foo"], Is.EqualTo("bar"));
         }
 
         [Test]
         public void Changing_Body_in_environment_reparses_Post_dictionary()
         {
-            var request = new Request() {Method = "POST", Body = Body.FromText("foo=bar")};
+            var request = new Request(new Environment()) { Method = "POST", Body = Body.FromText("foo=bar") };
             Assert.That(request.Post["foo"], Is.EqualTo("bar"));
 
             request.Body = Body.FromText("foo=quux");

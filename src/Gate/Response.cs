@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Gate.Utils;
 
-namespace Gate.Helpers
+namespace Gate
 {
     public class Response
     {

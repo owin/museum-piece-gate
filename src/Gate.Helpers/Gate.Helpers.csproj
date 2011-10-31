@@ -47,10 +47,7 @@
     <Compile Include="ContentType.cs" />
     <Compile Include="InputStream.cs" />
     <Compile Include="OutputStream.cs" />
-    <Compile Include="ParamDictionary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Request.cs" />
-    <Compile Include="Response.cs" />
     <Compile Include="RewindableBody.cs" />
     <Compile Include="ShowExceptions.cs" />
     <Compile Include="ShowExceptions.View.cs">
@@ -61,7 +58,6 @@
     <Compile Include="Signal.cs" />
     <Compile Include="Utils\StreamAwaiter.cs" />
     <Compile Include="Wilson.cs" />
-    <Compile Include="Spool.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gate.Builder\Gate.Builder.csproj">

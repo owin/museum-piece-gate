@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Gate
 {
-    public class NotFound 
+    public static class NotFound 
     {
         static readonly ArraySegment<byte> Body = new ArraySegment<byte>(Encoding.UTF8.GetBytes(@"
 <!DOCTYPE HTML PUBLIC ""-//IETF//DTD HTML 2.0//EN"">

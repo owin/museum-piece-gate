@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using Gate.Utils;
 
-namespace Gate.Helpers
+namespace Gate
 {
+    using BodyAction = Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>;
+    
     public class Request : Environment
     {
         static readonly char[] CommaSemicolon = new[] {',', ';'};
 
-        public Request() : base() { }
         public Request(IDictionary<string, object> env) : base(env)
         {
         }
@@ -87,7 +90,7 @@ namespace Gate.Helpers
                     if (!ReferenceEquals(Get<object>("Gate.Helpers.Request.Post:input"), input) ||
                         Get<IDictionary<string, string>>("Gate.Helpers.Request.Post") == null)
                     {
-                        var text = input.ToText(Encoding.UTF8);
+                        var text = ToText(input, Encoding.UTF8);
                         this["Gate.Helpers.Request.Post:input"] = input;
                         this["Gate.Helpers.Request.Post:text"] = text;
                         this["Gate.Helpers.Request.Post"] = ParamDictionary.Parse(text);
@@ -98,6 +101,32 @@ namespace Gate.Helpers
                 return ParamDictionary.Parse("");
             }
         }
+
+
+        static string ToText(BodyAction body, Encoding encoding)
+        {
+            var sb = new StringBuilder();
+            var wait = new ManualResetEvent(false);
+            Exception exception = null;
+            body.Invoke(
+                (data, _) =>
+                {
+                    sb.Append(encoding.GetString(data.Array, data.Offset, data.Count));
+                    return false;
+                },
+                ex =>
+                {
+                    exception = ex;
+                    wait.Set();
+                },
+                () => wait.Set());
+
+            wait.WaitOne();
+            if (exception != null)
+                throw new AggregateException(exception);
+            return sb.ToString();
+        }
+
 
         public string HostWithPort
         {

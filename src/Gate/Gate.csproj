@@ -36,11 +36,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Environment.cs" />
+    <Compile Include="Utils\ParamDictionary.cs" />
+    <Compile Include="Utils\Spool.cs" />
     <Compile Include="NotFound.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <Compile Include="Request.cs" />
+    <Compile Include="Response.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gate.Owin\Gate.Owin.csproj">
