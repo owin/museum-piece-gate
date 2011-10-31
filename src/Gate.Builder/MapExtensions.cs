@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Gate.Builder.Implementation;
 
-namespace Gate
+namespace Gate.Builder
 {
     public static class MapExtensions
     {

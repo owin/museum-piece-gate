@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Gate.Builder.Implementation;
 
-namespace Gate
+namespace Gate.Builder.Implementation
 {
     public class UrlMapper
     {

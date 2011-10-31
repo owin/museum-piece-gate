@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Gate.Builder.Implementation;
 
-namespace Gate
+namespace Gate.Builder.Implementation
 {
     class BaseBuilder : IAppBuilder
     {

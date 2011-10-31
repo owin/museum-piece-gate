@@ -1,6 +1,8 @@
 ﻿using System;
+using Gate.Builder.Implementation;
+using Gate.Builder.Loader;
 
-namespace Gate
+namespace Gate.Builder
 {
     public class AppBuilder : IAppBuilder
     {

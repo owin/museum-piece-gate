@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Gate.Builder.Implementation;
 using Gate.Helpers;
 using Gate.TestHelpers;
 using NUnit.Framework;

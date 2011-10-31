@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using Gate.Builder;
 using Gate.TestHelpers;
 using NUnit.Framework;
 

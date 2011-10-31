@@ -1,4 +1,6 @@
 ﻿
+using Gate.Builder;
+
 namespace Gate.Tests
 {
     public class Startup

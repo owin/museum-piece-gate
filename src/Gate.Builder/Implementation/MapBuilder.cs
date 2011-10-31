@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Gate
+namespace Gate.Builder.Implementation
 {
     class MapBuilder : IAppBuilder
     {

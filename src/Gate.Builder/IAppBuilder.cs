@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Gate
+namespace Gate.Builder
 {
     public interface IAppBuilder
     {

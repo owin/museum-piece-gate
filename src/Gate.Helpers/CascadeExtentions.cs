@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Gate.Builder;
 
 namespace Gate.Helpers
 {

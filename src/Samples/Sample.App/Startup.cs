@@ -1,4 +1,5 @@
 ﻿using Gate;
+using Gate.Builder;
 using Gate.Helpers;
 using Nancy.Hosting.Owin;
 

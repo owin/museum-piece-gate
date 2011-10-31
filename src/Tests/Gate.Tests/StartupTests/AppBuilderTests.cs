@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Collections.Generic;
+using Gate.Builder;
 using Gate.TestHelpers;
 using NUnit.Framework;
 

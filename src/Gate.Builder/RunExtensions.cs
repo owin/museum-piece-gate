@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Gate
+namespace Gate.Builder
 {
     using AppAction = Action< // app
         IDictionary<string, object>, // env
