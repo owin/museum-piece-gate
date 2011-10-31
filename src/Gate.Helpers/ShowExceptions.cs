@@ -7,14 +7,9 @@ using System.Text;
 
 namespace Gate.Helpers
 {
-    public partial class ShowExceptions : IMiddleware
+    public partial class ShowExceptions
     {
-        AppDelegate IMiddleware.Create(AppDelegate app)
-        {
-            return Create(app);
-        }
-
-        public static AppDelegate Create(AppDelegate app)
+        public static AppDelegate Middleware(AppDelegate app)
         {
             return (env, result, fault) =>
             {

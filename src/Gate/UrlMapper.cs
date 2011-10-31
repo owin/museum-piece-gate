@@ -16,7 +16,7 @@ namespace Gate
 
         public static AppDelegate Create(IDictionary<string, AppDelegate> map)
         {
-            return Create(NotFound.Create(), map);
+            return Create(NotFound.App(), map);
         }
 
         public static AppDelegate Create(AppDelegate app, IDictionary<string, AppDelegate> map)

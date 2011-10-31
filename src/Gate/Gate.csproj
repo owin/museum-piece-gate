@@ -38,9 +38,6 @@
     <Compile Include="Delegates.cs" />
     <Compile Include="Environment.cs" />
     <Compile Include="NotFound.cs" />
-    <Compile Include="IApplication.cs" />
-    <Compile Include="IMiddleware.cs" />
-    <Compile Include="Startup\AppBuilderArgs.cs" />
     <Compile Include="Startup\Builder\AppBuilder.cs" />
     <Compile Include="Startup\Builder\BaseBuilder.cs" />
     <Compile Include="Startup\Builder\MapBuilder.cs" />

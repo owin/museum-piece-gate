@@ -23,7 +23,7 @@ namespace Gate
         {
             return _stack
                 .Reverse()
-                .Aggregate(NotFound.Create(), (app, factory) => factory(app));
+                .Aggregate(NotFound.App(), (app, factory) => factory(app));
         }
     }
 }

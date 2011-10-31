@@ -72,34 +72,5 @@ namespace Gate
         }
 
 
-        /* 
-         * Extension methods take a type implementing IApplication and its associated parameters.
-         */
-
-        public static IAppBuilder Run<TApplication>(this IAppBuilder builder) where TApplication : IApplication, new()
-        {
-            return builder.Run(new TApplication().Create);
-        }
-
-        public static IAppBuilder Run<TApplication, T1>(this IAppBuilder builder, T1 arg1) where TApplication : IApplication<T1>, new()
-        {
-            return builder.Run(() => new TApplication().Create(arg1));
-        }
-
-        public static IAppBuilder Run<TApplication, T1, T2>(this IAppBuilder builder, T1 arg1, T2 arg2) where TApplication : IApplication<T1, T2>, new()
-        {
-            return builder.Run(() => new TApplication().Create(arg1, arg2));
-        }
-
-        public static IAppBuilder Run<TApplication, T1, T2, T3>(this IAppBuilder builder, T1 arg1, T2 arg2, T3 arg3) where TApplication : IApplication<T1, T2, T3>, new()
-        {
-            return builder.Run(() => new TApplication().Create(arg1, arg2, arg3));
-        }
-
-        public static IAppBuilder Run<TApplication, T1, T2, T3, T4>(this IAppBuilder builder, T1 arg1, T2 arg2, T3 arg3, T4 arg4) where TApplication : IApplication<T1, T2, T3, T4>, new()
-        {
-            return builder.Run(() => new TApplication().Create(arg1, arg2, arg3, arg4));
-        }
-
     }
 }

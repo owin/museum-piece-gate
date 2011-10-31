@@ -3,9 +3,9 @@ using Gate.Helpers;
 
 namespace Sample.App
 {
-    public class DefaultPage : IApplication
+    public class DefaultPage 
     {
-        public static AppDelegate Create()
+        public static AppDelegate App()
         {
             return (env, result, fault) =>
             {
@@ -25,11 +25,6 @@ namespace Sample.App
                     NotFound.Invoke(env, result, fault);
                 }
             };
-        }
-
-        AppDelegate IApplication.Create()
-        {
-            return Create();
         }
     }
 }

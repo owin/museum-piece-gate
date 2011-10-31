@@ -16,7 +16,7 @@ namespace Gate.Helpers.Tests
             app.Headers["Content-Type"] = "text/plain";
 
             var builder = new AppBuilder()
-                .Use<ShowExceptions>()
+                .Use(ShowExceptions.Middleware)
                 .Run(app.AppDelegate);
 
             var host = new FakeHost(builder.Build());
@@ -33,7 +33,7 @@ namespace Gate.Helpers.Tests
             var app = new FakeApp(new ApplicationException("Kaboom"));
 
             var builder = new AppBuilder()
-                .Use<ShowExceptions>()
+                .Use(ShowExceptions.Middleware)
                 .Run(app.AppDelegate);
 
             var host = new FakeHost(builder.Build());
@@ -59,7 +59,7 @@ namespace Gate.Helpers.Tests
             };
 
             var builder = new AppBuilder()
-                .Use<ShowExceptions>()
+                .Use(ShowExceptions.Middleware)
                 .Run(app.AppDelegate);
 
             var host = new FakeHost(builder.Build());

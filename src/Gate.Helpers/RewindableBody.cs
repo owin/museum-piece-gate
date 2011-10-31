@@ -7,17 +7,12 @@ using System.Threading;
 
 namespace Gate.Helpers
 {
-    public class RewindableBody : IMiddleware
+    public class RewindableBody 
     {
         static readonly MethodInfo RewindableBodyInvoke = typeof (RewindableBody).GetMethod("Invoke");
         const int DefaultTempFileThresholdBytes = 64 << 10; //64k
 
-        AppDelegate IMiddleware.Create(AppDelegate app)
-        {
-            return Create(app);
-        }
-
-        public static AppDelegate Create(AppDelegate app)
+        public static AppDelegate Middleware(AppDelegate app)
         {
             return (env, result, fault) =>
             {

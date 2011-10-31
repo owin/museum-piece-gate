@@ -7,24 +7,14 @@ using Timer = System.Timers.Timer;
 namespace Gate.Helpers
 {
 
-    public class Wilson : IApplication, IApplication<bool>
+    public class Wilson 
     {
-        AppDelegate IApplication.Create()
+        public static AppDelegate App(bool async)
         {
-            return Create();
+            return async ? AsyncApp() : App();
         }
 
-        AppDelegate IApplication<bool>.Create(bool async)
-        {
-            return async ? CreateAsync() : Create();
-        }
-
-        public static AppDelegate Create(bool async)
-        {
-            return async ? CreateAsync() : Create();
-        }
-
-        public static AppDelegate Create()
+        public static AppDelegate App()
         {
             return (env, result, fault) =>
             {
@@ -55,7 +45,7 @@ namespace Gate.Helpers
             };
         }
 
-        public static AppDelegate CreateAsync()
+        public static AppDelegate AsyncApp()
         {
             return (env, result, fault) =>
             {

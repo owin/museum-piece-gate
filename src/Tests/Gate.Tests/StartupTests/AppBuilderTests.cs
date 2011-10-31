@@ -157,111 +157,55 @@ namespace Gate.Tests.StartupTests
         [Test]
         public void Class_with_IApplication_can_be_used_by_AppBuilder()
         {
-            var withIApplication = new WithIApplication();
+            var withApplication = new WithApplication();
             var app = new AppBuilder()
-                .Run(withIApplication.Create)
+                .Run(withApplication.App)
                 .Build();
             var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 WithIApplication"));
+            Assert.That(callResult.Status, Is.EqualTo("200 WithApplication"));
         }
 
         [Test]
         public void Class_with_IApplication_can_have_parameters()
         {
-            var withIApplication2 = new WithIApplication();
+            var withApplication = new WithApplication();
             var app = new AppBuilder()
-                .Run(withIApplication2.Create, "200 WithIApplication", "Foo!")
+                .Run(withApplication.App, "200 WithApplication", "Foo!")
                 .Build();
             var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 WithIApplication"));
+            Assert.That(callResult.Status, Is.EqualTo("200 WithApplication"));
         }
 
-        [Test]
-        public void Run_extension_methods_enable_you_to_provide_type_instead_of_create_instance()
-        {
-            var app = new AppBuilder()
-                .Run<WithIApplication>()
-                .Build();
-            var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 WithIApplication"));
-        }
 
-        [Test]
-        public void Run_extension_methods_for_type_also_accept_parameters()
-        {
-            var app = new AppBuilder()
-                .Run<WithIApplication, string, string>("200 CustomStatus", "Foo!")
-                .Build();
-            var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 CustomStatus"));
-        }
 
-        [Test]
-        public void Run_extension_method_with_extra_call_to_take_parameters()
-        {
-            var app = new AppBuilder()
-                .WithArgs("200 CustomStatus2", "Foo!").Run<WithIApplication>()
-                .Build();
-            var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 CustomStatus2"));
-        }
 
         [Test]
         public void Class_with_IMiddleware_can_be_used_by_AppBuilder()
         {
-            var withIMiddleware = new WithIMiddleware();
+            var withMiddleware = new WithMiddleware();
             var app = new AppBuilder()
-                .Use(withIMiddleware.Create)
+                .Use(withMiddleware.Middleware)
                 .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(), "Hello world"))
                 .Build();
             var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 OKWithIMiddleware"));
+            Assert.That(callResult.Status, Is.EqualTo("200 OKWithMiddleware"));
         }
 
         [Test]
         public void Class_with_IMiddleware_can_have_parameters()
         {
-            var withIMiddleware2 = new WithIMiddleware();
+            var withMiddleware2 = new WithMiddleware();
             var app = new AppBuilder()
-                .Use(withIMiddleware2.Create, "AppendCustom")
+                .Use(withMiddleware2.Middleware, "AppendCustom")
                 .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(), "Hello world"))
                 .Build();
             var callResult = AppUtils.Call(app);
             Assert.That(callResult.Status, Is.EqualTo("200 OKAppendCustom"));
         }
 
-        [Test]
-        public void Use_extension_methods_enable_you_to_provide_type_instead_of_create_instance()
-        {
-            var app = new AppBuilder()
-                .Use<WithIMiddleware>()
-                .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(), "Hello world"))
-                .Build();
-            var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 OKWithIMiddleware"));
-        }
 
-        [Test]
-        public void Use_extension_methods_for_type_also_accept_parameters()
-        {
-            var app = new AppBuilder()
-                .Use<WithIMiddleware, string>("CustomStatus")
-                .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(), "Hello world"))
-                .Build();
-            var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 OKCustomStatus"));
-        }
 
-        [Test]
-        public void Use_extension_method_with_extra_call_to_take_parameters()
-        {
-            var app = new AppBuilder()
-                .WithArgs("CustomStatus2").Use<WithIMiddleware>()
-                .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(), "Hello world"))
-                .Build();
-            var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 OKCustomStatus2"));
-        }
+
         
         static AppAction AddStatus(AppAction app, string append)
         {
@@ -303,27 +247,27 @@ namespace Gate.Tests.StartupTests
         }
     }
 
-    internal class WithIApplication : IApplication, IApplication<string, string>
+    internal class WithApplication 
     {
-        public AppDelegate Create()
+        public AppDelegate App()
         {
-            return Create("200 WithIApplication", "Hello World");
+            return App("200 WithApplication", "Hello World");
         }
 
-        public AppDelegate Create(string status, string content)
+        public AppDelegate App(string status, string content)
         {
             return AppUtils.Simple(status, new Dictionary<string, string>(), content);
         }
     }
 
-    internal class WithIMiddleware : IMiddleware, IMiddleware<string>
+    internal class WithMiddleware 
     {
-        public AppDelegate Create(AppDelegate app)
+        public AppDelegate Middleware(AppDelegate app)
         {
-            return Create(app, "WithIMiddleware");
+            return Middleware(app, "WithMiddleware");
         }
 
-        public AppDelegate Create(AppDelegate app, string appendStatus)
+        public AppDelegate Middleware(AppDelegate app, string appendStatus)
         {
             return (env, result, fault) =>
                 app(

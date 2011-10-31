@@ -23,7 +23,7 @@ namespace Gate.Tests
         {
             var map = new Dictionary<string, AppDelegate>
             {
-                {"/foo", Wilson.Create()}
+                {"/foo", Wilson.App()}
             };
             var app = UrlMapper.Create(map);
 

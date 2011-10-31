@@ -38,6 +38,8 @@ namespace Gate.Kayak.Tests
     [TestFixture]
     public class SchedulerMiddlewareTests
     {
+        static Func<int, int, int> _workaround;
+
         [Test]
         public void Response_stream_is_rebuffered()
         {
