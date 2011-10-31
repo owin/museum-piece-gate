@@ -2,6 +2,7 @@
 using System.Text;
 using System.Collections.Generic;
 using Gate.Builder;
+using Gate.Owin;
 using Gate.TestHelpers;
 using NUnit.Framework;
 

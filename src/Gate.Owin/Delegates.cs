@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Gate
+namespace Gate.Owin
 {
     public delegate void AppDelegate(
         IDictionary<string, object> env,

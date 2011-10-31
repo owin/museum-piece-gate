@@ -1,4 +1,5 @@
 ﻿using System;
+using Gate.Owin;
 
 namespace Gate.Builder
 {

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Xml.Linq;
 using Gate.Helpers;
+using Gate.Owin;
 
 namespace Gate.TestHelpers
 {

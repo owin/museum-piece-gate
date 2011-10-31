@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Gate.Builder.Implementation;
+using Gate.Owin;
 
 namespace Gate.Builder
 {
