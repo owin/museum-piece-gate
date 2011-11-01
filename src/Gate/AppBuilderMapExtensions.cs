@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using Gate.Builder.Implementation;
+using Gate.Builder;
 using Gate.Owin;
 
-namespace Gate.Builder
+namespace Gate
 {
-    public static class MapExtensions
+    public static class AppBuilderMapExtensions
     {
         /*
          * Fundamental definition of Map.

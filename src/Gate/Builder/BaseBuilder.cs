@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Gate.Owin;
 
-namespace Gate.Builder.Implementation
+namespace Gate.Builder
 {
     class BaseBuilder : IAppBuilder
     {

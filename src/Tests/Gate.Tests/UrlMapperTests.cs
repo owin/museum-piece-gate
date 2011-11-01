@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Gate.Builder.Implementation;
+using Gate.Builder;
 using Gate.Helpers;
 using Gate.Owin;
 using Gate.TestHelpers;

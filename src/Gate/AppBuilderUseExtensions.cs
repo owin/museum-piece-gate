@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Gate.Owin;
 
-namespace Gate.Builder
+namespace Gate
 {
     using AppAction = Action< // app
          IDictionary<string, object>, // env
@@ -19,7 +19,7 @@ namespace Gate.Builder
                  Action>>, // cancel
          Action<Exception>>; // error
 
-    public static class UseExtensions
+    public static class AppBuilderUseExtensions
     {
         /* 
          * Extension methods take an AppDelegate factory func and its associated parameters.

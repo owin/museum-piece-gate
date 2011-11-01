@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Gate.Owin;
 
-namespace Gate.Builder
+namespace Gate
 {
     using AppAction = Action< // app
         IDictionary<string, object>, // env
@@ -19,7 +19,7 @@ namespace Gate.Builder
                 Action>>, // cancel
         Action<Exception>>; // error
 
-    public static class RunExtensions
+    public static class AppBuilderRunExtensions
     {
         /*
          * Fundamental definition of Run.

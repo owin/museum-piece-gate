@@ -23,7 +23,7 @@ namespace Sample.App
                 }
                 else
                 {
-                    NotFound.Invoke(env, result, fault);
+                    NotFound.Call(env, result, fault);
                 }
             };
         }

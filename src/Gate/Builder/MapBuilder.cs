@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Gate.Owin;
 
-namespace Gate.Builder.Implementation
+namespace Gate.Builder
 {
     class MapBuilder : IAppBuilder
     {
