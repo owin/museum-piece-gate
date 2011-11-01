@@ -31,12 +31,17 @@ namespace Gate.Builder
 
         public AppBuilder()
         {
-            _builder = new BaseBuilder();
+            _builder = new BaseBuilder(BuildConfiguration);
         }
 
         public IAppBuilder Use(Func<AppDelegate, AppDelegate> middleware)
         {
             return _builder.Use(middleware);
+        }
+
+        public AppDelegate Fork(Action<IAppBuilder> fork)
+        {
+            return _builder.Fork(fork);
         }
 
         public AppDelegate Build()

@@ -27,6 +27,11 @@ namespace Gate.Builder
             return _builder.Use(middleware);
         }
 
+        public AppDelegate Fork(Action<IAppBuilder> fork)
+        {
+            return _builder.Fork(fork);
+        }
+
         public AppDelegate Build()
         {
             return _builder.Build();

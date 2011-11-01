@@ -27,11 +27,19 @@ namespace Gate.Tests.StartupTests
     public class AppBuilderTests
     {
         // ReSharper disable InconsistentNaming
-        static readonly AppDelegate TwoHundredFoo = (env, result, fault) => result("200 Foo", null, null);
-        
+        static readonly AppDelegate TwoHundredFoo = (env, result, fault) => result(
+            "200 Foo",
+            new Dictionary<string, string> { { "Content-Type", "text/plain" } },
+            (next, error, complete) =>
+            {
+                next(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")), null);
+                complete();
+                return () => { };
+            });
+
         static readonly AppAction TwoHundredFooAction = (env, result, fault) => result(
             "200 Foo",
-            new Dictionary<string, string> {{"Content-Type", "text/plain"}},
+            new Dictionary<string, string> { { "Content-Type", "text/plain" } },
             (next, error, complete) =>
             {
                 next(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")), null);
@@ -98,7 +106,7 @@ namespace Gate.Tests.StartupTests
             app(null, (status, headers, body) => stat = status, ex => { });
             Assert.That(stat, Is.EqualTo("200 Foo"));
         }
-        
+
         static string Execute(AppDelegate app)
         {
             var stat = "";
@@ -208,7 +216,7 @@ namespace Gate.Tests.StartupTests
 
 
 
-        
+
         static AppAction AddStatus(AppAction app, string append)
         {
             return (env, result, fault) =>
@@ -247,9 +255,57 @@ namespace Gate.Tests.StartupTests
             Assert.That(result.Status, Is.EqualTo("200 FooYarg"));
             Assert.That(result.BodyText, Is.EqualTo("Hello Foo"));
         }
+
+        [Test]
+        public void Use_middleware_inside_calls_to_map_only_apply_to_requests_that_go_inside_map()
+        {
+            var builder = new AppBuilder();
+            var app = builder
+                .Use(AddStatus, " Outer")
+                .Map("/here", map => map
+                    .Use(AddStatus, " Mapped")
+                    .Run(TwoHundredFoo))
+                .Use(AddStatus, " Inner")
+                .Run(TwoHundredFoo)
+                .Build();
+
+            var resultThere = AppUtils.Call(app, "/there");
+            var resultHere = AppUtils.Call(app, "/here");
+
+            Assert.That(resultThere.Status, Is.EqualTo("200 Foo Inner Outer"));
+            Assert.That(resultHere.Status, Is.EqualTo("200 Foo Mapped Outer"));
+        }
+
+        [Test]
+        public void Use_middleware_between_calls_to_map_only_apply_to_requests_that_reach_later_maps()
+        {
+            var builder = new AppBuilder();
+            builder
+                .Use(AddStatus, " Outer")
+                .Map("/here1", map => map
+                    .Use(AddStatus, " Mapped1")
+                    .Run(TwoHundredFoo))
+                .Use(AddStatus, " Between")
+                .Map("/here2", map => map
+                    .Use(AddStatus, " Mapped2")
+                    .Run(TwoHundredFoo))
+                .Use(AddStatus, " Inner")
+                .Run(TwoHundredFoo);
+            
+            var app = builder.Build();
+
+            var resultThere = AppUtils.Call(app, "/there");
+            var resultHere1 = AppUtils.Call(app, "/here1");
+            var resultHere2 = AppUtils.Call(app, "/here2");
+
+            Assert.That(resultThere.Status, Is.EqualTo("200 Foo Inner Between Outer"));
+            Assert.That(resultHere1.Status, Is.EqualTo("200 Foo Mapped1 Outer"));
+            Assert.That(resultHere2.Status, Is.EqualTo("200 Foo Mapped2 Between Outer"));
+        }
+
     }
 
-    internal class WithApplication 
+    internal class WithApplication
     {
         public AppDelegate App()
         {
@@ -262,7 +318,7 @@ namespace Gate.Tests.StartupTests
         }
     }
 
-    internal class WithMiddleware 
+    internal class WithMiddleware
     {
         public AppDelegate Middleware(AppDelegate app)
         {
