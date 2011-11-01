@@ -35,6 +35,18 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Builder\AppBuilder.cs" />
+    <Compile Include="Builder\Delegates.cs" />
+    <Compile Include="Builder\IAppBuilder.cs" />
+    <Compile Include="Builder\Implementation\BaseBuilder.cs" />
+    <Compile Include="Builder\Implementation\MapBuilder.cs" />
+    <Compile Include="Builder\Implementation\NotFound.cs" />
+    <Compile Include="Builder\Implementation\UrlMapper.cs" />
+    <Compile Include="Builder\Loader\DefaultConfigurationLoader.cs" />
+    <Compile Include="Builder\Loader\IConfigurationLoader.cs" />
+    <Compile Include="Builder\MapExtensions.cs" />
+    <Compile Include="Builder\RunExtensions.cs" />
+    <Compile Include="Builder\UseExtensions.cs" />
     <Compile Include="Environment.cs" />
     <Compile Include="Utils\ParamDictionary.cs" />
     <Compile Include="Utils\Spool.cs" />

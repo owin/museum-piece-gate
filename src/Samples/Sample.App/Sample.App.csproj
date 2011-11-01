@@ -53,10 +53,6 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Gate.Builder\Gate.Builder.csproj">
-      <Project>{58DE0B07-29E3-4FDD-A516-F1296450B178}</Project>
-      <Name>Gate.Builder</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Gate.Helpers\Gate.Helpers.csproj">
       <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
       <Name>Gate.Helpers</Name>

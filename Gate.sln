@@ -39,8 +39,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Owin", "src\Gate.Owin\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Middleware", "src\Gate.Middleware\Gate.Middleware.csproj", "{60C36D8F-BE53-4733-BD92-CFA103D46020}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Builder", "src\Gate.Builder\Gate.Builder.csproj", "{58DE0B07-29E3-4FDD-A516-F1296450B178}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -211,16 +209,6 @@ Global
 		{60C36D8F-BE53-4733-BD92-CFA103D46020}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{60C36D8F-BE53-4733-BD92-CFA103D46020}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{60C36D8F-BE53-4733-BD92-CFA103D46020}.Release|x86.ActiveCfg = Release|Any CPU
-		{58DE0B07-29E3-4FDD-A516-F1296450B178}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{58DE0B07-29E3-4FDD-A516-F1296450B178}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{58DE0B07-29E3-4FDD-A516-F1296450B178}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{58DE0B07-29E3-4FDD-A516-F1296450B178}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{58DE0B07-29E3-4FDD-A516-F1296450B178}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{58DE0B07-29E3-4FDD-A516-F1296450B178}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{58DE0B07-29E3-4FDD-A516-F1296450B178}.Release|Any CPU.Build.0 = Release|Any CPU
-		{58DE0B07-29E3-4FDD-A516-F1296450B178}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{58DE0B07-29E3-4FDD-A516-F1296450B178}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{58DE0B07-29E3-4FDD-A516-F1296450B178}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
