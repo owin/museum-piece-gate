@@ -19,14 +19,14 @@ namespace Gate
     /// </summary>
     public class Environment : IDictionary<string, object>
     {
-        public static readonly string RequestMethodKey = "owin.RequestMethod";
-        public static readonly string RequestPathBaseKey = "owin.RequestPathBase";
-        public static readonly string RequestPathKey = "owin.RequestPath";
-        public static readonly string RequestQueryStringKey = "owin.RequestQueryString";
-        public static readonly string RequestBodyKey = "owin.RequestBody";
-        public static readonly string RequestHeadersKey = "owin.RequestHeaders";
-        public static readonly string RequestSchemeKey = "owin.RequestScheme";
-        public static readonly string VersionKey = "owin.Version";
+        public const string RequestMethodKey = "owin.RequestMethod";
+        public const string RequestPathBaseKey = "owin.RequestPathBase";
+        public const string RequestPathKey = "owin.RequestPath";
+        public const string RequestQueryStringKey = "owin.RequestQueryString";
+        public const string RequestBodyKey = "owin.RequestBody";
+        public const string RequestHeadersKey = "owin.RequestHeaders";
+        public const string RequestSchemeKey = "owin.RequestScheme";
+        public const string VersionKey = "owin.Version";
 
         public IDictionary<string, object> Env { get; set; }
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using Gate.Helpers;
+using Gate.Owin;
 using NUnit.Framework;
 
 namespace Gate.Helpers.Tests

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Text;
 using System.Collections.Generic;
+using Gate.Builder;
+using Gate.Owin;
 using Gate.TestHelpers;
 using NUnit.Framework;
 
@@ -25,11 +27,19 @@ namespace Gate.Tests.StartupTests
     public class AppBuilderTests
     {
         // ReSharper disable InconsistentNaming
-        static readonly AppDelegate TwoHundredFoo = (env, result, fault) => result("200 Foo", null, null);
-        
+        static readonly AppDelegate TwoHundredFoo = (env, result, fault) => result(
+            "200 Foo",
+            new Dictionary<string, string> { { "Content-Type", "text/plain" } },
+            (next, error, complete) =>
+            {
+                next(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")), null);
+                complete();
+                return () => { };
+            });
+
         static readonly AppAction TwoHundredFooAction = (env, result, fault) => result(
             "200 Foo",
-            new Dictionary<string, string> {{"Content-Type", "text/plain"}},
+            new Dictionary<string, string> { { "Content-Type", "text/plain" } },
             (next, error, complete) =>
             {
                 next(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")), null);
@@ -96,7 +106,7 @@ namespace Gate.Tests.StartupTests
             app(null, (status, headers, body) => stat = status, ex => { });
             Assert.That(stat, Is.EqualTo("200 Foo"));
         }
-        
+
         static string Execute(AppDelegate app)
         {
             var stat = "";
@@ -157,112 +167,56 @@ namespace Gate.Tests.StartupTests
         [Test]
         public void Class_with_IApplication_can_be_used_by_AppBuilder()
         {
-            var withIApplication = new WithIApplication();
+            var withApplication = new WithApplication();
             var app = new AppBuilder()
-                .Run(withIApplication.Create)
+                .Run(withApplication.App)
                 .Build();
             var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 WithIApplication"));
+            Assert.That(callResult.Status, Is.EqualTo("200 WithApplication"));
         }
 
         [Test]
         public void Class_with_IApplication_can_have_parameters()
         {
-            var withIApplication2 = new WithIApplication();
+            var withApplication = new WithApplication();
             var app = new AppBuilder()
-                .Run(withIApplication2.Create, "200 WithIApplication", "Foo!")
+                .Run(withApplication.App, "200 WithApplication", "Foo!")
                 .Build();
             var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 WithIApplication"));
+            Assert.That(callResult.Status, Is.EqualTo("200 WithApplication"));
         }
 
-        [Test]
-        public void Run_extension_methods_enable_you_to_provide_type_instead_of_create_instance()
-        {
-            var app = new AppBuilder()
-                .Run<WithIApplication>()
-                .Build();
-            var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 WithIApplication"));
-        }
 
-        [Test]
-        public void Run_extension_methods_for_type_also_accept_parameters()
-        {
-            var app = new AppBuilder()
-                .Run<WithIApplication, string, string>("200 CustomStatus", "Foo!")
-                .Build();
-            var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 CustomStatus"));
-        }
 
-        [Test]
-        public void Run_extension_method_with_extra_call_to_take_parameters()
-        {
-            var app = new AppBuilder()
-                .WithArgs("200 CustomStatus2", "Foo!").Run<WithIApplication>()
-                .Build();
-            var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 CustomStatus2"));
-        }
 
         [Test]
         public void Class_with_IMiddleware_can_be_used_by_AppBuilder()
         {
-            var withIMiddleware = new WithIMiddleware();
+            var withMiddleware = new WithMiddleware();
             var app = new AppBuilder()
-                .Use(withIMiddleware.Create)
+                .Use(withMiddleware.Middleware)
                 .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(), "Hello world"))
                 .Build();
             var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 OKWithIMiddleware"));
+            Assert.That(callResult.Status, Is.EqualTo("200 OKWithMiddleware"));
         }
 
         [Test]
         public void Class_with_IMiddleware_can_have_parameters()
         {
-            var withIMiddleware2 = new WithIMiddleware();
+            var withMiddleware2 = new WithMiddleware();
             var app = new AppBuilder()
-                .Use(withIMiddleware2.Create, "AppendCustom")
+                .Use(withMiddleware2.Middleware, "AppendCustom")
                 .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(), "Hello world"))
                 .Build();
             var callResult = AppUtils.Call(app);
             Assert.That(callResult.Status, Is.EqualTo("200 OKAppendCustom"));
         }
 
-        [Test]
-        public void Use_extension_methods_enable_you_to_provide_type_instead_of_create_instance()
-        {
-            var app = new AppBuilder()
-                .Use<WithIMiddleware>()
-                .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(), "Hello world"))
-                .Build();
-            var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 OKWithIMiddleware"));
-        }
 
-        [Test]
-        public void Use_extension_methods_for_type_also_accept_parameters()
-        {
-            var app = new AppBuilder()
-                .Use<WithIMiddleware, string>("CustomStatus")
-                .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(), "Hello world"))
-                .Build();
-            var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 OKCustomStatus"));
-        }
 
-        [Test]
-        public void Use_extension_method_with_extra_call_to_take_parameters()
-        {
-            var app = new AppBuilder()
-                .WithArgs("CustomStatus2").Use<WithIMiddleware>()
-                .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(), "Hello world"))
-                .Build();
-            var callResult = AppUtils.Call(app);
-            Assert.That(callResult.Status, Is.EqualTo("200 OKCustomStatus2"));
-        }
-        
+
+
         static AppAction AddStatus(AppAction app, string append)
         {
             return (env, result, fault) =>
@@ -301,29 +255,77 @@ namespace Gate.Tests.StartupTests
             Assert.That(result.Status, Is.EqualTo("200 FooYarg"));
             Assert.That(result.BodyText, Is.EqualTo("Hello Foo"));
         }
-    }
 
-    internal class WithIApplication : IApplication, IApplication<string, string>
-    {
-        public AppDelegate Create()
+        [Test]
+        public void Use_middleware_inside_calls_to_map_only_apply_to_requests_that_go_inside_map()
         {
-            return Create("200 WithIApplication", "Hello World");
+            var builder = new AppBuilder();
+            var app = builder
+                .Use(AddStatus, " Outer")
+                .Map("/here", map => map
+                    .Use(AddStatus, " Mapped")
+                    .Run(TwoHundredFoo))
+                .Use(AddStatus, " Inner")
+                .Run(TwoHundredFoo)
+                .Build();
+
+            var resultThere = AppUtils.Call(app, "/there");
+            var resultHere = AppUtils.Call(app, "/here");
+
+            Assert.That(resultThere.Status, Is.EqualTo("200 Foo Inner Outer"));
+            Assert.That(resultHere.Status, Is.EqualTo("200 Foo Mapped Outer"));
         }
 
-        public AppDelegate Create(string status, string content)
+        [Test]
+        public void Use_middleware_between_calls_to_map_only_apply_to_requests_that_reach_later_maps()
+        {
+            var builder = new AppBuilder();
+            builder
+                .Use(AddStatus, " Outer")
+                .Map("/here1", map => map
+                    .Use(AddStatus, " Mapped1")
+                    .Run(TwoHundredFoo))
+                .Use(AddStatus, " Between")
+                .Map("/here2", map => map
+                    .Use(AddStatus, " Mapped2")
+                    .Run(TwoHundredFoo))
+                .Use(AddStatus, " Inner")
+                .Run(TwoHundredFoo);
+            
+            var app = builder.Build();
+
+            var resultThere = AppUtils.Call(app, "/there");
+            var resultHere1 = AppUtils.Call(app, "/here1");
+            var resultHere2 = AppUtils.Call(app, "/here2");
+
+            Assert.That(resultThere.Status, Is.EqualTo("200 Foo Inner Between Outer"));
+            Assert.That(resultHere1.Status, Is.EqualTo("200 Foo Mapped1 Outer"));
+            Assert.That(resultHere2.Status, Is.EqualTo("200 Foo Mapped2 Between Outer"));
+        }
+
+    }
+
+    internal class WithApplication
+    {
+        public AppDelegate App()
+        {
+            return App("200 WithApplication", "Hello World");
+        }
+
+        public AppDelegate App(string status, string content)
         {
             return AppUtils.Simple(status, new Dictionary<string, string>(), content);
         }
     }
 
-    internal class WithIMiddleware : IMiddleware, IMiddleware<string>
+    internal class WithMiddleware
     {
-        public AppDelegate Create(AppDelegate app)
+        public AppDelegate Middleware(AppDelegate app)
         {
-            return Create(app, "WithIMiddleware");
+            return Middleware(app, "WithMiddleware");
         }
 
-        public AppDelegate Create(AppDelegate app, string appendStatus)
+        public AppDelegate Middleware(AppDelegate app, string appendStatus)
         {
             return (env, result, fault) =>
                 app(

@@ -2,32 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Gate.Owin;
 
 namespace Gate.Helpers
 {
     /// <summary>
     /// Sets content type in response if none present
     /// </summary>
-    public class ContentType : IMiddleware, IMiddleware<string>
+    public class ContentType 
     {        
         const string DefaultContentType = "text/html";
 
-        AppDelegate IMiddleware.Create(AppDelegate app)
+        public static AppDelegate Middleware(AppDelegate app)
         {
-            return Create(app, DefaultContentType);
+            return Middleware(app, DefaultContentType);
         }
 
-        AppDelegate IMiddleware<string>.Create(AppDelegate app, string contentType)
-        {
-            return Create(app, contentType);
-        }
-
-        public static AppDelegate Create(AppDelegate app)
-        {
-            return Create(app, DefaultContentType);
-        }
-
-        public static AppDelegate Create(AppDelegate app, string contentType)
+        public static AppDelegate Middleware(AppDelegate app, string contentType)
         {
             return (env, result, fault) => app(
                 env,

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Threading;
+using Gate.Owin;
 
 namespace Gate.Helpers
 {

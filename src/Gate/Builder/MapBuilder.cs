@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Gate.Owin;
 
-namespace Gate
+namespace Gate.Builder
 {
     class MapBuilder : IAppBuilder
     {
@@ -21,9 +22,14 @@ namespace Gate
             _map[path] = app;
         }
 
-        public IAppBuilder Use(Func<AppDelegate, AppDelegate> factory)
+        public IAppBuilder Use(Func<AppDelegate, AppDelegate> middleware)
         {
-            return _builder.Use(factory);
+            return _builder.Use(middleware);
+        }
+
+        public AppDelegate Fork(Action<IAppBuilder> fork)
+        {
+            return _builder.Fork(fork);
         }
 
         public AppDelegate Build()

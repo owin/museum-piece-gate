@@ -1,4 +1,6 @@
-﻿namespace Nancy.Hosting.Owin.Tests.Fakes
+﻿using Gate.Owin;
+
+namespace Nancy.Hosting.Owin.Tests.Fakes
 {
     using System;
     using System.IO;

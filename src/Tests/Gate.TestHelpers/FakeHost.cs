@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml.Linq;
+using Gate.Builder;
+using Gate.Owin;
 using Nancy.Hosting.Owin.Tests.Fakes;
 
 namespace Gate.TestHelpers

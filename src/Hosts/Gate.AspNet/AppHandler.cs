@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Gate.Helpers;
+using Gate.Owin;
 
 namespace Gate.AspNet
 {

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Gate.Owin;
 
 namespace Gate
 {
-    public class NotFound : IApplication
+    public static class NotFound
     {
         static readonly ArraySegment<byte> Body = new ArraySegment<byte>(Encoding.UTF8.GetBytes(@"
 <!DOCTYPE HTML PUBLIC ""-//IETF//DTD HTML 2.0//EN"">
@@ -16,21 +17,16 @@ namespace Gate
 </body></html>
 "));
 
-        AppDelegate IApplication.Create()
+        public static AppDelegate App()
         {
-            return Create();
+            return Call;
         }
 
-        public static AppDelegate Create()
-        {
-            return Invoke;
-        }
-
-        public static void Invoke(IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault)
+        public static void Call(IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault)
         {
             result(
                 "404 Not Found",
-                new Dictionary<string, string> {{"Content-Type", "text/html"}},
+                new Dictionary<string, string> { { "Content-Type", "text/html" } },
                 (next, error, complete) =>
                 {
                     next(Body, null);

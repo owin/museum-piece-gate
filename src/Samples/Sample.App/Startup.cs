@@ -1,4 +1,5 @@
 ﻿using Gate;
+using Gate.Builder;
 using Gate.Helpers;
 using Nancy.Hosting.Owin;
 
@@ -10,27 +11,13 @@ namespace Sample.App
         {
             var nancyOwinHost = new NancyOwinHost();
             builder
-                .Use(RewindableBody.Create)
-                .Use(ShowExceptions.Create)
-                .Use(ContentType.Create, "text/html")
-                .Map("/wilson", Wilson.Create)
-                .Map("/wilsonasync", Wilson.Create, true)
-                .Use(Cascade.Try, DefaultPage.Create())
+                .Use(RewindableBody.Middleware)
+                .Use(ShowExceptions.Middleware)
+                .Use(ContentType.Middleware, "text/html")
+                .Map("/wilson", map => map.Run(Wilson.App))
+                .Map("/wilsonasync", map => map.Run(Wilson.App, true))
+                .Use(Cascade.Try, DefaultPage.App())
                 .Run(nancyOwinHost.ProcessRequest);
-        }
-
-        public void ConfigurationVariation(IAppBuilder builder)
-        {
-            builder
-                .Use<RewindableBody>()
-                .Use<ShowExceptions>()
-                .Use<ContentType, string>("text/html")
-                .Map("/wilson", map => map.Run<Wilson>())
-                .Map("/wilsonasync", map => map.Run<Wilson, bool>(true))
-                .Cascade(
-                    cascade => cascade.Run<DefaultPage>(),
-                    cascade => cascade.Run(new NancyOwinHost().ProcessRequest)
-                );
         }
     }
 }

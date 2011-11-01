@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using Gate.Builder;
 using Gate.Helpers;
+using Gate.Owin;
 using Gate.TestHelpers;
 using NUnit.Framework;
 
@@ -23,7 +25,7 @@ namespace Gate.Tests
         {
             var map = new Dictionary<string, AppDelegate>
             {
-                {"/foo", Wilson.Create()}
+                {"/foo", Wilson.App()}
             };
             var app = UrlMapper.Create(map);
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Gate;
 using Gate.Kayak;
+using Gate.Owin;
 using NUnit.Framework;
 using Kayak.Http;
 using Kayak;

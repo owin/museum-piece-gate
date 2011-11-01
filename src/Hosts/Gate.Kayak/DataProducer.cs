@@ -1,4 +1,5 @@
 ﻿using System;
+using Gate.Owin;
 using Kayak;
 
 namespace Gate.Kayak

@@ -1,11 +1,12 @@
 ﻿using Gate;
 using Gate.Helpers;
+using Gate.Owin;
 
 namespace Sample.App
 {
-    public class DefaultPage : IApplication
+    public class DefaultPage 
     {
-        public static AppDelegate Create()
+        public static AppDelegate App()
         {
             return (env, result, fault) =>
             {
@@ -22,14 +23,9 @@ namespace Sample.App
                 }
                 else
                 {
-                    NotFound.Invoke(env, result, fault);
+                    NotFound.Call(env, result, fault);
                 }
             };
-        }
-
-        AppDelegate IApplication.Create()
-        {
-            return Create();
         }
     }
 }

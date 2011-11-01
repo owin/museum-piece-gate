@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Gate.Owin;
 using Gate.TestHelpers;
 using NUnit.Framework;
 
@@ -13,7 +14,7 @@ namespace Gate.Helpers.Tests
         [Test]
         public void Cascade_with_no_apps_should_return_404()
         {
-            var cascade = Cascade.Create(Enumerable.Empty<AppDelegate>());
+            var cascade = Cascade.Middleware(Enumerable.Empty<AppDelegate>());
             var host = new FakeHost(cascade);
             var response = host.GET("/");
             Assert.That(response.Status, Is.EqualTo("404 Not Found"));
@@ -24,7 +25,7 @@ namespace Gate.Helpers.Tests
         {
             var app = new FakeApp("200 OK", "Hello world");
             app.Headers["Content-Type"] = "text/plain";
-            var cascade = Cascade.Create(app.AppDelegate);
+            var cascade = Cascade.Middleware(app.AppDelegate);
             var host = new FakeHost(cascade);
             var response = host.GET("/");
             Assert.That(response.Status, Is.EqualTo("200 OK"));
@@ -39,7 +40,7 @@ namespace Gate.Helpers.Tests
             var app2 = new FakeApp("200 OK", "Hello world");
             app2.Headers["Content-Type"] = "text/plain";
             var app3 = new FakeApp("404 Not Found", "");
-            var cascade = Cascade.Create(app1.AppDelegate, app2.AppDelegate, app3.AppDelegate);
+            var cascade = Cascade.Middleware(app1.AppDelegate, app2.AppDelegate, app3.AppDelegate);
             var host = new FakeHost(cascade);
             var response = host.GET("/");
             Assert.That(response.Status, Is.EqualTo("200 OK"));
@@ -56,7 +57,7 @@ namespace Gate.Helpers.Tests
             var app2 = new FakeApp("200 OK", "Hello world") {SendAsync = true};
             app2.Headers["Content-Type"] = "text/plain";
             var app3 = new FakeApp("404 Not Found", "") {SendAsync = true};
-            var cascade = Cascade.Create(app1.AppDelegate, app2.AppDelegate, app3.AppDelegate);
+            var cascade = Cascade.Middleware(app1.AppDelegate, app2.AppDelegate, app3.AppDelegate);
             var host = new FakeHost(cascade);
             var response = host.GET("/");
             Assert.That(response.Status, Is.EqualTo("200 OK"));
