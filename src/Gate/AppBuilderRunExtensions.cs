@@ -25,9 +25,9 @@ namespace Gate
          * Fundamental definition of Run.
          */
 
-        public static IAppBuilder Run(this IAppBuilder builder, Func<AppDelegate> appFactory)
+        public static IAppBuilder Run(this IAppBuilder builder, Func<AppDelegate> app)
         {
-            return builder.Use(_ => appFactory());
+            return builder.Use(_ => app());
         }
 
         /* 
@@ -43,24 +43,24 @@ namespace Gate
          * Extension methods take an AppDelegate factory func and its associated parameters.
          */
 
-        public static IAppBuilder Run<T1>(this IAppBuilder builder, Func<T1, AppDelegate> factory, T1 arg1)
+        public static IAppBuilder Run<T1>(this IAppBuilder builder, Func<T1, AppDelegate> app, T1 arg1)
         {
-            return builder.Run(() => factory(arg1));
+            return builder.Run(() => app(arg1));
         }
 
-        public static IAppBuilder Run<T1, T2>(this IAppBuilder builder, Func<T1, T2, AppDelegate> factory, T1 arg1, T2 arg2)
+        public static IAppBuilder Run<T1, T2>(this IAppBuilder builder, Func<T1, T2, AppDelegate> app, T1 arg1, T2 arg2)
         {
-            return builder.Run(() => factory(arg1, arg2));
+            return builder.Run(() => app(arg1, arg2));
         }
 
-        public static IAppBuilder Run<T1, T2, T3>(this IAppBuilder builder, Func<T1, T2, T3, AppDelegate> factory, T1 arg1, T2 arg2, T3 arg3)
+        public static IAppBuilder Run<T1, T2, T3>(this IAppBuilder builder, Func<T1, T2, T3, AppDelegate> app, T1 arg1, T2 arg2, T3 arg3)
         {
-            return builder.Run(() => factory(arg1, arg2, arg3));
+            return builder.Run(() => app(arg1, arg2, arg3));
         }
 
-        public static IAppBuilder Run<T1, T2, T3, T4>(this IAppBuilder builder, Func<T1, T2, T3, T4, AppDelegate> factory, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+        public static IAppBuilder Run<T1, T2, T3, T4>(this IAppBuilder builder, Func<T1, T2, T3, T4, AppDelegate> app, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
-            return builder.Run(() => factory(arg1, arg2, arg3, arg4));
+            return builder.Run(() => app(arg1, arg2, arg3, arg4));
         }
 
         /* 

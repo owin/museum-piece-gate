@@ -25,24 +25,24 @@ namespace Gate
          * Extension methods take an AppDelegate factory func and its associated parameters.
          */
 
-        public static IAppBuilder Use<T1>(this IAppBuilder builder, Func<AppDelegate, T1, AppDelegate> factory, T1 arg1)
+        public static IAppBuilder Use<T1>(this IAppBuilder builder, Func<AppDelegate, T1, AppDelegate> middleware, T1 arg1)
         {
-            return builder.Use(app => factory(app, arg1));
+            return builder.Use(app => middleware(app, arg1));
         }
 
-        public static IAppBuilder Use<T1, T2>(this IAppBuilder builder, Func<AppDelegate, T1, T2, AppDelegate> factory, T1 arg1, T2 arg2)
+        public static IAppBuilder Use<T1, T2>(this IAppBuilder builder, Func<AppDelegate, T1, T2, AppDelegate> middleware, T1 arg1, T2 arg2)
         {
-            return builder.Use(app => factory(app, arg1, arg2));
+            return builder.Use(app => middleware(app, arg1, arg2));
         }
 
-        public static IAppBuilder Use<T1, T2, T3>(this IAppBuilder builder, Func<AppDelegate, T1, T2, T3, AppDelegate> factory, T1 arg1, T2 arg2, T3 arg3)
+        public static IAppBuilder Use<T1, T2, T3>(this IAppBuilder builder, Func<AppDelegate, T1, T2, T3, AppDelegate> middleware, T1 arg1, T2 arg2, T3 arg3)
         {
-            return builder.Use(app => factory(app, arg1, arg2, arg3));
+            return builder.Use(app => middleware(app, arg1, arg2, arg3));
         }
 
-        public static IAppBuilder Use<T1, T2, T3, T4>(this IAppBuilder builder, Func<AppDelegate, T1, T2, T3, T4, AppDelegate> factory, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+        public static IAppBuilder Use<T1, T2, T3, T4>(this IAppBuilder builder, Func<AppDelegate, T1, T2, T3, T4, AppDelegate> middleware, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
-            return builder.Use(app => factory(app, arg1, arg2, arg3, arg4));
+            return builder.Use(app => middleware(app, arg1, arg2, arg3, arg4));
         }
 
 
@@ -50,29 +50,29 @@ namespace Gate
          * Extension methods take an AppAction factory func and its associated parameters.
          */
 
-        public static IAppBuilder Use(this IAppBuilder builder, Func<AppAction, AppAction> factory)
+        public static IAppBuilder Use(this IAppBuilder builder, Func<AppAction, AppAction> middleware)
         {
-            return builder.Use(app => factory(app.ToAction()).ToDelegate());
+            return builder.Use(app => middleware(app.ToAction()).ToDelegate());
         }
 
-        public static IAppBuilder Use<T1>(this IAppBuilder builder, Func<AppAction, T1, AppAction> factory, T1 arg1)
+        public static IAppBuilder Use<T1>(this IAppBuilder builder, Func<AppAction, T1, AppAction> middleware, T1 arg1)
         {
-            return builder.Use(app => factory(app.ToAction(), arg1).ToDelegate());
+            return builder.Use(app => middleware(app.ToAction(), arg1).ToDelegate());
         }
 
-        public static IAppBuilder Use<T1, T2>(this IAppBuilder builder, Func<AppAction, T1, T2, AppAction> factory, T1 arg1, T2 arg2)
+        public static IAppBuilder Use<T1, T2>(this IAppBuilder builder, Func<AppAction, T1, T2, AppAction> middleware, T1 arg1, T2 arg2)
         {
-            return builder.Use(app => factory(app.ToAction(), arg1, arg2).ToDelegate());
+            return builder.Use(app => middleware(app.ToAction(), arg1, arg2).ToDelegate());
         }
 
-        public static IAppBuilder Use<T1, T2, T3>(this IAppBuilder builder, Func<AppAction, T1, T2, T3, AppAction> factory, T1 arg1, T2 arg2, T3 arg3)
+        public static IAppBuilder Use<T1, T2, T3>(this IAppBuilder builder, Func<AppAction, T1, T2, T3, AppAction> middleware, T1 arg1, T2 arg2, T3 arg3)
         {
-            return builder.Use(app => factory(app.ToAction(), arg1, arg2, arg3).ToDelegate());
+            return builder.Use(app => middleware(app.ToAction(), arg1, arg2, arg3).ToDelegate());
         }
 
-        public static IAppBuilder Use<T1, T2, T3, T4>(this IAppBuilder builder, Func<AppAction, T1, T2, T3, T4, AppAction> factory, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+        public static IAppBuilder Use<T1, T2, T3, T4>(this IAppBuilder builder, Func<AppAction, T1, T2, T3, T4, AppAction> middleware, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
-            return builder.Use(app => factory(app.ToAction(), arg1, arg2, arg3, arg4).ToDelegate());
+            return builder.Use(app => middleware(app.ToAction(), arg1, arg2, arg3, arg4).ToDelegate());
         }
     }
 }

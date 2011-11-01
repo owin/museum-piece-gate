@@ -11,19 +11,19 @@ namespace Gate.Builder
             return BuildConfiguration(default(string));
         }
 
-        public static AppDelegate BuildConfiguration(string configurationString)
+        public static AppDelegate BuildConfiguration(string startupName)
         {
-            var configuration = new DefaultConfigurationLoader().Load(configurationString);
-            return BuildConfiguration(configuration);
+            var startup = new DefaultStartupLoader().Load(startupName);
+            return BuildConfiguration(startup);
         }
 
-        public static AppDelegate BuildConfiguration(Action<IAppBuilder> configuration)
+        public static AppDelegate BuildConfiguration(Action<IAppBuilder> startup)
         {
-            if (configuration == null)
-                throw new ArgumentNullException("configuration");
+            if (startup == null)
+                throw new ArgumentNullException("startup");
 
             var builder = new AppBuilder();
-            configuration(builder);
+            startup(builder);
             return builder.Build();
         }
 
@@ -34,9 +34,9 @@ namespace Gate.Builder
             _builder = new BaseBuilder();
         }
 
-        public IAppBuilder Use(Func<AppDelegate, AppDelegate> factory)
+        public IAppBuilder Use(Func<AppDelegate, AppDelegate> middleware)
         {
-            return _builder.Use(factory);
+            return _builder.Use(middleware);
         }
 
         public AppDelegate Build()

@@ -22,9 +22,9 @@ namespace Gate.Builder
             _map[path] = app;
         }
 
-        public IAppBuilder Use(Func<AppDelegate, AppDelegate> factory)
+        public IAppBuilder Use(Func<AppDelegate, AppDelegate> middleware)
         {
-            return _builder.Use(factory);
+            return _builder.Use(middleware);
         }
 
         public AppDelegate Build()

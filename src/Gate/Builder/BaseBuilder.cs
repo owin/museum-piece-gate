@@ -14,9 +14,9 @@ namespace Gate.Builder
             _stack = new List<Func<AppDelegate, AppDelegate>>();
         }
 
-        public IAppBuilder Use(Func<AppDelegate, AppDelegate> factory)
+        public IAppBuilder Use(Func<AppDelegate, AppDelegate> middleware)
         {
-            _stack.Add(factory);
+            _stack.Add(middleware);
             return this;
         }
 

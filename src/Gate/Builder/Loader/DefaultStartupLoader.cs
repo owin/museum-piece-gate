@@ -22,22 +22,22 @@ namespace Gate.Builder.Loader
                 Action>>, // cancel
         Action<Exception>>; // error
 
-    public class DefaultConfigurationLoader : IConfigurationLoader
+    public class DefaultStartupLoader : IStartupLoader
     {
-        public static Action<IAppBuilder> LoadConfiguration(string configurationString)
+        public static Action<IAppBuilder> LoadStartup(string startupName)
         {
-            return new DefaultConfigurationLoader().Load(configurationString);
+            return new DefaultStartupLoader().Load(startupName);
         }
 
-        public Action<IAppBuilder> Load(string configurationString)
+        public Action<IAppBuilder> Load(string startupName)
         {
-            if (string.IsNullOrWhiteSpace(configurationString))
+            if (string.IsNullOrWhiteSpace(startupName))
             {
-                configurationString = GetDefaultConfigurationString(
+                startupName = GetDefaultConfigurationString(
                     assembly => new[] { "Startup", assembly.GetName().Name + ".Startup" });
             }
 
-            var typeAndMethod = GetTypeAndMethodNameForConfigurationString(configurationString);
+            var typeAndMethod = GetTypeAndMethodNameForConfigurationString(startupName);
 
             if (typeAndMethod == null)
                 return null;
