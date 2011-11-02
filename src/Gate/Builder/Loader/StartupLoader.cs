@@ -22,11 +22,11 @@ namespace Gate.Builder.Loader
                 Action>>, // cancel
         Action<Exception>>; // error
 
-    public class DefaultStartupLoader : IStartupLoader
+    public class StartupLoader : IStartupLoader
     {
         public static Action<IAppBuilder> LoadStartup(string startupName)
         {
-            return new DefaultStartupLoader().Load(startupName);
+            return new StartupLoader().Load(startupName);
         }
 
         public Action<IAppBuilder> Load(string startupName)

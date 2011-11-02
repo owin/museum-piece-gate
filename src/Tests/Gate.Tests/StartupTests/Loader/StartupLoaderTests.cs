@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DifferentNamespace;
@@ -30,7 +30,7 @@ namespace Gate.Tests.StartupTests.Loader
         [Test]
         public void Strings_are_split_based_on_dots()
         {
-            var strings = DefaultStartupLoader.DotByDot("this.is.a.test").ToArray();
+            var strings = StartupLoader.DotByDot("this.is.a.test").ToArray();
             Assert.That(strings.Length, Is.EqualTo(4));
             Assert.That(strings[0], Is.EqualTo("this.is.a.test"));
             Assert.That(strings[1], Is.EqualTo("this.is.a"));
@@ -41,12 +41,12 @@ namespace Gate.Tests.StartupTests.Loader
         [Test]
         public void Leading_and_trailing_dot_and_empty_strings_are_safe_and_ignored()
         {
-            var string1 = DefaultStartupLoader.DotByDot(".a.test").ToArray();
-            var string2 = DefaultStartupLoader.DotByDot("a.test.").ToArray();
-            var string3 = DefaultStartupLoader.DotByDot(".a.test.").ToArray();
-            var string4 = DefaultStartupLoader.DotByDot(".").ToArray();
-            var string5 = DefaultStartupLoader.DotByDot("").ToArray();
-            var string6 = DefaultStartupLoader.DotByDot(null).ToArray();
+            var string1 = StartupLoader.DotByDot(".a.test").ToArray();
+            var string2 = StartupLoader.DotByDot("a.test.").ToArray();
+            var string3 = StartupLoader.DotByDot(".a.test.").ToArray();
+            var string4 = StartupLoader.DotByDot(".").ToArray();
+            var string5 = StartupLoader.DotByDot("").ToArray();
+            var string6 = StartupLoader.DotByDot(null).ToArray();
 
             AssertArrayEqual(string1, new[] {"a.test", "a"});
             AssertArrayEqual(string2, new[] {"a.test", "a"});
@@ -75,7 +75,7 @@ namespace Gate.Tests.StartupTests.Loader
         [Test]
         public void Load_will_find_assembly_and_type_and_static_method()
         {
-            var loader = new DefaultStartupLoader();
+            var loader = new StartupLoader();
             var configuration = loader.Load("Gate.Tests.StartupTests.Loader.DefaultConfigurationLoaderTests.Hello");
 
             _helloCalls = 0;
@@ -86,7 +86,7 @@ namespace Gate.Tests.StartupTests.Loader
         [Test]
         public void An_extra_segment_will_cause_the_match_to_fail()
         {
-            var loader = new DefaultStartupLoader();
+            var loader = new StartupLoader();
             var configuration = loader.Load("Gate.Tests.StartupTests.Loader.DefaultConfigurationLoaderTests.Hello.Bar");
 
             Assert.That(configuration, Is.Null);
@@ -95,7 +95,7 @@ namespace Gate.Tests.StartupTests.Loader
         [Test]
         public void Calling_a_class_with_multiple_configs_is_okay()
         {
-            var loader = new DefaultStartupLoader();
+            var loader = new StartupLoader();
             var foo = loader.Load("Gate.Tests.StartupTests.Loader.MultiConfigs.Foo");
             var bar = loader.Load("Gate.Tests.StartupTests.Loader.MultiConfigs.Bar");
 
@@ -116,7 +116,7 @@ namespace Gate.Tests.StartupTests.Loader
         [Test]
         public void Configuration_method_defaults_to_Configuration_if_only_type_name_is_provided()
         {
-            var loader = new DefaultStartupLoader();
+            var loader = new StartupLoader();
             var configuration = loader.Load("Gate.Tests.StartupTests.Loader.MultiConfigs");
 
             MultiConfigs.FooCalls = 0;
@@ -138,7 +138,7 @@ namespace Gate.Tests.StartupTests.Loader
         [Test]
         public void Comma_may_be_used_if_assembly_name_doesnt_match_namespace()
         {
-            var loader = new DefaultStartupLoader();
+            var loader = new StartupLoader();
             var configuration = loader.Load("DifferentNamespace.DoesNotFollowConvention, Gate.Tests");
 
             DoesNotFollowConvention.ConfigurationCalls = 0;
@@ -158,7 +158,7 @@ namespace Gate.Tests.StartupTests.Loader
         [Test]
         public void Method_that_returns_app_action_may_also_be_called()
         {
-            var loader = new DefaultStartupLoader();
+            var loader = new StartupLoader();
             var configuration = loader.Load("Gate.Tests.StartupTests.Loader.DefaultConfigurationLoaderTests.Alpha");
 
             var builder = new AppBuilder();
@@ -173,7 +173,7 @@ namespace Gate.Tests.StartupTests.Loader
         [Test]
         public void Startup_Configuration_in_assembly_namespace_will_be_discovered_by_default()
         {
-            var loader = new DefaultStartupLoader();
+            var loader = new StartupLoader();
             var configuration = loader.Load("");
             Startup.ConfigurationCalls = 0;
             configuration(null);

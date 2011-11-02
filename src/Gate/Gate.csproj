@@ -41,7 +41,6 @@
     <Compile Include="Builder\MapBuilder.cs" />
     <Compile Include="NotFound.cs" />
     <Compile Include="Builder\UrlMapper.cs" />
-    <Compile Include="Builder\Loader\DefaultStartupLoader.cs" />
     <Compile Include="Builder\Loader\IStartupLoader.cs" />
     <Compile Include="AppBuilderMapExtensions.cs" />
     <Compile Include="AppBuilderRunExtensions.cs" />
@@ -52,6 +51,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Request.cs" />
     <Compile Include="Response.cs" />
+    <Compile Include="Builder\Loader\StartupLoader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

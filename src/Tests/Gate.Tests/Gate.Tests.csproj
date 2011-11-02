@@ -53,8 +53,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StartupTests\AppBuilderTests.cs" />
     <Compile Include="Startup.cs" />
-    <Compile Include="StartupTests\Loader\DefaultConfigurationLoaderTests.cs" />
     <Compile Include="UrlMapperTests.cs" />
+    <Compile Include="StartupTests\Loader\StartupLoaderTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

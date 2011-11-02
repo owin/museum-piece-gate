@@ -13,7 +13,7 @@ namespace Gate.Builder
 
         public static AppDelegate BuildConfiguration(string startupName)
         {
-            var startup = new DefaultStartupLoader().Load(startupName);
+            var startup = new StartupLoader().Load(startupName);
             return BuildConfiguration(startup);
         }
 
