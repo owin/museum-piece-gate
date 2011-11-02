@@ -8,12 +8,10 @@ namespace Gate.Builder
     class BaseBuilder : IAppBuilder
     {
         readonly IList<Func<AppDelegate, AppDelegate>> _stack;
-        readonly Func<Action<IAppBuilder>, AppDelegate> _forkMethod;
 
-        public BaseBuilder(Func<Action<IAppBuilder>, AppDelegate> forkMethod)
+        public BaseBuilder()
         {
             _stack = new List<Func<AppDelegate, AppDelegate>>();
-            _forkMethod = forkMethod;
         }
 
         public IAppBuilder Use(Func<AppDelegate, AppDelegate> middleware)
@@ -24,9 +22,10 @@ namespace Gate.Builder
 
         public AppDelegate Fork(Action<IAppBuilder> fork)
         {
-            return _forkMethod(fork);
+            var b = new BaseBuilder();
+            fork(b);
+            return b.Build();
         }
-
 
         public AppDelegate Build()
         {

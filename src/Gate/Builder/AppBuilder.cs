@@ -31,7 +31,7 @@ namespace Gate.Builder
 
         public AppBuilder()
         {
-            _builder = new BaseBuilder(BuildConfiguration);
+            _builder = new BaseBuilder();
         }
 
         public IAppBuilder Use(Func<AppDelegate, AppDelegate> middleware)
