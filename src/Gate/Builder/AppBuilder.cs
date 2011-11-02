@@ -26,7 +26,7 @@ namespace Gate.Builder
 
             var builder = new AppBuilder();
             startup(builder);
-            return builder.Build();
+            return builder.Materialize();
         }
 
         readonly IList<Func<AppDelegate, AppDelegate>> _stack;
@@ -42,14 +42,14 @@ namespace Gate.Builder
             return this;
         }
 
-        public AppDelegate Fork(Action<IAppBuilder> fork)
+        public AppDelegate Build(Action<IAppBuilder> fork)
         {
             var b = new AppBuilder();
             fork(b);
-            return b.Build();
+            return b.Materialize();
         }
 
-        public AppDelegate Build()
+        public AppDelegate Materialize()
         {
             return _stack
                 .Reverse()

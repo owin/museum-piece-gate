@@ -14,7 +14,7 @@ namespace Gate.Helpers
 
         public static IAppBuilder Cascade(this IAppBuilder builder, params Action<IAppBuilder>[] apps)
         {
-            return builder.Cascade(apps.Select(builder.Fork).ToArray());
+            return builder.Cascade(apps.Select(builder.Build).ToArray());
         }
     }
 }

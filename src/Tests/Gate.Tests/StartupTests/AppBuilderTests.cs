@@ -56,7 +56,7 @@ namespace Gate.Tests.StartupTests
         public void Build_returns_404_by_default()
         {
             var builder = new AppBuilder();
-            var app = builder.Build();
+            var app = builder.Materialize();
             var callResult = AppUtils.Call(app);
             Assert.That(callResult.Status, Is.EqualTo("404 Not Found"));
         }
@@ -284,7 +284,7 @@ namespace Gate.Tests.StartupTests
                 .Use(AddStatus, " Inner")
                 .Run(TwoHundredFoo);
             
-            var app = builder.Build();
+            var app = builder.Materialize();
 
             var resultThere = AppUtils.Call(app, "/there");
             var resultHere1 = AppUtils.Call(app, "/here1");

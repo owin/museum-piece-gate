@@ -163,7 +163,7 @@ namespace Gate.Tests.StartupTests.Loader
 
             var builder = new AppBuilder();
             configuration(builder);
-            var app = builder.Build();
+            var app = builder.Materialize();
 
             _alphaCalls = 0;
             app(null, null, null);
