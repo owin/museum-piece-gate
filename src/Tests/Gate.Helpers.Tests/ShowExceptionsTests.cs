@@ -4,23 +4,29 @@ using System.Text;
 using Gate.Builder;
 using Gate.TestHelpers;
 using NUnit.Framework;
+using Gate.Owin;
 
 namespace Gate.Helpers.Tests
 {
     [TestFixture]
     public class ShowExceptionsTests
     {
+        AppDelegate Build(Action<IAppBuilder> b)
+        {
+            return AppBuilder.BuildConfiguration(b);
+        }
+
         [Test]
         public void Normal_request_should_pass_through_unchanged()
         {
             var app = new FakeApp("200 OK", "Hello");
             app.Headers["Content-Type"] = "text/plain";
 
-            var builder = new AppBuilder()
+            var stack = Build(b => b
                 .Use(ShowExceptions.Middleware)
-                .Run(app.AppDelegate);
+                .Run(app.AppDelegate));
 
-            var host = new FakeHost(builder.Build());
+            var host = new FakeHost(stack);
 
             var response = host.GET("/");
 
@@ -33,11 +39,11 @@ namespace Gate.Helpers.Tests
         {
             var app = new FakeApp(new ApplicationException("Kaboom"));
 
-            var builder = new AppBuilder()
+            var stack = Build(b => b
                 .Use(ShowExceptions.Middleware)
-                .Run(app.AppDelegate);
+                .Run(app.AppDelegate));
 
-            var host = new FakeHost(builder.Build());
+            var host = new FakeHost(stack);
 
             var response = host.GET("/");
 
@@ -59,11 +65,11 @@ namespace Gate.Helpers.Tests
                 return () => { };
             };
 
-            var builder = new AppBuilder()
+            var stack = Build(b => b
                 .Use(ShowExceptions.Middleware)
-                .Run(app.AppDelegate);
+                .Run(app.AppDelegate));
 
-            var host = new FakeHost(builder.Build());
+            var host = new FakeHost(stack);
 
             var response = host.GET("/");
 

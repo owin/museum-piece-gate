@@ -31,10 +31,5 @@ namespace Gate.Builder
         {
             return _builder.Fork(fork);
         }
-
-        public AppDelegate Build()
-        {
-            return _builder.Build();
-        }
     }
 }

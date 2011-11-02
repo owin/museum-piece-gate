@@ -47,6 +47,11 @@ namespace Gate.Tests.StartupTests
                 return () => { };
             });
 
+        AppDelegate Build(Action<IAppBuilder> b)
+        {
+            return AppBuilder.BuildConfiguration(b);
+        }
+
         [Test]
         public void Build_returns_404_by_default()
         {
@@ -59,9 +64,8 @@ namespace Gate.Tests.StartupTests
         [Test]
         public void Calling_Run_with_factory_produces_app_that_is_returned_by_Build()
         {
-            var app = new AppBuilder()
-                .Run(() => TwoHundredFoo)
-                .Build();
+            var app = Build(b =>
+                b.Run(() => TwoHundredFoo));
             var stat = "";
             app(null, (status, headers, body) => stat = status, ex => { });
             Assert.That(stat, Is.EqualTo("200 Foo"));
@@ -70,15 +74,15 @@ namespace Gate.Tests.StartupTests
         [Test]
         public void Extension_method_for_Run_lets_you_pass_in_AppDelegate_instead_of_AppDelegate_factory()
         {
-            var app = new AppBuilder()
-                .Run(TwoHundredFoo)
-                .Build();
+            var app = Build(b => b
+                .Run(TwoHundredFoo));
+
             var stat = "";
             app(null, (status, headers, body) => stat = status, ex => { });
             Assert.That(stat, Is.EqualTo("200 Foo"));
         }
 
-        public static void MyConfig(AppBuilder builder)
+        public static void MyConfig(IAppBuilder builder)
         {
             builder.Run(TwoHundredFoo);
         }
@@ -86,9 +90,7 @@ namespace Gate.Tests.StartupTests
         [Test]
         public void Calling_Configure_passes_control_to_a_builder_configuration_method()
         {
-            var builder = new AppBuilder();
-            MyConfig(builder);
-            var app = builder.Build();
+            var app = Build(MyConfig);
 
             var stat = "";
             app(null, (status, headers, body) => stat = status, ex => { });
@@ -98,9 +100,7 @@ namespace Gate.Tests.StartupTests
         [Test]
         public void Overloaded_constructor_calls_Configure()
         {
-            var builder = new AppBuilder();
-            MyConfig(builder);
-            var app = builder.Build();
+            var app = Build(MyConfig);
 
             var stat = "";
             app(null, (status, headers, body) => stat = status, ex => { });
@@ -132,9 +132,8 @@ namespace Gate.Tests.StartupTests
         [Test]
         public void Extension_methods_let_you_call_factories_with_parameters()
         {
-            var app = new AppBuilder()
-                .Run(ReturnStatus, "200 Foo")
-                .Build();
+            var app = Build(b => b
+                .Run(ReturnStatus, "200 Foo"));
 
             var status = Execute(app);
             Assert.That(status, Is.EqualTo("200 Foo"));
@@ -143,10 +142,10 @@ namespace Gate.Tests.StartupTests
         [Test]
         public void Calling_Use_wraps_middleware_around_app()
         {
-            var app = new AppBuilder()
+            var app = Build(b => b
                 .Use(AppendStatus, "[2]")
                 .Run(ReturnStatus, "[1]")
-                .Build();
+                );
             var status = Execute(app);
             Assert.That(status, Is.EqualTo("[1][2]"));
         }
@@ -154,11 +153,11 @@ namespace Gate.Tests.StartupTests
         [Test]
         public void Use_middleware_runs_in_the_order_they_are_registered()
         {
-            var app = new AppBuilder()
+            var app = Build(b => b
                 .Use(AppendStatus, "[3]")
                 .Use(AppendStatus, "[2]")
                 .Run(ReturnStatus, "[1]")
-                .Build();
+                );
 
             var status = Execute(app);
             Assert.That(status, Is.EqualTo("[1][2][3]"));
@@ -168,9 +167,9 @@ namespace Gate.Tests.StartupTests
         public void Class_with_IApplication_can_be_used_by_AppBuilder()
         {
             var withApplication = new WithApplication();
-            var app = new AppBuilder()
+            var app = Build(b => b
                 .Run(withApplication.App)
-                .Build();
+                );
             var callResult = AppUtils.Call(app);
             Assert.That(callResult.Status, Is.EqualTo("200 WithApplication"));
         }
@@ -179,9 +178,9 @@ namespace Gate.Tests.StartupTests
         public void Class_with_IApplication_can_have_parameters()
         {
             var withApplication = new WithApplication();
-            var app = new AppBuilder()
+            var app = Build(b => b
                 .Run(withApplication.App, "200 WithApplication", "Foo!")
-                .Build();
+                );
             var callResult = AppUtils.Call(app);
             Assert.That(callResult.Status, Is.EqualTo("200 WithApplication"));
         }
@@ -193,10 +192,10 @@ namespace Gate.Tests.StartupTests
         public void Class_with_IMiddleware_can_be_used_by_AppBuilder()
         {
             var withMiddleware = new WithMiddleware();
-            var app = new AppBuilder()
+            var app = Build(b => b
                 .Use(withMiddleware.Middleware)
                 .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(), "Hello world"))
-                .Build();
+                );
             var callResult = AppUtils.Call(app);
             Assert.That(callResult.Status, Is.EqualTo("200 OKWithMiddleware"));
         }
@@ -205,17 +204,13 @@ namespace Gate.Tests.StartupTests
         public void Class_with_IMiddleware_can_have_parameters()
         {
             var withMiddleware2 = new WithMiddleware();
-            var app = new AppBuilder()
+            var app = Build(b => b
                 .Use(withMiddleware2.Middleware, "AppendCustom")
                 .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(), "Hello world"))
-                .Build();
+                );
             var callResult = AppUtils.Call(app);
             Assert.That(callResult.Status, Is.EqualTo("200 OKAppendCustom"));
         }
-
-
-
-
 
         static AppAction AddStatus(AppAction app, string append)
         {
@@ -230,10 +225,9 @@ namespace Gate.Tests.StartupTests
         [Test]
         public void AppBuilder_has_action_overloads_to_support_pure_system_namespace_delegates()
         {
-            var builder = new AppBuilder();
-            var app = builder
+            var app = Build(b => b
                 .Run(TwoHundredFooAction)
-                .Build();
+                );
 
             Assert.That(app, Is.Not.Null);
             var result = AppUtils.Call(app);
@@ -244,11 +238,10 @@ namespace Gate.Tests.StartupTests
         [Test]
         public void AppBuilder_has_action_overloads_which_support_use_and_parameters()
         {
-            var builder = new AppBuilder();
-            var app = builder
+            var app = Build(b => b
                 .Use(AddStatus, "Yarg")
                 .Run(TwoHundredFooAction)
-                .Build();
+                );
 
             Assert.That(app, Is.Not.Null);
             var result = AppUtils.Call(app);
@@ -259,15 +252,14 @@ namespace Gate.Tests.StartupTests
         [Test]
         public void Use_middleware_inside_calls_to_map_only_apply_to_requests_that_go_inside_map()
         {
-            var builder = new AppBuilder();
-            var app = builder
+            var app = Build(b => b
                 .Use(AddStatus, " Outer")
                 .Map("/here", map => map
                     .Use(AddStatus, " Mapped")
                     .Run(TwoHundredFoo))
                 .Use(AddStatus, " Inner")
                 .Run(TwoHundredFoo)
-                .Build();
+                );
 
             var resultThere = AppUtils.Call(app, "/there");
             var resultHere = AppUtils.Call(app, "/here");
