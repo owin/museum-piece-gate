@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using Gate.Builder.Loader;
 using Gate.Owin;
+using System.Linq;
 
 namespace Gate.Builder
 {
@@ -27,26 +29,31 @@ namespace Gate.Builder
             return builder.Build();
         }
 
-        readonly BaseBuilder _builder;
+        readonly IList<Func<AppDelegate, AppDelegate>> _stack;
 
         public AppBuilder()
         {
-            _builder = new BaseBuilder();
+            _stack = new List<Func<AppDelegate, AppDelegate>>();
         }
 
         public IAppBuilder Use(Func<AppDelegate, AppDelegate> middleware)
         {
-            return _builder.Use(middleware);
+            _stack.Add(middleware);
+            return this;
         }
 
         public AppDelegate Fork(Action<IAppBuilder> fork)
         {
-            return _builder.Fork(fork);
+            var b = new AppBuilder();
+            fork(b);
+            return b.Build();
         }
 
         public AppDelegate Build()
         {
-            return _builder.Build();
+            return _stack
+                .Reverse()
+                .Aggregate(NotFound.App(), (app, factory) => factory(app));
         }
     }
 }

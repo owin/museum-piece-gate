@@ -37,7 +37,6 @@
     <Compile Include="Builder\AppBuilder.cs" />
     <Compile Include="Builder\Delegates.cs" />
     <Compile Include="IAppBuilder.cs" />
-    <Compile Include="Builder\BaseBuilder.cs" />
     <Compile Include="Builder\MapBuilder.cs" />
     <Compile Include="NotFound.cs" />
     <Compile Include="Builder\UrlMapper.cs" />
