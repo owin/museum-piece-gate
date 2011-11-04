@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -39,6 +39,9 @@
     <Reference Include="pnunit.framework">
       <HintPath>..\..\..\packages\NUnit.2.5.9.10348\lib\pnunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Gate.Middleware\Gate.Middleware.csproj">
@@ -59,7 +62,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MethodOverrideTests.cs" />
     <Compile Include="PredicateTests.cs" />
     <Compile Include="BasicAuthTests.cs" />
+    <Compile Include="TransformTests.cs" />
   </ItemGroup>
 </Project>

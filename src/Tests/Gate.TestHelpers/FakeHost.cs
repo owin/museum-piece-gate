@@ -42,7 +42,7 @@ namespace Gate.TestHelpers
             });
         }
 
-        FakeHostResponse Invoke(Action<FakeHostRequest> requestSetup)
+        public FakeHostResponse Invoke(Action<FakeHostRequest> requestSetup)
         {
             var request = new FakeHostRequest()
             {
