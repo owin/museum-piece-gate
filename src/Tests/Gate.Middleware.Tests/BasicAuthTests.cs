@@ -34,20 +34,20 @@ namespace Gate.Middleware.Tests
         }
 
         [Test]
-        public void RequireAuth_falls_through_if_authenticated()
+        public void BasicAuth_falls_through_if_authenticated()
         {
             var result = AppUtils.Call(AppBuilder.BuildConfiguration(b =>
-                b.RequireAuth((e, c) => c(true), "RealmString")
+                b.BasicAuth((e, c) => c(true), "RealmString")
                 .Run(AppUtils.Simple("200 OK", null, null))));
 
             Assert.That(result.Status, Is.EqualTo("200 OK"));
         }
 
         [Test]
-        public void RequireAuth_returns_401_if_not_authenticated()
+        public void BasicAuth_returns_401_if_not_authenticated()
         {
             var result = AppUtils.Call(AppBuilder.BuildConfiguration(b =>
-                b.RequireAuth((e, c) => c(false), "RealmString")
+                b.BasicAuth((e, c) => c(false), "RealmString")
                 .Run(AppUtils.Simple("200 OK", null, null))));
 
             Assert.That(result.Status, Is.EqualTo("401 Authorization Required"));

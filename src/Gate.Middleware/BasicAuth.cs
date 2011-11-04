@@ -23,21 +23,21 @@ namespace Gate.Middleware
             return Encoding.ASCII.GetString(Convert.FromBase64String(authCred));
         }
 
-        public static IAppBuilder RequireAuth(this IAppBuilder builder,
+        public static IAppBuilder BasicAuth(this IAppBuilder builder,
             Func<string, bool> authenticates)
         {
-            return builder.RequireAuth((e, c) =>
+            return builder.BasicAuth((e, c) =>
                 c(authenticates(e.GetBasicAuth())), "secure");
         }
 
-        public static IAppBuilder RequireAuth(this IAppBuilder builder,
+        public static IAppBuilder BasicAuth(this IAppBuilder builder,
             Action<Environment, Action<bool>> authenticates, string realm)
         {
-            return builder.RequireAuth(authenticates,
+            return builder.BasicAuth(authenticates,
                 b => b.Run(new FourOhOneUnauthorizedResponse(realm).Invoke));
         }
 
-        public static IAppBuilder RequireAuth(this IAppBuilder builder,
+        public static IAppBuilder BasicAuth(this IAppBuilder builder,
             Action<Environment, Action<bool>> authenticates, Action<IAppBuilder> unauthorized)
         {
             return builder.Unless(authenticates, unauthorized);
