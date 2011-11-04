@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{AFFF8587-C837-433F-913A-BF34B0885243}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Gate.Middleware.Tests</RootNamespace>
+    <AssemblyName>Gate.Middleware.Tests</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\..\packages\NUnit.2.5.9.10348\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.mocks">
+      <HintPath>..\..\..\packages\NUnit.2.5.9.10348\lib\nunit.mocks.dll</HintPath>
+    </Reference>
+    <Reference Include="pnunit.framework">
+      <HintPath>..\..\..\packages\NUnit.2.5.9.10348\lib\pnunit.framework.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Gate.Middleware\Gate.Middleware.csproj">
+      <Project>{60C36D8F-BE53-4733-BD92-CFA103D46020}</Project>
+      <Name>Gate.Middleware</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Gate\Gate.csproj">
+      <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
+      <Name>Gate</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Gate.Owin\Gate.Owin.csproj">
+      <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
+      <Name>Gate.Owin</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Gate.TestHelpers\Gate.TestHelpers.csproj">
+      <Project>{E4256EDF-0B54-4715-8E66-8D4D4887E15F}</Project>
+      <Name>Gate.TestHelpers</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="PredicateTests.cs" />
+    <Compile Include="BasicAuthTests.cs" />
+  </ItemGroup>
+</Project>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -11,6 +11,7 @@
     <RootNamespace>Gate.Middleware</RootNamespace>
     <AssemblyName>Gate.Middleware</AssemblyName>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,14 +33,22 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="BasicAuth.cs" />
+    <Compile Include="Predicate.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Gate.Owin\Gate.Owin.csproj">
+      <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
+      <Name>Gate.Owin</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Gate\Gate.csproj">
+      <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
+      <Name>Gate</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

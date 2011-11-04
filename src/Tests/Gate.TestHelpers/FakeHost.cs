@@ -60,23 +60,27 @@ namespace Gate.TestHelpers
                 {
                     response.Status = status;
                     response.Headers = headers;
-                    response.Body = body;
-                    response.Consumer = new FakeConsumer(true);
-                    response.Consumer.InvokeBodyDelegate(body, true);
-
-                    string contentType;
-                    if (!headers.TryGetValue("Content-Type", out contentType))
-                        contentType = "";
-
-                    if (contentType.StartsWith("text/"))
+                    if (body != null)
                     {
-                        response.BodyText = Encoding.UTF8.GetString(response.Consumer.ConsumedData);
-                        if (contentType.StartsWith("text/xml"))
+                        response.Body = body;
+                        response.Consumer = new FakeConsumer(true);
+                        response.Consumer.InvokeBodyDelegate(body, true);
+
+                        string contentType;
+                        if (!headers.TryGetValue("Content-Type", out contentType))
+                            contentType = "";
+    
+                        if (contentType.StartsWith("text/"))
                         {
-                            response.BodyXml = XElement.Parse(response.BodyText);
+                            response.BodyText = Encoding.UTF8.GetString(response.Consumer.ConsumedData);
+                            if (contentType.StartsWith("text/xml"))
+                            {
+                                response.BodyXml = XElement.Parse(response.BodyText);
+                            }
                         }
                     }
                     wait.Set();
+
                 },
                 ex =>
                 {

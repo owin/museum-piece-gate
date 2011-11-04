@@ -19,8 +19,11 @@ namespace Gate.TestHelpers
         {
             Status = status;
             Headers = new Dictionary<string, string>();
-            var buffer = Encoding.UTF8.GetBytes(body);
-            Body = new FakeProducer(false, buffer, 5, true).BodyDelegate;
+            if (body != null)
+            {
+                var buffer = Encoding.UTF8.GetBytes(body);
+                Body = new FakeProducer(false, buffer, 5, true).BodyDelegate;
+            }
         }
 
         public FakeApp(string status, BodyDelegate body)
