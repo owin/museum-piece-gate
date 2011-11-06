@@ -9,7 +9,7 @@ namespace Gate.Middleware
 
     public static class ContentLengthExtensions
     {
-        static string[] ExcludeStatuses = new[] { "204", "205" };
+        static string[] ExcludeStatusesStartingWith = new[] { "204", "205", "304", "1" };
 
         public static IAppBuilder ContentLength(this IAppBuilder builder)
         {
@@ -17,7 +17,7 @@ namespace Gate.Middleware
                 var status = response.Item1;
                 var headers = response.Item2;
                 var body = response.Item3;
-                if (!ExcludeStatuses.Any(i => status.StartsWith(i)) &&
+                if (!ExcludeStatusesStartingWith.Any(i => status.StartsWith(i)) &&
                     !headers.ContainsKey("content-length") &&
                     !headers.ContainsKey("transfer-encoding") &&
                     body != null)
@@ -28,7 +28,6 @@ namespace Gate.Middleware
                         buffer.Add(data);
                         return false;
                     },
-                    // XXX propagate error through fault callback via transform
                     fault,
                     () => {
                         headers["Content-Length"] = buffer.GetCount().ToString();
