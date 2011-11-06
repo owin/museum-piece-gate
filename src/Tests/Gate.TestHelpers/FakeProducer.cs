@@ -1,4 +1,4 @@
-﻿namespace Nancy.Hosting.Owin.Tests.Fakes
+﻿namespace Gate.TestHelpers
 {
     using System;
     using System.Threading;

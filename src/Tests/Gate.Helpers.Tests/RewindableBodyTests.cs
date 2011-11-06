@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Text;
 using Gate.Owin;
-using Nancy.Hosting.Owin.Tests.Fakes;
 using NUnit.Framework;
+using Gate.TestHelpers;
 
 namespace Gate.Helpers.Tests
 {

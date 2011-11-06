@@ -4,21 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Gate.Owin;
-using Nancy.Hosting.Owin.Tests.Fakes;
 
 namespace Gate.TestHelpers
 {
     public class FakeApp
     {
-        public FakeApp()
+        public FakeApp() : this(default(string)) { }
+        public FakeApp(string status) : this(status, default(string)) { }
+        public FakeApp(string status, string body) : this (status, default(BodyDelegate))
         {
-            Headers = new Dictionary<string, string>();
-        }
-
-        public FakeApp(string status, string body)
-        {
-            Status = status;
-            Headers = new Dictionary<string, string>();
             if (body != null)
             {
                 var buffer = Encoding.UTF8.GetBytes(body);
@@ -28,8 +22,8 @@ namespace Gate.TestHelpers
 
         public FakeApp(string status, BodyDelegate body)
         {
-            Status = status;
-            Headers = new Dictionary<string, string>();
+            Status = status ?? "200 OK";
+            Headers = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             Body = body;
         }
 

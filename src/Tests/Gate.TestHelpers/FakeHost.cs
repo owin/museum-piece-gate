@@ -6,7 +6,6 @@ using System.Threading;
 using System.Xml.Linq;
 using Gate.Builder;
 using Gate.Owin;
-using Nancy.Hosting.Owin.Tests.Fakes;
 
 namespace Gate.TestHelpers
 {
@@ -31,15 +30,7 @@ namespace Gate.TestHelpers
 
         public FakeHostResponse GET(string path, Action<FakeHostRequest> requestSetup)
         {
-            var pathParts = path.Split("?".ToArray(), 2);
-            return Invoke(request =>
-            {
-                request.Method = "GET";
-                request.PathBase = "";
-                request.Path = pathParts[0];
-                request.QueryString = pathParts.Length == 2 ? pathParts[1] : null;
-                requestSetup(request);
-            });
+            return Invoke(FakeHostRequest.GetRequest(path, requestSetup));
         }
 
         public FakeHostResponse Invoke(Action<FakeHostRequest> requestSetup)
