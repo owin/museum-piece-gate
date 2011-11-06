@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -11,7 +11,6 @@
     <RootNamespace>Gate.Middleware</RootNamespace>
     <AssemblyName>Gate.Middleware</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -43,6 +42,7 @@
     <Compile Include="Predicate.cs" />
     <Compile Include="Transform.cs" />
     <Compile Include="ContentLength.cs" />
+    <Compile Include="Chunked.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gate.Owin\Gate.Owin.csproj">
