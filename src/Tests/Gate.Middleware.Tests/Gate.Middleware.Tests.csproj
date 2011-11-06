@@ -66,5 +66,6 @@
     <Compile Include="PredicateTests.cs" />
     <Compile Include="BasicAuthTests.cs" />
     <Compile Include="TransformTests.cs" />
+    <Compile Include="ContentLengthTests.cs" />
   </ItemGroup>
 </Project>

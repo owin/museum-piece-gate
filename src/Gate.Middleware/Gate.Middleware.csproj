@@ -42,6 +42,7 @@
     <Compile Include="BasicAuth.cs" />
     <Compile Include="Predicate.cs" />
     <Compile Include="Transform.cs" />
+    <Compile Include="ContentLength.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gate.Owin\Gate.Owin.csproj">
