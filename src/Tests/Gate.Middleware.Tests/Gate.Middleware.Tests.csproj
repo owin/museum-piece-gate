@@ -68,5 +68,9 @@
     <Compile Include="TransformTests.cs" />
     <Compile Include="ContentLengthTests.cs" />
     <Compile Include="ChunkedTests.cs" />
+    <Compile Include="CascadeTests.cs" />
+    <Compile Include="ContentTypeTests.cs" />
+    <Compile Include="RewindableBodyTests.cs" />
+    <Compile Include="ShowExceptionsTests.cs" />
   </ItemGroup>
 </Project>

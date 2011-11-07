@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Gate.Helpers
+namespace Gate.Middleware
 {
     public partial class ShowExceptions
     {

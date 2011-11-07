@@ -7,7 +7,7 @@ using System.Threading;
 using Gate.Owin;
 using Gate.Utils;
 
-namespace Gate.Helpers
+namespace Gate.Middleware
 {
     public class RewindableBody 
     {
@@ -310,6 +310,121 @@ namespace Gate.Helpers
                 _spoolComplete.Continue(() => state.Go(0));
 
                 return () => state.Cancelled = true;
+            }
+        }
+
+        public class Signal
+        {
+            bool _signaled;
+            Action _continuation;
+    
+            public void Set()
+            {
+                lock (this)
+                {
+                    _signaled = true;
+                }
+                if (_continuation != null)
+                {
+                    var continuation = _continuation;
+                    _continuation = null;
+                    continuation();
+                }
+            }
+    
+            public void Continue(Action continuation)
+            {
+                if (_signaled)
+                {
+                    continuation();
+                    return;
+                }
+                lock (this)
+                {
+                    if (_signaled)
+                    {
+                        continuation();
+                        return;
+                    }
+    
+                    if (_continuation == null)
+                    {
+                        _continuation = continuation;
+                    }
+                    else
+                    {
+                        var prior = _continuation;
+                        _continuation = () =>
+                        {
+                            prior();
+                            continuation();
+                        };
+                    }
+                }
+            }
+        }
+
+        class StreamAwaiter
+        {
+            readonly Func<IAsyncResult, int> _end;
+            IAsyncResult _result;
+            Action _continuation;
+    
+            StreamAwaiter(Func<IAsyncResult, int> end)
+            {
+                _end = end;
+            }
+    
+            public static StreamAwaiter Write(Stream stream, byte[] buffer, int offset, int count)
+            {
+                var awaiter = new StreamAwaiter(result =>
+                {
+                    stream.EndWrite(result);
+                    return 0;
+                });
+    
+                var sr = stream.BeginWrite(buffer, offset, count, ar => { if (!ar.CompletedSynchronously) awaiter.SetResult(ar); }, null);
+    
+                if (sr.CompletedSynchronously) awaiter.SetResult(sr);
+    
+                return awaiter;
+            }
+    
+            public static StreamAwaiter Read(Stream stream, byte[] buffer, int offset, int count)
+            {
+                var awaiter = new StreamAwaiter(stream.EndRead);
+    
+                var sr = stream.BeginRead(buffer, offset, count, ar => { if (!ar.CompletedSynchronously) awaiter.SetResult(ar); }, null);
+    
+                if (sr.CompletedSynchronously) awaiter.SetResult(sr);
+    
+                return awaiter;
+            }
+    
+            public bool BeginAwait(Action continuation)
+            {
+                lock (this)
+                {
+                    if (_result != null)
+                        return false;
+                    _continuation = continuation;
+                    return true;
+                }
+            }
+    
+            public int EndAwait()
+            {
+                return _end(_result);
+            }
+    
+            void SetResult(IAsyncResult result)
+            {
+                lock (this)
+                {
+                    _result = result;
+                    if (_continuation != null)
+                        _continuation();
+                }
             }
         }
     }

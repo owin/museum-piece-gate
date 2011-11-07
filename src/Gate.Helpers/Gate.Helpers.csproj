@@ -41,21 +41,9 @@
   <ItemGroup>
     <Compile Include="AsyncResult.cs" />
     <Compile Include="Body.cs" />
-    <Compile Include="Cascade.cs" />
-    <Compile Include="CascadeExtentions.cs" />
-    <Compile Include="ContentType.cs" />
     <Compile Include="InputStream.cs" />
     <Compile Include="OutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RewindableBody.cs" />
-    <Compile Include="ShowExceptions.cs" />
-    <Compile Include="ShowExceptions.View.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ShowExceptions.View.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Signal.cs" />
-    <Compile Include="Utils\StreamAwaiter.cs" />
     <Compile Include="Wilson.cs" />
   </ItemGroup>
   <ItemGroup>

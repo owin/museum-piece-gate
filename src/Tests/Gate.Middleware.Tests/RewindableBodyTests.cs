@@ -4,8 +4,9 @@ using System.Text;
 using Gate.Owin;
 using NUnit.Framework;
 using Gate.TestHelpers;
+using Gate.Middleware;
 
-namespace Gate.Helpers.Tests
+namespace Gate.Middleware.Tests
 {
 // ReSharper disable InconsistentNaming
     [TestFixture]

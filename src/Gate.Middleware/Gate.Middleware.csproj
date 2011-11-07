@@ -43,6 +43,16 @@
     <Compile Include="Transform.cs" />
     <Compile Include="ContentLength.cs" />
     <Compile Include="Chunked.cs" />
+    <Compile Include="Cascade.cs" />
+    <Compile Include="CascadeExtentions.cs" />
+    <Compile Include="ContentType.cs" />
+    <Compile Include="RewindableBody.cs" />
+    <Compile Include="ShowExceptions.cs" />
+    <Compile Include="ShowExceptions.View.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ShowExceptions.View.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gate.Owin\Gate.Owin.csproj">

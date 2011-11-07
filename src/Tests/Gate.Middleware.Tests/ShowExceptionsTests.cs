@@ -5,8 +5,9 @@ using Gate.Builder;
 using Gate.TestHelpers;
 using NUnit.Framework;
 using Gate.Owin;
+using Gate.Middleware;
 
-namespace Gate.Helpers.Tests
+namespace Gate.Middleware.Tests
 {
     [TestFixture]
     public class ShowExceptionsTests

@@ -1,6 +1,7 @@
 ﻿using Gate;
 using Gate.Builder;
 using Gate.Helpers;
+using Gate.Middleware;
 using Nancy.Hosting.Owin;
 
 namespace Sample.App

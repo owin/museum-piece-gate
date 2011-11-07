@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using Gate.Owin;
 
-namespace Gate.Helpers
+namespace Gate.Middleware
 {
     public partial class ShowExceptions
     {

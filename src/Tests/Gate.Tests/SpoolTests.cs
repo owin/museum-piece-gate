@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 // ReSharper disable InconsistentNaming
 
-namespace Gate.Helpers.Tests
+namespace Gate.Tests
 {
     [TestFixture]
     public class SpoolTests

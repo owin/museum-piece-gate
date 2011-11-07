@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using Gate.TestHelpers;
 using NUnit.Framework;
+using Gate.Middleware;
 
-namespace Gate.Helpers.Tests
+namespace Gate.Middleware.Tests
 {
     [TestFixture]
     public class ContentTypeTests

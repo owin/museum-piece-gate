@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Gate.Owin;
 
-namespace Gate.Helpers
+namespace Gate.Middleware
 {
     /// <summary>
     /// Sets content type in response if none present

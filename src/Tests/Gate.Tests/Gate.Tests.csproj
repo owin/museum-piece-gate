@@ -55,6 +55,7 @@
     <Compile Include="Startup.cs" />
     <Compile Include="UrlMapperTests.cs" />
     <Compile Include="StartupTests\Loader\StartupLoaderTests.cs" />
+    <Compile Include="SpoolTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

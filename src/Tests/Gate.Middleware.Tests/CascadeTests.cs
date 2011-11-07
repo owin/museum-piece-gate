@@ -5,8 +5,9 @@ using System.Text;
 using Gate.Owin;
 using Gate.TestHelpers;
 using NUnit.Framework;
+using Gate.Middleware;
 
-namespace Gate.Helpers.Tests
+namespace Gate.Middleware.Tests
 {
     [TestFixture]
     public class CascadeTests
