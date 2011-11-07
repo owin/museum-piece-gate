@@ -17,8 +17,7 @@ namespace Sample.App
                 .Use(ContentType.Middleware, "text/html")
                 .Map("/wilson", map => map.Run(Wilson.App))
                 .Map("/wilsonasync", map => map.Run(Wilson.App, true))
-                .Use(Cascade.Try, DefaultPage.App())
-                .Run(nancyOwinHost.ProcessRequest);
+                .Cascade(DefaultPage.App(), Delegates.ToDelegate(nancyOwinHost.ProcessRequest));
         }
     }
 }

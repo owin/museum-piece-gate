@@ -6,23 +6,19 @@ using Gate.Owin;
 
 namespace Gate.Middleware
 {
-    public class Cascade 
+    public static class CascadeExtensions
     {
-        public static AppDelegate Try(AppDelegate fallback, AppDelegate app1)
+        public static IAppBuilder Cascade(this IAppBuilder builder, params AppDelegate[] apps)
         {
-            return Middleware(new[] { app1, fallback});
-        }
-        public static AppDelegate Try(AppDelegate fallback, AppDelegate app1, AppDelegate app2)
-        {
-            return Middleware(new[] { app1, app2, fallback });
+            return builder.Run(Middleware(apps));
         }
 
-        public static AppDelegate Middleware(params AppDelegate[] apps)
+        public static IAppBuilder Cascade(this IAppBuilder builder, params Action<IAppBuilder>[] apps)
         {
-            return Middleware((IEnumerable<AppDelegate>) apps);
+            return builder.Cascade(apps.Select(builder.Build).ToArray());
         }
 
-        public static AppDelegate Middleware(IEnumerable<AppDelegate> apps)
+        static AppDelegate Middleware(IEnumerable<AppDelegate> apps)
         {
             if (apps == null || !apps.Any())
                 apps = new[] {NotFound.App()};
@@ -70,5 +66,19 @@ namespace Gate.Middleware
                 loop();
             };
         }
+//
+//        public static AppDelegate Try(AppDelegate fallback, AppDelegate app1)
+//        {
+//            return Middleware(new[] { app1, fallback});
+//        }
+//        public static AppDelegate Try(AppDelegate fallback, AppDelegate app1, AppDelegate app2)
+//        {
+//            return Middleware(new[] { app1, app2, fallback });
+//        }
+//
+//        public static AppDelegate Middleware(params AppDelegate[] apps)
+//        {
+//            return Middleware((IEnumerable<AppDelegate>) apps);
+//        }
     }
 }

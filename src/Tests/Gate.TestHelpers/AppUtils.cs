@@ -50,6 +50,13 @@ namespace Gate.TestHelpers
             return new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
         }
 
+        public static IDictionary<string, string> CreateHeaderDictionary(Action<IDictionary<string, string>> setup)
+        {
+            var h = CreateHeaderDictionary();
+            setup(h);
+            return h;
+        }
+
         public static AppDelegate Simple()
         {
             return new FakeApp().AppDelegate;
