@@ -13,7 +13,7 @@ namespace Sample.App
             var nancyOwinHost = new NancyOwinHost();
             builder
                 .Use(RewindableBody.Middleware)
-                .Use(ShowExceptions.Middleware)
+                .ShowExceptions()
                 .ContentType()
                 .Map("/wilson", map => map.Run(Wilson.App))
                 .Map("/wilsonasync", map => map.Run(Wilson.App, true))

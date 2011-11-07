@@ -5,12 +5,18 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Gate.Owin;
+using Gate.Builder;
 
 namespace Gate.Middleware
 {
-    public partial class ShowExceptions
+    public static partial class ShowExceptionsExtensions
     {
-        public static AppDelegate Middleware(AppDelegate app)
+        public static IAppBuilder ShowExceptions(this IAppBuilder builder)
+        {
+            return builder.Use(a => Middleware(a));
+        }
+
+        static AppDelegate Middleware(AppDelegate app)
         {
             return (env, result, fault) =>
             {
@@ -67,7 +73,7 @@ namespace Gate.Middleware
             }
         }
 
-        public static IEnumerable<Frame> StackFrames(IEnumerable<string> stackTraces)
+        internal static IEnumerable<Frame> StackFrames(IEnumerable<string> stackTraces)
         {
             foreach (var stackTrace in stackTraces.Where(value => !string.IsNullOrWhiteSpace(value)))
             {
@@ -79,8 +85,7 @@ namespace Gate.Middleware
             }
         }
 
-
-        static Frame StackFrame(Chunk line)
+        internal static Frame StackFrame(Chunk line)
         {
             line.Advance("  at ");
             var function = line.Advance(" in ").ToString();
@@ -107,7 +112,7 @@ namespace Gate.Middleware
             return frame;
         }
 
-        class Chunk
+        internal class Chunk
         {
             public string Text;
             public int Start;
@@ -145,7 +150,7 @@ namespace Gate.Middleware
             }
         }
 
-        public class Frame
+        internal class Frame
         {
             public string Function;
             public string File;
