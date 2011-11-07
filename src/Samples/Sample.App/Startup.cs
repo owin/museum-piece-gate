@@ -12,7 +12,7 @@ namespace Sample.App
         {
             var nancyOwinHost = new NancyOwinHost();
             builder
-                .Use(RewindableBody.Middleware)
+                .RewindableBody()
                 .ShowExceptions()
                 .ContentType()
                 .Map("/wilson", map => map.Run(Wilson.App))

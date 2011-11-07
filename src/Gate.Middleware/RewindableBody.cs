@@ -9,12 +9,17 @@ using Gate.Utils;
 
 namespace Gate.Middleware
 {
-    public class RewindableBody 
+    public static class RewindableBodyExtensions
     {
-        static readonly MethodInfo RewindableBodyInvoke = typeof (RewindableBody).GetMethod("Invoke");
+        static readonly MethodInfo RewindableBodyInvoke = typeof (RewindableBodyExtensions).GetMethod("Invoke");
         const int DefaultTempFileThresholdBytes = 64 << 10; //64k
 
-        public static AppDelegate Middleware(AppDelegate app)
+        public static IAppBuilder RewindableBody(this IAppBuilder builder)
+        {
+            return builder.Use(a => Middleware(a));
+        }
+
+        static AppDelegate Middleware(AppDelegate app)
         {
             return (env, result, fault) =>
             {
@@ -313,7 +318,7 @@ namespace Gate.Middleware
             }
         }
 
-        public class Signal
+        class Signal
         {
             bool _signaled;
             Action _continuation;

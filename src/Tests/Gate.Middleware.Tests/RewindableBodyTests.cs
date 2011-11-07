@@ -20,14 +20,14 @@ namespace Gate.Middleware.Tests
                 complete();
                 return () => { };
             };
-            var wrapped = RewindableBody.Wrap(body);
+            var wrapped = RewindableBodyExtensions.Wrap(body);
             Assert.That(wrapped, Is.Not.Null);
         }
 
         [Test]
         public void Calling_wrap_should_return_null_delegate_if_argument_null()
         {
-            var wrapped = RewindableBody.Wrap((BodyDelegate) null);
+            var wrapped = RewindableBodyExtensions.Wrap((BodyDelegate) null);
             Assert.That(wrapped, Is.Null);
         }
 
@@ -42,7 +42,7 @@ namespace Gate.Middleware.Tests
                 complete();
                 return () => { };
             };
-            var wrapped = RewindableBody.Wrap(body);
+            var wrapped = RewindableBodyExtensions.Wrap(body);
 
             var consumer1 = new FakeConsumer(false);
             consumer1.InvokeBodyDelegate(wrapped, true);
@@ -73,7 +73,7 @@ namespace Gate.Middleware.Tests
                 complete();
                 return () => { };
             };
-            var wrapped = RewindableBody.Wrap(body);
+            var wrapped = RewindableBodyExtensions.Wrap(body);
 
             var consumer1 = new FakeConsumer(false);
             consumer1.InvokeBodyDelegate(wrapped, true);
