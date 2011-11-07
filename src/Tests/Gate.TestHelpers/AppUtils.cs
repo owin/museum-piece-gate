@@ -111,5 +111,10 @@ namespace Gate.TestHelpers
         {
             return builder.Run(Simple(status, headers, body));
         }
+
+        public static IAppBuilder Simple(this IAppBuilder builder, string status, IDictionary<string, string> headers, string body)
+        {
+            return builder.Run(Simple(status, headers, body));
+        }
     }
 }

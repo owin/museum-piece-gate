@@ -14,7 +14,7 @@ namespace Sample.App
             builder
                 .Use(RewindableBody.Middleware)
                 .Use(ShowExceptions.Middleware)
-                .Use(ContentType.Middleware, "text/html")
+                .ContentType()
                 .Map("/wilson", map => map.Run(Wilson.App))
                 .Map("/wilsonasync", map => map.Run(Wilson.App, true))
                 .Cascade(DefaultPage.App(), Delegates.ToDelegate(nancyOwinHost.ProcessRequest));

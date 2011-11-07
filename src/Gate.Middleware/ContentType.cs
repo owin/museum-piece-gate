@@ -9,16 +9,21 @@ namespace Gate.Middleware
     /// <summary>
     /// Sets content type in response if none present
     /// </summary>
-    public class ContentType 
-    {        
+    public static class ContentTypeExtensions
+    {
         const string DefaultContentType = "text/html";
 
-        public static AppDelegate Middleware(AppDelegate app)
+        public static IAppBuilder ContentType(this IAppBuilder builder)
         {
-            return Middleware(app, DefaultContentType);
+            return builder.ContentType(DefaultContentType);
         }
 
-        public static AppDelegate Middleware(AppDelegate app, string contentType)
+        public static IAppBuilder ContentType(this IAppBuilder builder, string contentType)
+        {
+            return builder.Use(a => Middleware(a, contentType));
+        }
+
+        static AppDelegate Middleware(AppDelegate app, string contentType)
         {
             return (env, result, fault) => app(
                 env,
