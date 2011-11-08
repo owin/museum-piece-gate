@@ -74,5 +74,35 @@ namespace Gate
         {
             return builder.Use(app => middleware(app.ToAction(), arg1, arg2, arg3, arg4).ToDelegate());
         }
+
+
+        /* 
+         * Extension methods take an OwinApp factory func and its associated parameters.
+         */
+
+        public static IAppBuilder Use(this IAppBuilder builder, Func<OwinApp, OwinApp> middleware)
+        {
+            return builder.Use(app => middleware(app.ToApp()).ToDelegate());
+        }
+
+        public static IAppBuilder Use<T1>(this IAppBuilder builder, Func<OwinApp, T1, OwinApp> middleware, T1 arg1)
+        {
+            return builder.Use(app => middleware(app.ToApp(), arg1).ToDelegate());
+        }
+
+        public static IAppBuilder Use<T1, T2>(this IAppBuilder builder, Func<OwinApp, T1, T2, OwinApp> middleware, T1 arg1, T2 arg2)
+        {
+            return builder.Use(app => middleware(app.ToApp(), arg1, arg2).ToDelegate());
+        }
+
+        public static IAppBuilder Use<T1, T2, T3>(this IAppBuilder builder, Func<OwinApp, T1, T2, T3, OwinApp> middleware, T1 arg1, T2 arg2, T3 arg3)
+        {
+            return builder.Use(app => middleware(app.ToApp(), arg1, arg2, arg3).ToDelegate());
+        }
+
+        public static IAppBuilder Use<T1, T2, T3, T4>(this IAppBuilder builder, Func<OwinApp, T1, T2, T3, T4, OwinApp> middleware, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+        {
+            return builder.Use(app => middleware(app.ToApp(), arg1, arg2, arg3, arg4).ToDelegate());
+        }
     }
 }
