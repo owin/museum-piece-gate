@@ -25,11 +25,13 @@ namespace Gate.TestHelpers
             Status = status ?? "200 OK";
             Headers = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             Body = body;
+            AppDelegate = Call;
         }
 
         public FakeApp(Exception faultException)
         {
             FaultException = faultException;
+            AppDelegate = Call;
         }
 
         /// <summary>
@@ -75,13 +77,15 @@ namespace Gate.TestHelpers
             get { return new Environment(Env); }
         }
 
+        public AppDelegate AppDelegate { get; set; }
+
         /// <summary>
         /// The actual app delegate
         /// </summary>
         /// <param name="env"></param>
         /// <param name="result"></param>
         /// <param name="fault"></param>
-        public void AppDelegate(
+        public void Call(
             IDictionary<string, object> env,
             ResultDelegate result,
             Action<Exception> fault)

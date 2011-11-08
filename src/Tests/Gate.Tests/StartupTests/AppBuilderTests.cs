@@ -212,7 +212,7 @@ namespace Gate.Tests.StartupTests
             Assert.That(callResult.Status, Is.EqualTo("200 OKAppendCustom"));
         }
 
-        static AppAction AddStatus(AppAction app, string append)
+        static readonly Func<AppAction, string, AppAction> AddStatus = delegate(AppAction app, string append)
         {
             return (env, result, fault) =>
                 app(
@@ -220,7 +220,7 @@ namespace Gate.Tests.StartupTests
                     (status, headers, body) =>
                         result(status + append, headers, body),
                     fault);
-        }
+        };
 
         [Test]
         public void AppBuilder_has_action_overloads_to_support_pure_system_namespace_delegates()

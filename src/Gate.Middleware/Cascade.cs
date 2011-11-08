@@ -15,7 +15,7 @@ namespace Gate.Middleware
 
         public static IAppBuilder Cascade(this IAppBuilder builder, params Action<IAppBuilder>[] apps)
         {
-            return builder.Cascade(apps.Select(builder.Build).ToArray());
+            return builder.Cascade(apps.Select(builder.Build<AppDelegate>).ToArray());
         }
 
         static AppDelegate Middleware(IEnumerable<AppDelegate> apps)
