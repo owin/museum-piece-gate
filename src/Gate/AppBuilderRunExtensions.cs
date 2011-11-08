@@ -25,53 +25,63 @@ namespace Gate
          * Fundamental definition of Run.
          */
 
-        public static IAppBuilder Run(this IAppBuilder builder, Func<AppDelegate> app)
+        public static IAppBuilder Run<TApp>(this IAppBuilder builder, Func<TApp> app)
         {
-            return builder.Use(_ => app());
+            return builder.Use<TApp>(_ => app());
         }
 
         /* 
          * Extension method to support passing in an already-built delegate.
          */
 
-        public static IAppBuilder Run(this IAppBuilder builder, AppDelegate app)
+        public static IAppBuilder Run<TApp>(this IAppBuilder builder, TApp app)
         {
-            return builder.Run(() => app);
+            return builder.Use<TApp>(_ => app);
         }
 
         /* 
-         * Extension methods take an AppDelegate factory func and its associated parameters.
+         * Extension methods take a TApp factory func and its associated parameters.
          */
+
+        public static IAppBuilder Run<TApp, T1>(this IAppBuilder builder, Func<T1, TApp> app, T1 arg1)
+        {
+            return builder.Use<TApp>(_ => app(arg1));
+        }
+
+        public static IAppBuilder Run<TApp, T1, T2>(this IAppBuilder builder, Func<T1, T2, TApp> app, T1 arg1, T2 arg2)
+        {
+            return builder.Use<TApp>(_ => app(arg1, arg2));
+        }
+
+        public static IAppBuilder Run<TApp, T1, T2, T3>(this IAppBuilder builder, Func<T1, T2, T3, TApp> app, T1 arg1, T2 arg2, T3 arg3)
+        {
+            return builder.Use<TApp>(_ => app(arg1, arg2, arg3));
+        }
+
+        public static IAppBuilder Run<TApp, T1, T2, T3, T4>(this IAppBuilder builder, Func<T1, T2, T3, T4, TApp> app, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+        {
+            return builder.Use<TApp>(_ => app(arg1, arg2, arg3, arg4));
+        }
+
+
+        // strongly-typed to avoid "method group" issues when a class method is used
+        public static IAppBuilder Run(this IAppBuilder builder, AppDelegate app)
+        { return builder.Use<AppDelegate>(_ => app); }
+
+        public static IAppBuilder Run(this IAppBuilder builder, Func<AppDelegate> app)
+        { return builder.Use<AppDelegate>(_ => app()); }
 
         public static IAppBuilder Run<T1>(this IAppBuilder builder, Func<T1, AppDelegate> app, T1 arg1)
-        {
-            return builder.Run(() => app(arg1));
-        }
+        { return builder.Use<AppDelegate>(_ => app(arg1)); }
 
         public static IAppBuilder Run<T1, T2>(this IAppBuilder builder, Func<T1, T2, AppDelegate> app, T1 arg1, T2 arg2)
-        {
-            return builder.Run(() => app(arg1, arg2));
-        }
+        { return builder.Use<AppDelegate>(_ => app(arg1, arg2)); }
 
         public static IAppBuilder Run<T1, T2, T3>(this IAppBuilder builder, Func<T1, T2, T3, AppDelegate> app, T1 arg1, T2 arg2, T3 arg3)
-        {
-            return builder.Run(() => app(arg1, arg2, arg3));
-        }
+        { return builder.Use<AppDelegate>(_ => app(arg1, arg2, arg3)); }
 
         public static IAppBuilder Run<T1, T2, T3, T4>(this IAppBuilder builder, Func<T1, T2, T3, T4, AppDelegate> app, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
-        {
-            return builder.Run(() => app(arg1, arg2, arg3, arg4));
-        }
-
-        /* 
-         * Extension method to support passing in an already-built action.
-         */
-
-        public static IAppBuilder Run(this IAppBuilder builder, AppAction app)
-        {
-            return builder.Run(() => app.ToDelegate());
-        }
-
+        { return builder.Use<AppDelegate>(_ => app(arg1, arg2, arg3, arg4)); }
 
     }
 }

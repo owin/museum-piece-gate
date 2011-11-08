@@ -22,14 +22,14 @@ namespace Gate.Builder
             _map[path] = app;
         }
 
-        public IAppBuilder Use(Func<AppDelegate, AppDelegate> middleware)
+        public IAppBuilder Use<TApp>(Func<TApp, TApp> middleware)
         {
             return _builder.Use(middleware);
         }
 
-        public AppDelegate Build(Action<IAppBuilder> fork)
+        public TApp Build<TApp>(Action<IAppBuilder> fork)
         {
-            return _builder.Build(fork);
+            return _builder.Build<TApp>(fork);
         }
     }
 }

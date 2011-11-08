@@ -5,7 +5,7 @@ namespace Gate
 {
     public interface IAppBuilder
     {
-        IAppBuilder Use(Func<AppDelegate, AppDelegate> middleware);
-        AppDelegate Build(Action<IAppBuilder> fork);
+        IAppBuilder Use<TApp>(Func<TApp, TApp> middleware);
+        TApp Build<TApp>(Action<IAppBuilder> fork);
     }
 }
