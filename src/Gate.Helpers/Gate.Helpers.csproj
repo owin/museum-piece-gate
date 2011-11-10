@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -41,9 +42,24 @@
   <ItemGroup>
     <Compile Include="AsyncResult.cs" />
     <Compile Include="Body.cs" />
+    <Compile Include="Cascade.cs" />
+    <Compile Include="CascadeExtentions.cs" />
+    <Compile Include="ContentType.cs" />
+    <Compile Include="BodyStream.cs" />
+    <Compile Include="Cascade.cs" />
+    <Compile Include="CascadeExtentions.cs" />
+    <Compile Include="ContentType.cs" />
+    <Compile Include="FileBody.cs" />
+    <Compile Include="FileServer.cs" />
     <Compile Include="InputStream.cs" />
+    <Compile Include="Mime.cs" />
     <Compile Include="OutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StateMachine.cs" />
+    <Compile Include="TextBody.cs" />
+    <Compile Include="Utils\RangeHeader.cs" />
+    <Compile Include="Utils\HttpFormatExtensions.cs" />
+    <Compile Include="Utils\StreamAwaiter.cs" />
     <Compile Include="Wilson.cs" />
   </ItemGroup>
   <ItemGroup>
