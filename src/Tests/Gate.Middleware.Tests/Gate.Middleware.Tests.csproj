@@ -44,10 +44,6 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Gate.Helpers\Gate.Helpers.csproj">
-      <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
-      <Name>Gate.Helpers</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Gate.Middleware\Gate.Middleware.csproj">
       <Project>{60C36D8F-BE53-4733-BD92-CFA103D46020}</Project>
       <Name>Gate.Middleware</Name>

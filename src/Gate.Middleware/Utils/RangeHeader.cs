@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Gate.Helpers.Utils
+namespace Gate.Middleware.Utils
 {
     public class RangeHeader
     {

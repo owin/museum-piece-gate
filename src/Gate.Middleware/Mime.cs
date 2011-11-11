@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Gate.Helpers
+namespace Gate.Middleware
 {
     public class Mime
     {

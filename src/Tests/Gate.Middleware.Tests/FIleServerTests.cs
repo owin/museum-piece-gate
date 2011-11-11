@@ -1,7 +1,6 @@
 using System;
 using System.IO;
-using Gate.Helpers;
-using Gate.Helpers.Utils;
+using Gate.Middleware.Utils;
 using Gate.TestHelpers;
 using NUnit.Framework;
 

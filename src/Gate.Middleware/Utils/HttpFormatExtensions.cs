@@ -1,7 +1,7 @@
 using System;
 using System.Web;
 
-namespace Gate.Helpers.Utils
+namespace Gate.Middleware.Utils
 {
     public static class HttpFormatExtensions
     {

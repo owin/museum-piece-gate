@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using Gate.Owin;
 
-namespace Gate.Helpers
+namespace Gate.Middleware
 {
     public class FileBody
     {

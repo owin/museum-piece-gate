@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -32,7 +32,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -42,17 +41,9 @@
   <ItemGroup>
     <Compile Include="AsyncResult.cs" />
     <Compile Include="Body.cs" />
-    <Compile Include="BodyStream.cs" />
-    <Compile Include="FileBody.cs" />
-    <Compile Include="FileServer.cs" />
     <Compile Include="InputStream.cs" />
-    <Compile Include="Mime.cs" />
     <Compile Include="OutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StateMachine.cs" />
-    <Compile Include="TextBody.cs" />
-    <Compile Include="Utils\RangeHeader.cs" />
-    <Compile Include="Utils\HttpFormatExtensions.cs" />
     <Compile Include="Wilson.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -64,12 +55,6 @@
       <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
       <Name>Gate.Owin</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ShowExceptions.View.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>ShowExceptions.View.cs</LastGenOutput>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
