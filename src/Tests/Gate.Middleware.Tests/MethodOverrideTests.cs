@@ -15,7 +15,7 @@ namespace Gate.Middleware.Tests
         public void Method_is_overridden_if_override_present()
         {
             var result = new FakeHost(AppBuilder.BuildConfiguration(b => b
-                .MethodOverride()
+                .UseMethodOverride()
                 .Run(AppUtils.ShowEnvironment))).Invoke(r => {
                     r.Method = "POST";
                     r.Headers = new Dictionary<string, string>() { { "x-http-method-override", "DELETE" } };
@@ -28,7 +28,7 @@ namespace Gate.Middleware.Tests
         public void Method_is_unchanged_if_override_not_present()
         {
             var result = new FakeHost(AppBuilder.BuildConfiguration(b => b
-                .MethodOverride()
+                .UseMethodOverride()
                 .Run(AppUtils.ShowEnvironment))).Invoke(r =>
                 {
                     r.Method = "POST";

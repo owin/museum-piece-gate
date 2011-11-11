@@ -9,14 +9,14 @@ using Gate.Builder;
 
 namespace Gate.Middleware
 {
-    public static partial class ShowExceptionsExtensions
+    public static partial class ShowExceptions
     {
-        public static IAppBuilder ShowExceptions(this IAppBuilder builder)
+        public static IAppBuilder UseShowExceptions(this IAppBuilder builder)
         {
-            return builder.Use(a => Middleware(a));
+            return builder.Use(Middleware);
         }
 
-        static AppDelegate Middleware(AppDelegate app)
+        public static AppDelegate Middleware(AppDelegate app)
         {
             return (env, result, fault) =>
             {
@@ -73,7 +73,7 @@ namespace Gate.Middleware
             }
         }
 
-        internal static IEnumerable<Frame> StackFrames(IEnumerable<string> stackTraces)
+        static IEnumerable<Frame> StackFrames(IEnumerable<string> stackTraces)
         {
             foreach (var stackTrace in stackTraces.Where(value => !string.IsNullOrWhiteSpace(value)))
             {
@@ -85,7 +85,7 @@ namespace Gate.Middleware
             }
         }
 
-        internal static Frame StackFrame(Chunk line)
+        static Frame StackFrame(Chunk line)
         {
             line.Advance("  at ");
             var function = line.Advance(" in ").ToString();
@@ -150,7 +150,7 @@ namespace Gate.Middleware
             }
         }
 
-        internal class Frame
+        public class Frame
         {
             public string Function;
             public string File;

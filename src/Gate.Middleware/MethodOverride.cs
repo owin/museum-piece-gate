@@ -1,21 +1,25 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Gate.Owin;
 
 namespace Gate.Middleware
 {
-    public static class MethodOverrideExtensions
+    public static class MethodOverride
     {
-        public static IAppBuilder MethodOverride(this IAppBuilder builder)
+        public static IAppBuilder UseMethodOverride(this IAppBuilder builder)
         {
-            return builder.Transform((e, c, ex) =>
-            {
-                if (e.Headers.ContainsKey("x-http-method-override"))
-                    e.Method = e.Headers["x-http-method-override"];
+            return builder.Use(Middleware);
+        }
 
-                c(e);
-            });
+        public static AppDelegate Middleware(AppDelegate app)
+        {
+            return (env, result, fault) =>
+            {
+                var req = new Request(env);
+                string method;
+                if (req.Headers.TryGetValue("x-http-method-override", out method))
+                    req.Method = method;
+
+                app(env, result, fault);
+            };
         }
     }
 }
