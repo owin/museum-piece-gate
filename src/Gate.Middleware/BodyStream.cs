@@ -1,7 +1,8 @@
 using System;
 using System.Linq;
+using Gate.Helpers;
 
-namespace Gate.Helpers
+namespace Gate.Middleware
 {
     public enum BodyStreamCommand
     {

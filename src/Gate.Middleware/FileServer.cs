@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Gate.Helpers.Utils;
+using Gate.Helpers;
+using Gate.Middleware.Utils;
 using Gate.Owin;
 
-namespace Gate.Helpers
+namespace Gate.Middleware
 {
     public class FileServer
     {
