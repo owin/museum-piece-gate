@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace Gate.Middleware.Tests
 {
     [TestFixture]
-    public class FIleServerTests
+    public class FileServerTests
     {
         string root;
         FileServer fileServer;
