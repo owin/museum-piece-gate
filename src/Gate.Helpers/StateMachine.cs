@@ -16,7 +16,7 @@ namespace Gate.Helpers
 
         public TState State { get; private set; }
 
-        protected void Initialize(TState state)
+        public void Initialize(TState state)
         {
             State = state;
         }
