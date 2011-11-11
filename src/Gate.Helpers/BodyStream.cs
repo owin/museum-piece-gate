@@ -22,21 +22,24 @@ namespace Gate.Helpers
         Resumed
     }
 
-    public class BodyStream : StateMachine<BodyStreamCommand, BodyStreamState>
+    public class BodyStream
     {
+        private readonly StateMachine<BodyStreamCommand, BodyStreamState> stateMachine;
+
         public Func<ArraySegment<byte>, Action, bool> Next { get; private set; }
         public Action<Exception> Error { get; private set; }
         public Action Complete { get; private set; }
 
         public BodyStream(Func<ArraySegment<byte>, Action, bool> data, Action<Exception> error, Action complete)
         {
-            Initialize(BodyStreamState.Ready);
+            stateMachine = new StateMachine<BodyStreamCommand, BodyStreamState>();
+            stateMachine.Initialize(BodyStreamState.Ready);
 
-            MapTransition(BodyStreamCommand.Pause, BodyStreamState.Paused);
-            MapTransition(BodyStreamCommand.Start, BodyStreamState.Started);
-            MapTransition(BodyStreamCommand.Cancel, BodyStreamState.Cancelled);
-            MapTransition(BodyStreamCommand.Resume, BodyStreamState.Resumed);
-            MapTransition(BodyStreamCommand.Stop, BodyStreamState.Stopped);
+            stateMachine.MapTransition(BodyStreamCommand.Pause, BodyStreamState.Paused);
+            stateMachine.MapTransition(BodyStreamCommand.Start, BodyStreamState.Started);
+            stateMachine.MapTransition(BodyStreamCommand.Cancel, BodyStreamState.Cancelled);
+            stateMachine.MapTransition(BodyStreamCommand.Resume, BodyStreamState.Resumed);
+            stateMachine.MapTransition(BodyStreamCommand.Stop, BodyStreamState.Stopped);
 
             Next = data;
             Error = error;
@@ -50,14 +53,14 @@ namespace Gate.Helpers
                 throw new ArgumentNullException("start", "Missing start action for the BodyStream.");
             }
 
-            On(BodyStreamCommand.Start, start);
-            Invoke(BodyStreamCommand.Start);
+            stateMachine.On(BodyStreamCommand.Start, start);
+            stateMachine.Invoke(BodyStreamCommand.Start);
 
             if (dispose != null)
             {
                 foreach (var command in new[] { BodyStreamCommand.Stop, BodyStreamCommand.Cancel })
                 {
-                    On(command, dispose);
+                    stateMachine.On(command, dispose);
                 }
             }
         }
@@ -75,7 +78,7 @@ namespace Gate.Helpers
 
             if (continuation != null)
             {
-                On(BodyStreamCommand.Resume, continuation);
+                stateMachine.On(BodyStreamCommand.Resume, continuation);
                 resume = Resume;
                 pause = Pause;
             }
@@ -94,28 +97,28 @@ namespace Gate.Helpers
 
         public void Cancel()
         {
-            Invoke(BodyStreamCommand.Cancel);
+            stateMachine.Invoke(BodyStreamCommand.Cancel);
         }
 
         public void Pause()
         {
-            Invoke(BodyStreamCommand.Pause);
+            stateMachine.Invoke(BodyStreamCommand.Pause);
         }
 
         public void Resume()
         {
-            Invoke(BodyStreamCommand.Resume);
+            stateMachine.Invoke(BodyStreamCommand.Resume);
         }
 
         public void Stop()
         {
-            Invoke(BodyStreamCommand.Stop);
+            stateMachine.Invoke(BodyStreamCommand.Stop);
         }
 
         public bool CanSend()
         {
             var validStates = new[] { BodyStreamState.Started, BodyStreamState.Resumed };
-            return validStates.Contains(State);
+            return validStates.Contains(stateMachine.State);
         }
     }
 }
