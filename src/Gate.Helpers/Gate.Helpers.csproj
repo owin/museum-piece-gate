@@ -42,13 +42,7 @@
   <ItemGroup>
     <Compile Include="AsyncResult.cs" />
     <Compile Include="Body.cs" />
-    <Compile Include="Cascade.cs" />
-    <Compile Include="CascadeExtentions.cs" />
-    <Compile Include="ContentType.cs" />
     <Compile Include="BodyStream.cs" />
-    <Compile Include="Cascade.cs" />
-    <Compile Include="CascadeExtentions.cs" />
-    <Compile Include="ContentType.cs" />
     <Compile Include="FileBody.cs" />
     <Compile Include="FileServer.cs" />
     <Compile Include="InputStream.cs" />
@@ -59,7 +53,6 @@
     <Compile Include="TextBody.cs" />
     <Compile Include="Utils\RangeHeader.cs" />
     <Compile Include="Utils\HttpFormatExtensions.cs" />
-    <Compile Include="Utils\StreamAwaiter.cs" />
     <Compile Include="Wilson.cs" />
   </ItemGroup>
   <ItemGroup>
