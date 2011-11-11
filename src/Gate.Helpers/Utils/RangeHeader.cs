@@ -80,7 +80,7 @@ namespace Gate.Helpers.Utils
 
                 if (r0Value <= r1Value)
                 {
-                    ranges.Concat(new[] { new Tuple<long, long>(r0Value, r1Value) });
+                    ranges = ranges.Concat(new[] { new Tuple<long, long>(r0Value, r1Value) });
                 }
             }
 
