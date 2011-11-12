@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Gate.Helpers
+namespace Gate.Middleware
 {
-    public partial class ShowExceptions
+    public static partial class ShowExceptionsExtensions
     {
         static void ErrorPage(IDictionary<string,object> env, Exception ex, Action<string> write)
         {
+            // XXX test this more thoroughly on mono, it shouldn't throw NullRef,
+            // but rather, branch gracefully if something comes up null
+            try {
+
             var request = new Request(env);
             var path = request.PathBase + request.Path;
             var frames = StackFrames(ex);
@@ -301,6 +305,9 @@ namespace Gate.Helpers
 </body>
 </html>
             "); #>
+            } catch {
+                return;
+            }
         }
     }
 }
