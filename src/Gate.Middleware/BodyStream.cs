@@ -27,12 +27,17 @@ namespace Gate.Middleware
     {
         private readonly StateMachine<BodyStreamCommand, BodyStreamState> stateMachine;
 
-        public Func<ArraySegment<byte>, Action, bool> Next { get; private set; }
+        public Func<ArraySegment<byte>, Action, bool> Data { get; private set; }
         public Action<Exception> Error { get; private set; }
         public Action Complete { get; private set; }
 
         public BodyStream(Func<ArraySegment<byte>, Action, bool> data, Action<Exception> error, Action complete)
         {
+            if (data == null)
+            {
+                throw new ArgumentException("An on-next callback must be supplied to the body stream.", "data");
+            }
+
             stateMachine = new StateMachine<BodyStreamCommand, BodyStreamState>();
             stateMachine.Initialize(BodyStreamState.Ready);
 
@@ -42,7 +47,7 @@ namespace Gate.Middleware
             stateMachine.MapTransition(BodyStreamCommand.Resume, BodyStreamState.Resumed);
             stateMachine.MapTransition(BodyStreamCommand.Stop, BodyStreamState.Stopped);
 
-            Next = data;
+            Data = data;
             Error = error;
             Complete = complete;
         }
@@ -69,11 +74,25 @@ namespace Gate.Middleware
         public void Finish()
         {
             Stop();
-            Complete();
+
+            if (Complete != null)
+            {
+                Complete();
+            }
         }
 
         public void SendBytes(ArraySegment<byte> part, Action continuation, Action complete)
         {
+            if (!CanSend())
+            {
+                if (complete != null)
+                {
+                    complete.Invoke();
+                }
+
+                return;
+            }
+
             Action resume = null;
             Action pause = () => { };
 
@@ -85,7 +104,7 @@ namespace Gate.Middleware
             }
 
             // call on-next with back-pressure support
-            if (Next(part, resume))
+            if (Data(part, resume))
             {
                 pause.Invoke();
             }

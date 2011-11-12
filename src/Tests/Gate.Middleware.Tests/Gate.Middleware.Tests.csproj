@@ -62,6 +62,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BodyStreamTests.cs" />
     <Compile Include="ContentLengthTests.cs">
       <SubType>Code</SubType>
     </Compile>

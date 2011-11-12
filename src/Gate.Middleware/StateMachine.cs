@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Gate.Helpers
 {
@@ -10,8 +9,6 @@ namespace Gate.Helpers
     {
         private readonly IDictionary<TCommand, Action> handlers =
             new Dictionary<TCommand, Action>();
-        private readonly IDictionary<TCommand, IEnumerable<Action>> listeners =
-            new Dictionary<TCommand, IEnumerable<Action>>();
         private readonly IDictionary<TCommand, TState> transitions = new Dictionary<TCommand, TState>();
 
         public TState State { get; private set; }
@@ -25,16 +22,6 @@ namespace Gate.Helpers
         {
             transitions[command] = state;
             return this;
-        }
-
-        public void AddListener(TCommand command, Action listener)
-        {
-            if (!listeners.ContainsKey(command))
-            {
-                listeners[command] = Enumerable.Empty<Action>();
-            }
-
-            listeners[command] = listeners[command].Concat(new[] { listener });
         }
 
         public void On(TCommand command, Action handler)
@@ -52,14 +39,6 @@ namespace Gate.Helpers
             if (handlers.ContainsKey(command))
             {
                 handlers[command].Invoke();
-            }
-
-            if (listeners.ContainsKey(command))
-            {
-                foreach (var listener in listeners[command])
-                {
-                    listener.Invoke();
-                }
             }
         }
     }
