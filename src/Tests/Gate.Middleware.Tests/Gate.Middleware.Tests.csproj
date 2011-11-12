@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -62,13 +62,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FIleServerTests.cs" />
+    <Compile Include="ContentLengthTests.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileServerTests.cs" />
     <Compile Include="MethodOverrideTests.cs" />
     <Compile Include="PredicateTests.cs" />
     <Compile Include="BasicAuthTests.cs" />
     <Compile Include="StaticTests.cs" />
     <Compile Include="TransformTests.cs" />
-    <Compile Include="ContentLengthTests.cs" />
     <Compile Include="ChunkedTests.cs" />
     <Compile Include="CascadeTests.cs" />
     <Compile Include="ContentTypeTests.cs" />
@@ -86,6 +88,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-</Project>
-</Project>
 </Project>
