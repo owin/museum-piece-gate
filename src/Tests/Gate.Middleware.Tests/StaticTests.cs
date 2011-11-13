@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Gate.Builder;
-using Gate.Owin;
 using Gate.TestHelpers;
 using NUnit.Framework;
 
@@ -14,7 +13,7 @@ namespace Gate.Middleware.Tests
         public void Static_serves_files_from_default_location()
         {
             var result = AppUtils.CallPipe(b =>
-                b.Static(), FakeHostRequest.GetRequest("/kayak.png"));
+                b.UseStatic(), FakeHostRequest.GetRequest("/kayak.png"));
 
             Assert.That(result.Status, Is.EqualTo("200 OK"));
         }
@@ -24,7 +23,7 @@ namespace Gate.Middleware.Tests
         {
             var root = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "public");
             var result = AppUtils.CallPipe(b =>
-                b.Static(root), FakeHostRequest.GetRequest("/kayak.png"));
+                b.UseStatic(root), FakeHostRequest.GetRequest("/kayak.png"));
 
             Assert.That(result.Status, Is.EqualTo("200 OK"));
         }
@@ -34,7 +33,7 @@ namespace Gate.Middleware.Tests
         {
             var root = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "public");
             var result = AppUtils.CallPipe(b =>
-                b.Static(root, new[] {"/scripts/lib.js"}), FakeHostRequest.GetRequest("/scripts/lib.js"));
+                b.UseStatic(root, new[] {"/scripts/lib.js"}), FakeHostRequest.GetRequest("/scripts/lib.js"));
 
             Assert.That(result.Status, Is.EqualTo("200 OK"));
         }
@@ -44,7 +43,7 @@ namespace Gate.Middleware.Tests
         {
             var root = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "public");
             var result = AppUtils.CallPipe(b =>
-                b.Static(root, new[] { "/scripts/lib.js" }), FakeHostRequest.GetRequest("/kayak.png"));
+                b.UseStatic(root, new[] { "/scripts/lib.js" }), FakeHostRequest.GetRequest("/kayak.png"));
 
             Assert.That(result.Status, Is.EqualTo("404 Not Found"));
         }
@@ -54,7 +53,7 @@ namespace Gate.Middleware.Tests
         {
             var app = new FakeApp("200 OK", "Hello World");
             app.Headers["Content-Type"] = "text/plain";
-            var config = AppBuilder.BuildConfiguration(b => b.Static().Run(app.AppDelegate));
+            var config = AppBuilder.BuildConfiguration(b => b.UseStatic().Run(app.AppDelegate));
             var host = new FakeHost(config);
             var response = host.GET("/johnson/and/johnson");
 
@@ -67,7 +66,7 @@ namespace Gate.Middleware.Tests
         public void Static_returns_404_on_missing_file()
         {
             var result = AppUtils.CallPipe(b =>
-                b.Static(), FakeHostRequest.GetRequest("/scripts/penicillin.js"));
+                b.UseStatic(), FakeHostRequest.GetRequest("/scripts/penicillin.js"));
 
             Assert.That(result.Status, Is.EqualTo("404 Not Found"));
         }

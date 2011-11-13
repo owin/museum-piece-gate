@@ -8,24 +8,24 @@ namespace Gate.Middleware
 {
     public static class StaticExtensions
     {
-        public static IAppBuilder Static(this IAppBuilder builder, string root, IEnumerable<string> urls)
+        public static IAppBuilder UseStatic(this IAppBuilder builder, string root, IEnumerable<string> urls)
         {
-            return builder.Use(app => new Static(app, root, urls).Invoke);
+            return builder.Use(Static.Middleware, root, urls);
         }
 
-        public static IAppBuilder Static(this IAppBuilder builder, IEnumerable<string> urls)
+        public static IAppBuilder UseStatic(this IAppBuilder builder, IEnumerable<string> urls)
         {
-            return builder.Use(app => new Static(app, urls).Invoke);
+            return builder.Use(Static.Middleware, urls);
         }
 
-        public static IAppBuilder Static(this IAppBuilder builder, string root)
+        public static IAppBuilder UseStatic(this IAppBuilder builder, string root)
         {
-            return builder.Use(app => new Static(app, root).Invoke);
+            return builder.Use(Static.Middleware, root);
         }
 
-        public static IAppBuilder Static(this IAppBuilder builder)
+        public static IAppBuilder UseStatic(this IAppBuilder builder)
         {
-            return builder.Use(app => new Static(app).Invoke);
+            return builder.Use(Static.Middleware);
         }
     }
 
@@ -64,6 +64,26 @@ namespace Gate.Middleware
             this.urls = urls;
 
             fileServer = new FileServer(root);
+        }
+
+        public static AppDelegate Middleware(AppDelegate app, string root, IEnumerable<string> urls)
+        {
+            return new Static(app, root, urls).Invoke;
+        }
+
+        public static AppDelegate Middleware(AppDelegate app, string root)
+        {
+            return new Static(app, root).Invoke;
+        }
+
+        public static AppDelegate Middleware(AppDelegate app, IEnumerable<string> urls)
+        {
+            return new Static(app, urls).Invoke;
+        }
+
+        public static AppDelegate Middleware(AppDelegate app)
+        {
+            return new Static(app).Invoke;
         }
 
         public void Invoke(IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault)
