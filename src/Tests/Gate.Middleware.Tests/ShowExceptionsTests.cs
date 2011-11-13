@@ -83,13 +83,13 @@ namespace Gate.Middleware.Tests
         //[Test]
         //public void Stack_frame_should_parse_with_and_without_line_numbers()
         //{
-        //    var frames = ShowExceptions.StackFrames(new[]{"  at foo in bar:line 42\r\n"}).ToArray();
+        //    var frames = ShowExceptionsExtensions.StackFrames(new[]{"  at foo in bar:line 42\r\n"}).ToArray();
         //    Assert.That(frames.Length, Is.EqualTo(1));
         //    Assert.That(frames[0].Function, Is.EqualTo("foo"));
         //    Assert.That(frames[0].File, Is.EqualTo("bar"));
         //    Assert.That(frames[0].Line, Is.EqualTo(42));
 
-        //    frames = ShowExceptions.StackFrames(new[]{"  at foo\r\n"}).ToArray();
+        //    frames = ShowExceptionsExtensions.StackFrames(new[]{"  at foo\r\n"}).ToArray();
         //    Assert.That(frames.Length, Is.EqualTo(1));
         //    Assert.That(frames[0].Function, Is.EqualTo("foo"));
         //    Assert.That(frames[0].File, Is.EqualTo(""));

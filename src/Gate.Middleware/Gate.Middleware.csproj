@@ -33,13 +33,21 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BodyStream.cs" />
+    <Compile Include="FileBody.cs" />
+    <Compile Include="FileServer.cs" />
     <Compile Include="MethodOverride.cs" />
+    <Compile Include="Mime.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BasicAuth.cs" />
     <Compile Include="Predicate.cs" />
+    <Compile Include="StateMachine.cs" />
+    <Compile Include="Static.cs" />
+    <Compile Include="TextBody.cs" />
     <Compile Include="Transform.cs" />
     <Compile Include="ContentLength.cs" />
     <Compile Include="Chunked.cs" />
@@ -52,6 +60,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ShowExceptions.View.tt</DependentUpon>
     </Compile>
+    <Compile Include="Utils\HttpFormatExtensions.cs" />
+    <Compile Include="Utils\RangeHeader.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gate.Owin\Gate.Owin.csproj">
@@ -62,6 +72,15 @@
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ShowExceptions.View.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ShowExceptions.View1.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
