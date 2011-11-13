@@ -39,6 +39,8 @@ namespace Gate.TestHelpers
                 {
                     var detail = env.Select(kv => new XElement(kv.Key, kv.Value));
                     var xml = new XElement("xml", detail.OfType<object>().ToArray());
+                    var headers = new Request(env).Headers.Select(kv => new XElement(kv.Key, kv.Value));
+                    xml.Add(new XElement("headers", headers.OfType<Object>().ToArray()));
                     response.Write(xml.ToString());
                     complete();
                 });
