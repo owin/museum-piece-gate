@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Gate
 {
-	public static class XForwardedFor
+    public static class XForwardedFor
     {
         static readonly string[] empty = new[] { "" };
 
@@ -28,14 +28,14 @@ namespace Gate
             return env.GetRemoteHosts().LastOrDefault();
         }
 
-        public static IEnumerable<string> GetRemoteAddresses(this IDictionary<string, object> env)
+        public static IEnumerable<string> GetProxiedAddresses(this IDictionary<string, object> env)
         {
             return env.GetRemoteHosts().Reverse().Skip(1).Reverse();
         }
 
-        public static IEnumerable<string> GetRemoteAddresses(this IDictionary<string, object> env, params string[] knownProxies)
+        public static IEnumerable<string> GetProxiedAddresses(this IDictionary<string, object> env, params string[] knownProxies)
         {
-            return env.GetRemoteAddresses().Reverse().SkipWhile(s => knownProxies.Contains(s)).Reverse();
+            return env.GetProxiedAddresses().Reverse().SkipWhile(s => knownProxies.Contains(s)).Reverse();
         }
 	}
 }
