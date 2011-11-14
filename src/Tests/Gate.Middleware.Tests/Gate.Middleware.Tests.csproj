@@ -72,5 +72,6 @@
     <Compile Include="ContentTypeTests.cs" />
     <Compile Include="RewindableBodyTests.cs" />
     <Compile Include="ShowExceptionsTests.cs" />
+    <Compile Include="XForwardedForTests.cs" />
   </ItemGroup>
 </Project>
