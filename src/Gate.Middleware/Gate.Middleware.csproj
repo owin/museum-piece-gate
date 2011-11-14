@@ -46,6 +46,7 @@
     <Compile Include="Cascade.cs" />
     <Compile Include="ContentType.cs" />
     <Compile Include="RewindableBody.cs" />
+    <Compile Include="XForwardedFor.cs" />
     <Compile Include="ShowExceptions.cs" />
     <Compile Include="ShowExceptions.View.cs">
       <AutoGen>True</AutoGen>
