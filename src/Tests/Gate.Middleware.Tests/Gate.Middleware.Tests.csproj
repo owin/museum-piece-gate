@@ -44,6 +44,10 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Gate.Builder\Gate.Builder.csproj">
+      <Project>{D26293A2-8533-4BF6-A9CC-A88455B0FF71}</Project>
+      <Name>Gate.Builder</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Gate.Middleware\Gate.Middleware.csproj">
       <Project>{60C36D8F-BE53-4733-BD92-CFA103D46020}</Project>
       <Name>Gate.Middleware</Name>
@@ -63,9 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BodyStreamTests.cs" />
-    <Compile Include="ContentLengthTests.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="ContentLengthTests.cs" />
     <Compile Include="FileServerTests.cs" />
     <Compile Include="MethodOverrideTests.cs" />
     <Compile Include="PredicateTests.cs" />

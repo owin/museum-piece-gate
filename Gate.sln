@@ -41,6 +41,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Middleware", "src\Gate
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Middleware.Tests", "src\Tests\Gate.Middleware.Tests\Gate.Middleware.Tests.csproj", "{AFFF8587-C837-433F-913A-BF34B0885243}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Builder", "src\Gate.Builder\Gate.Builder.csproj", "{D26293A2-8533-4BF6-A9CC-A88455B0FF71}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -221,6 +223,16 @@ Global
 		{AFFF8587-C837-433F-913A-BF34B0885243}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{AFFF8587-C837-433F-913A-BF34B0885243}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{AFFF8587-C837-433F-913A-BF34B0885243}.Release|x86.ActiveCfg = Release|Any CPU
+		{D26293A2-8533-4BF6-A9CC-A88455B0FF71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D26293A2-8533-4BF6-A9CC-A88455B0FF71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D26293A2-8533-4BF6-A9CC-A88455B0FF71}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D26293A2-8533-4BF6-A9CC-A88455B0FF71}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D26293A2-8533-4BF6-A9CC-A88455B0FF71}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D26293A2-8533-4BF6-A9CC-A88455B0FF71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D26293A2-8533-4BF6-A9CC-A88455B0FF71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D26293A2-8533-4BF6-A9CC-A88455B0FF71}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D26293A2-8533-4BF6-A9CC-A88455B0FF71}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D26293A2-8533-4BF6-A9CC-A88455B0FF71}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

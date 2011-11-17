@@ -1,7 +1,6 @@
 ﻿using System;
-using Gate.Owin;
 
-namespace Gate
+namespace Gate.Owin
 {
     public interface IAppBuilder
     {
