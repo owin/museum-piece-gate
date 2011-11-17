@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -44,9 +44,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Gate\Gate.csproj">
-      <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
-      <Name>Gate</Name>
+    <ProjectReference Include="..\..\Gate.Builder\Gate.Builder.csproj">
+      <Project>{D26293A2-8533-4BF6-A9CC-A88455B0FF71}</Project>
+      <Name>Gate.Builder</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Gate.Owin\Gate.Owin.csproj">
       <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>

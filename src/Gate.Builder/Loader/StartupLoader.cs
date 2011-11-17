@@ -159,21 +159,22 @@ namespace Gate.Builder.Loader
                 return null;
             }
 
-            if (Matches(methodInfo, typeof (void), typeof (IAppBuilder)))
+            if (Matches(methodInfo, typeof(void), typeof(IAppBuilder)))
             {
                 var instance = methodInfo.IsStatic ? null : Activator.CreateInstance(type);
-                return builder => methodInfo.Invoke(instance, new[] {builder});
+                return builder => methodInfo.Invoke(instance, new[] { builder });
             }
 
-            if (Matches(methodInfo, typeof (AppDelegate)))
+            if (Matches(methodInfo, typeof(AppDelegate)))
             {
                 var instance = methodInfo.IsStatic ? null : Activator.CreateInstance(type);
-                return builder => builder.Run((AppDelegate) methodInfo.Invoke(instance, new object[0] {}));
+                return builder => builder.Use<AppDelegate>(_ => (AppDelegate)methodInfo.Invoke(instance, new object[] { }));
             }
 
-            if (Matches(methodInfo, typeof(AppAction))) {
+            if (Matches(methodInfo, typeof(AppAction)))
+            {
                 var instance = methodInfo.IsStatic ? null : Activator.CreateInstance(type);
-                return builder => builder.Run(((AppAction)methodInfo.Invoke(instance, new object[0] { })).ToDelegate());
+                return builder => builder.Use<AppAction>(_ => ((AppAction)methodInfo.Invoke(instance, new object[] { })));
             }
 
             return null;
