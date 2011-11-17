@@ -1,5 +1,5 @@
 ﻿using System;
-using Gate.Builder;
+using Gate.Mapping;
 using Gate.Owin;
 
 namespace Gate
