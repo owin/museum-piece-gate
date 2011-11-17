@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Gate.Builder;
 using Gate.Helpers;
+using Gate.Mapping;
 using Gate.Owin;
 using Gate.TestHelpers;
 using NUnit.Framework;

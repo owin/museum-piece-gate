@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Gate.Owin;
-using Gate.Builder;
 
 namespace Gate.Middleware
 {
