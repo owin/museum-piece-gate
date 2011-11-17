@@ -49,10 +49,10 @@ namespace Gate.Builder
         public AppBuilder()
         {
             _stack = new List<Delegate>();
-            AddAdapter<AppDelegate, AppAction>(Delegates.ToAction);
-            AddAdapter<AppAction, AppDelegate>(Delegates.ToDelegate);
-            AddAdapter<AppDelegate, OwinApp>(Delegates.ToApp);
-            AddAdapter<OwinApp, AppDelegate>(Delegates.ToDelegate);
+            AddAdapter<AppDelegate, AppAction>(Adapters.ToAction);
+            AddAdapter<AppAction, AppDelegate>(Adapters.ToDelegate);
+            AddAdapter<AppDelegate, OwinApp>(Adapters.ToApp);
+            AddAdapter<OwinApp, AppDelegate>(Adapters.ToDelegate);
         }
 
         public IAppBuilder Use<TApp>(Func<TApp, TApp> middleware)

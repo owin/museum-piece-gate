@@ -5,6 +5,7 @@ using DifferentNamespace;
 using Gate;
 using Gate.Builder;
 using Gate.Builder.Loader;
+using Gate.Owin;
 using NUnit.Framework;
 
 namespace Gate.Tests.StartupTests.Loader
