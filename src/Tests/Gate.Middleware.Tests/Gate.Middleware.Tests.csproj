@@ -70,6 +70,7 @@
     <Compile Include="MethodOverrideTests.cs" />
     <Compile Include="PredicateTests.cs" />
     <Compile Include="BasicAuthTests.cs" />
+    <Compile Include="RangeHeaderTests.cs" />
     <Compile Include="StaticTests.cs" />
     <Compile Include="TransformTests.cs" />
     <Compile Include="ChunkedTests.cs" />

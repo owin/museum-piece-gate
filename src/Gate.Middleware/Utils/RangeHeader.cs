@@ -10,9 +10,9 @@ namespace Gate.Middleware.Utils
         public static IEnumerable<Tuple<long, long>> Parse(IDictionary<string, object> env, long size)
         {
             var headers = new Environment(env).Headers;
-            var httpRange = headers.ContainsKey("Range") ? headers["Range"] : null;
 
-            if (httpRange == null)
+            string httpRange;
+            if (!headers.TryGetValue("Range", out httpRange))
             {
                 return null;
             }
@@ -20,11 +20,8 @@ namespace Gate.Middleware.Utils
             var ranges = Enumerable.Empty<Tuple<long, long>>();
 
             var rangeSpecs = Regex.Split(httpRange, @",\s*");
-            foreach (var rangeSpec in rangeSpecs)
+            foreach (var matches in from rangeSpec in rangeSpecs let regex = new Regex(@"bytes=(\d*)-(\d*)") select regex.Matches(rangeSpec))
             {
-                var regex = new Regex(@"bytes=(\d*)-(\d*)");
-                var matches = regex.Matches(rangeSpec);
-
                 if (matches.Count == 0 || matches[0].Groups.Count == 0)
                 {
                     return null;
