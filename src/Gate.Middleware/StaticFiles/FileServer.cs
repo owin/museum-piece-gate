@@ -93,27 +93,36 @@ namespace Gate.Middleware.StaticFiles
                                   {"Content-Type", Mime.MimeType(fileInfo.Extension, "text/plain")}
                               };
 
-            var ranges = RangeHeader.Parse(environment, size);
-
-            if (ranges == null || ranges.Count() > 1)
+            if (!RangeHeader.IsValid(environment))
             {
-                // TODO: Support multiple ranges.
                 status = OK;
                 range = new Tuple<long, long>(0, size - 1);
             }
-            else if (!ranges.Any())
-            {
-                // Unsatisfiable.  Return error and file size.
-                return Fail(RequestedRangeNotSatisfiable, "Byte range unsatisfiable",
-                            new Dictionary<string, string> { { "Content-Range", "bytes */" + size } });
-            }
             else
             {
-                // Partial content
-                range = ranges.First();
-                status = PartialContent;
-                headers["Content-Range"] = "bytes " + range.Item1 + "-" + range.Item2 + "/" + size;
-                size = range.Item2 - range.Item1 + 1;
+                var ranges = RangeHeader.Parse(environment, size);
+
+                if (ranges == null)
+                {
+                    // Unsatisfiable.  Return error and file size.
+                    return Fail(RequestedRangeNotSatisfiable, "Byte range unsatisfiable",
+                                new Dictionary<string, string> { { "Content-Range", "bytes */" + size } });
+                }
+
+                if (ranges.Count() > 1)
+                {
+                    // TODO: Support multiple byte ranges.
+                    status = OK;
+                    range = new Tuple<long, long>(0, size - 1);
+                }
+                else
+                {
+                    // Partial content
+                    range = ranges.First();
+                    status = PartialContent;
+                    headers["Content-Range"] = "bytes " + range.Item1 + "-" + range.Item2 + "/" + size;
+                    size = range.Item2 - range.Item1 + 1;
+                }
             }
 
             headers["Content-Length"] = size.ToString();
