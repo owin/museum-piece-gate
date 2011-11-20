@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace Gate.Middleware
+namespace Gate.Middleware.StaticFiles
 {
     public enum BodyStreamCommand
     {

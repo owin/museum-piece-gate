@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Gate.Middleware.StaticFiles;
 using NUnit.Framework;
 
 namespace Gate.Middleware.Tests

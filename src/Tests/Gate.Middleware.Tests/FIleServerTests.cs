@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Gate.Middleware.StaticFiles;
 using Gate.Middleware.Utils;
 using Gate.TestHelpers;
 using NUnit.Framework;

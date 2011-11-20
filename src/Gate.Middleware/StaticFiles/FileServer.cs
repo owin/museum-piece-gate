@@ -6,7 +6,7 @@ using System.Text;
 using Gate.Middleware.Utils;
 using Gate.Owin;
 
-namespace Gate.Middleware
+namespace Gate.Middleware.StaticFiles
 {
     public class FileServer
     {
@@ -30,7 +30,7 @@ namespace Gate.Middleware
 
         public void Invoke(IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault)
         {
-            pathInfo = env["owin.RequestPath"].ToString().Unescape();
+            pathInfo = env["owin.RequestPath"].ToString();
 
             if (pathInfo.StartsWith("/"))
             {

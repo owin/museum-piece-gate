@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using Gate.Owin;
 
-namespace Gate.Middleware
+namespace Gate.Middleware.StaticFiles
 {
     public class FileBody
     {

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Gate.Middleware
+namespace Gate.Middleware.StaticFiles
 {
     public class StateMachine<TCommand, TState>
         where TCommand : struct

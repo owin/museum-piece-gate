@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Gate.Middleware
+namespace Gate.Middleware.StaticFiles
 {
     public class Mime
     {
