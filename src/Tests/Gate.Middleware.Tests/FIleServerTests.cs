@@ -47,11 +47,11 @@ namespace Gate.Middleware.Tests
         }
 
         [Test]
-        public void FileServer_serves_file_with_url_encoded_filename()
+        public void FileServer_does_not_decode_request_path()
         {
-            var result = AppUtils.Call(fileServer.Invoke, "/%6B%61%79%61%6B%2E%70%6E%67");
+            var result = AppUtils.Call(fileServer.Invoke, "/%6B%61%79%61%6B%2E%70%6E%67"); // kayak.png, url encoded
 
-            Assert.That(result.Status, Is.EqualTo("200 OK"));
+            Assert.That(result.Status, Is.EqualTo("404 Not Found"));
         }
 
         [Test]
