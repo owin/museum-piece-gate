@@ -97,15 +97,7 @@ namespace Gate.Middleware
                 return;
             }
 
-            Next(env, result, fault);
-        }
-
-        private void Next(IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault)
-        {
-            if (app != null)
-            {
-                app.Invoke(env, result, fault);
-            }
+            app.Invoke(env, result, fault);
         }
     }
 }
