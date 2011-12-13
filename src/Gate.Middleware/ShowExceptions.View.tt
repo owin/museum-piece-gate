@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Gate.Middleware
 {
-    public static partial class ShowExceptionsExtensions
+    public static partial class ShowExceptions
     {
         static void ErrorPage(IDictionary<string,object> env, Exception ex, Action<string> write)
         {
