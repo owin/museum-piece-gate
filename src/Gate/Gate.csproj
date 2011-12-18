@@ -34,10 +34,10 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Builder\Delegates.cs" />
-    <Compile Include="Builder\MapBuilder.cs" />
+    <Compile Include="Mapping\Delegates.cs" />
+    <Compile Include="Mapping\MapBuilder.cs" />
+    <Compile Include="Mapping\UrlMapper.cs" />
     <Compile Include="NotFound.cs" />
-    <Compile Include="Builder\UrlMapper.cs" />
     <Compile Include="AppBuilderMapExtensions.cs" />
     <Compile Include="AppBuilderRunExtensions.cs" />
     <Compile Include="AppBuilderUseExtensions.cs" />

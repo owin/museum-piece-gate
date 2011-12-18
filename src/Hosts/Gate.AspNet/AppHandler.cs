@@ -40,18 +40,18 @@ namespace Gate.AspNet
             var requestHeaders = httpRequest.Headers.AllKeys
                 .ToDictionary(x => x, x => httpRequest.Headers.Get(x), StringComparer.OrdinalIgnoreCase);
 
-            var env = new Environment()
-            {
-                Version = "1.0",
-                Method = httpRequest.HttpMethod,
-                Scheme = httpRequest.Url.Scheme,
-                PathBase = pathBase,
-                Path = path,
-                QueryString = serverVariables.QueryString,
-                Headers = requestHeaders,
-                Body = Body.FromStream(httpRequest.InputStream),
+            var env = new Dictionary<string, object>
+            { 
+                {"owin.Version", "1.0"},
+                {"owin.RequestMethod", httpRequest.HttpMethod},
+                {"owin.RequestScheme", httpRequest.Url.Scheme},
+                {"owin.RequestPathBase", pathBase},
+                {"owin.RequestPath", path},
+                {"owin.RequestQueryString", serverVariables.QueryString},
+                {"owin.RequestHeaders", requestHeaders},
+                {"owin.RequestBody", Body.FromStream(httpRequest.InputStream)},
+                {"aspnet.HttpContextBase", httpContext},
             };
-            env["aspnet.HttpContextBase"] = httpContext;
             foreach (var kv in serverVariables.AddToEnvironment())
             {
                 env["server." + kv.Key] = kv.Value;
