@@ -35,9 +35,6 @@
   <ItemGroup>
     <Compile Include="Delegates.cs" />
     <Compile Include="IAppBuilder.cs" />
-    <Compile Include="OwinApp.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

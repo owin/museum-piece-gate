@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Gate.Owin
 {
@@ -22,4 +23,7 @@ namespace Gate.Owin
         Action<Exception> error,
         Action complete);
 
+    public delegate Task<Tuple<string /* status */, IDictionary<String, String> /* headers */, BodyDelegate /* body */>> 
+        AppTaskDelegate(IDictionary<string, object> env);
 }
+    

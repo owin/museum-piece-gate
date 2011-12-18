@@ -5,6 +5,8 @@ using Gate.Owin;
 
 namespace Gate
 {
+    using ResultTuple = Tuple<string, IDictionary<String, String>, BodyDelegate>;
+
     using AppAction = Action< // app
         IDictionary<string, object>, // env
         Action< // result
@@ -73,122 +75,33 @@ namespace Gate
         }
 
 
-        public static OwinApp ToApp(AppDelegate app)
+        public static AppTaskDelegate ToTaskDelegate(AppDelegate app)
         {
             return
                 env =>
                 {
-                    var tcs = new TaskCompletionSource<OwinResult>();
+                    var tcs = new TaskCompletionSource<ResultTuple>();
                     app(
                         env,
-                        (status, headers, body) => tcs.SetResult(new OwinResult(status, headers, ToObservable(body))),
+                        (status, headers, body) => tcs.SetResult(new ResultTuple(status, headers, body)),
                         tcs.SetException);
                     return tcs.Task;
                 };
         }
 
-        public static AppDelegate ToDelegate(OwinApp app)
+        public static AppDelegate ToDelegate(AppTaskDelegate app)
         {
             return
                 (env, result, fault) =>
                 {
                     var task = app(env);
                     task.ContinueWith(
-                        t => result(t.Result.Status, t.Result.Headers, ToDelegate(t.Result.Body)),
+                        t => result(t.Result.Item1, t.Result.Item2, t.Result.Item3),
                         TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
                     task.ContinueWith(
                         t => fault(t.Exception),
                         TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnFaulted);
                 };
         }
-
-
-        public static IObservable<OwinData> ToObservable(BodyDelegate body)
-        {
-            return new Observable((next, error, complete) =>
-                body((bytes, resume) =>
-                {
-                    var paused = false;
-                    next(new OwinData(bytes, () => paused = true, resume));
-                    return paused;
-                }, error, complete));
-        }
-
-        public static BodyDelegate ToDelegate(IObservable<OwinData> body)
-        {
-            return (next, error, complete) =>
-                body.Subscribe(
-                    new Observer(
-                        data =>
-                        {
-                            if (next(data.Bytes, data.Resume))
-                                data.Pause();
-                        },
-                        error,
-                        complete)).Dispose;
-        }
-
-
-
-        class Observable : IObservable<OwinData>
-        {
-            readonly Func<Action<OwinData>, Action<Exception>, Action, Action> _subscribe;
-
-            public Observable(Func<Action<OwinData>, Action<Exception>, Action, Action> subscribe)
-            {
-                _subscribe = subscribe;
-            }
-
-            public IDisposable Subscribe(IObserver<OwinData> observer)
-            {
-                return new Disposable(_subscribe(observer.OnNext, observer.OnError, observer.OnCompleted));
-            }
-        }
-
-        class Observer : IObserver<OwinData>
-        {
-            readonly Action<OwinData> _next;
-            readonly Action<Exception> _error;
-            readonly Action _completed;
-
-            public Observer(Action<OwinData> next, Action<Exception> error, Action completed)
-            {
-                _next = next;
-                _error = error;
-                _completed = completed;
-            }
-
-            public void OnNext(OwinData value)
-            {
-                _next(value);
-            }
-
-            public void OnError(Exception error)
-            {
-                _error(error);
-            }
-
-            public void OnCompleted()
-            {
-                _completed();
-            }
-        }
-
-        class Disposable : IDisposable
-        {
-            readonly Action _dispose;
-
-            public Disposable(Action dispose)
-            {
-                _dispose = dispose;
-            }
-
-            public void Dispose()
-            {
-                _dispose();
-            }
-        }
     }
-
-
 }
