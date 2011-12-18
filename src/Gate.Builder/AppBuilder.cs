@@ -51,8 +51,10 @@ namespace Gate.Builder
             _stack = new List<Delegate>();
             AddAdapter<AppDelegate, AppAction>(Adapters.ToAction);
             AddAdapter<AppAction, AppDelegate>(Adapters.ToDelegate);
-            AddAdapter<AppDelegate, AppTaskDelegate>(Adapters.ToApp);
+            AddAdapter<AppDelegate, AppTaskDelegate>(Adapters.ToTaskDelegate);
             AddAdapter<AppTaskDelegate, AppDelegate>(Adapters.ToDelegate);
+            AddAdapter<AppAction, AppTaskDelegate>(app => Adapters.ToTaskDelegate(Adapters.ToDelegate(app)));
+            AddAdapter<AppTaskDelegate, AppAction>(app => Adapters.ToAction(Adapters.ToDelegate(app)));
         }
 
         public IAppBuilder Use<TApp>(Func<TApp, TApp> middleware)
