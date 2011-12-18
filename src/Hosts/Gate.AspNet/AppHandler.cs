@@ -3,14 +3,21 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using Gate.Helpers;
 using Gate.Owin;
 
 namespace Gate.AspNet
 {
+    using BodyAction = Func<
+        Func< //next
+            ArraySegment<byte>, // data
+            Action, // continuation
+            bool>, // continuation was or will be invoked
+        Action<Exception>, //error
+        Action, //complete
+        Action>; //cancel
+
     public class AppHandler
     {
         readonly AppDelegate _app;
@@ -49,13 +56,14 @@ namespace Gate.AspNet
                 {"owin.RequestPath", path},
                 {"owin.RequestQueryString", serverVariables.QueryString},
                 {"owin.RequestHeaders", requestHeaders},
-                {"owin.RequestBody", Body.FromStream(httpRequest.InputStream)},
+                {"owin.RequestBody", RequestBody(httpRequest.InputStream)},
                 {"aspnet.HttpContextBase", httpContext},
             };
             foreach (var kv in serverVariables.AddToEnvironment())
             {
                 env["server." + kv.Key] = kv.Value;
             }
+
 
             _app.Invoke(
                 env,
@@ -66,14 +74,15 @@ namespace Gate.AspNet
                         httpContext.Response.BufferOutput = false;
 
                         httpContext.Response.Status = status;
-                        foreach (var header in headers.SelectMany(kv => kv.Value.Split("\r\n".ToArray(), StringSplitOptions.RemoveEmptyEntries).Select(v => new {kv.Key, Value = v})))
+                        foreach (var header in headers.SelectMany(kv => kv.Value.Split("\r\n".ToArray(), StringSplitOptions.RemoveEmptyEntries).Select(v => new { kv.Key, Value = v })))
                         {
                             httpContext.Response.AddHeader(header.Key, header.Value);
                         }
 
-                        body.WriteToStream(
-                            httpContext.Response.OutputStream, 
-                            taskCompletionSource.SetException, 
+                        ResponseBody(
+                            body,
+                            httpContext.Response.OutputStream,
+                            taskCompletionSource.SetException,
                             () => taskCompletionSource.SetResult(() => httpContext.Response.End()));
                     }
                     catch (Exception ex)
@@ -87,13 +96,11 @@ namespace Gate.AspNet
 
         public void EndProcessRequest(IAsyncResult asyncResult)
         {
-            var task = ((Task<Action>) asyncResult);
-            // XXX should wait for task? seems to be a race.
-            //task.Wait();
+            var task = ((Task<Action>)asyncResult);
             if (task.IsFaulted)
             {
                 var exception = task.Exception;
-                exception.Handle(ex=>ex is HttpException);
+                exception.Handle(ex => ex is HttpException);
             }
             else if (task.IsCompleted)
             {
@@ -132,6 +139,17 @@ namespace Gate.AspNet
                     .Where(key => !key.StartsWith("HTTP_"))
                     .Select(key => new KeyValuePair<string, object>(key, _serverVariables.Get(key)));
             }
+        }
+
+
+        static BodyAction RequestBody(Stream stream)
+        {
+            return (next, error, complete) => new PipeRequest(stream, next, error, complete).Go();
+        }
+
+        static void ResponseBody(BodyDelegate body, Stream stream, Action<Exception> error, Action complete)
+        {
+            new PipeResponse(stream, error, complete).Go(body);
         }
     }
 }

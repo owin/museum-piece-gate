@@ -40,7 +40,8 @@
     <Compile Include="AppHandlerSingleton.cs" />
     <Compile Include="Handler.cs" />
     <Compile Include="Module.cs" />
-    <Compile Include="..\..\Gate.Helpers\Body.cs" />
+    <Compile Include="PipeRequest.cs" />
+    <Compile Include="PipeResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
