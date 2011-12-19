@@ -12,3 +12,4 @@ docs
 *.pidb
 TestResult.xml
 nugetkey
+packages
