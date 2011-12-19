@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Gate.Owin;
 
-namespace Gate
+namespace Gate.Builder
 {
     using ResultTuple = Tuple<string, IDictionary<String, String>, BodyDelegate>;
 
@@ -38,30 +38,53 @@ namespace Gate
         {
             return
                 (env, result, fault) =>
-                app(
-                    env,
-                    (status, headers, body) =>
-                    result(
-                        status,
-                        headers,
-                        (next, error, complete) =>
-                        body(next, error, complete)),
-                    fault);
+                {
+                    var revert = Replace<BodyAction, BodyDelegate>(env, ToDelegate);
+                    app(
+                        env,
+                        (status, headers, body) =>
+                        {
+                            revert();
+                            result(status, headers, ToAction(body));
+                        },
+                        ex =>
+                        {
+                            revert();
+                            fault(ex);
+                        });
+                };
         }
 
         public static AppDelegate ToDelegate(AppAction app)
         {
             return
                 (env, result, fault) =>
-                app(
-                    env,
-                    (status, headers, body) =>
-                    result(
-                        status,
-                        headers,
-                        (next, error, complete) =>
-                        body(next, error, complete)),
-                    fault);
+                {
+                    var revert = Replace<BodyDelegate, BodyAction>(env, ToAction);
+                    app(
+                        env,
+                        (status, headers, body) =>
+                        {
+                            revert();
+                            result(status, headers, ToDelegate(body));
+                        },
+                        ex =>
+                        {
+                            revert();
+                            fault(ex);
+                        });
+                };
+        }
+
+        static Action Replace<TFrom, TTo>(IDictionary<string, object> env, Func<TFrom, TTo> adapt)
+        {
+            object body;
+            if (env.TryGetValue("owin.RequestBody", out body) && body is TFrom)
+            {
+                env["owin.RequestBody"] = adapt((TFrom)body);
+                return () => env["owin.RequestBody"] = body;
+            }
+            return () => { };
         }
 
         public static BodyAction ToAction(BodyDelegate body)
