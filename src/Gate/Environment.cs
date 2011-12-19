@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Gate.Owin;
 
 namespace Gate
 {
@@ -33,12 +34,12 @@ namespace Gate
         protected T Get<T>(string name)
         {
             object value;
-            return TryGetValue(name, out value) ? (T) value : default(T);
+            return TryGetValue(name, out value) ? (T)value : default(T);
         }
 
         public Environment()
         {
-            Env = new Dictionary<string,object>();
+            Env = new Dictionary<string, object>();
         }
 
         public Environment(IDictionary<string, object> env)
@@ -103,9 +104,38 @@ namespace Gate
         /// <summary>
         /// "owin.RequestBody" An instance of the body delegate representing the body of the request. May be null.
         /// </summary>
-        public BodyAction Body
+        public BodyAction BodyAction
         {
-            get { return Get<BodyAction>(RequestBodyKey); }
+            get
+            {
+                object body;
+                if (!TryGetValue(RequestBodyKey, out body))
+                    return null;
+
+                if (body is BodyDelegate)
+                    return ((BodyDelegate)body).ToAction();
+
+                return (BodyAction)body;
+            }
+            set { this[RequestBodyKey] = value; }
+        }
+
+        /// <summary>
+        /// "owin.RequestBody" An instance of the body delegate representing the body of the request. May be null.
+        /// </summary>
+        public BodyDelegate BodyDelegate
+        {
+            get
+            {
+                object body;
+                if (!TryGetValue(RequestBodyKey, out body))
+                    return null;
+
+                if (body is BodyAction)
+                    return ((BodyAction)body).ToDelegate();
+
+                return (BodyDelegate)body;
+            }
             set { this[RequestBodyKey] = value; }
         }
 
@@ -153,7 +183,7 @@ namespace Gate
 
         public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
         {
-            Env.CopyTo(array,arrayIndex);
+            Env.CopyTo(array, arrayIndex);
         }
 
         public bool Remove(KeyValuePair<string, object> item)

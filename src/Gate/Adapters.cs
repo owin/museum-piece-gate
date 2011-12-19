@@ -32,36 +32,59 @@ namespace Gate
         Action>; //cancel
 
 
-    public static class Delegates
+    public static class Adapters
     {
         public static AppAction ToAction(this AppDelegate app)
         {
             return
                 (env, result, fault) =>
-                app(
-                    env,
-                    (status, headers, body) =>
-                    result(
-                        status,
-                        headers,
-                        (next, error, complete) =>
-                        body(next, error, complete)),
-                    fault);
+                {
+                    var revert = Replace<BodyAction, BodyDelegate>(env, ToDelegate);
+                    app(
+                        env,
+                        (status, headers, body) =>
+                        {
+                            revert();
+                            result(status, headers, ToAction(body));
+                        },
+                        ex =>
+                        {
+                            revert();
+                            fault(ex);
+                        });
+                };
         }
 
         public static AppDelegate ToDelegate(this AppAction app)
         {
             return
                 (env, result, fault) =>
-                app(
-                    env,
-                    (status, headers, body) =>
-                    result(
-                        status,
-                        headers,
-                        (next, error, complete) =>
-                        body(next, error, complete)),
-                    fault);
+                {
+                    var revert = Replace<BodyDelegate, BodyAction>(env, ToAction);
+                    app(
+                        env,
+                        (status, headers, body) =>
+                        {
+                            revert();
+                            result(status, headers, ToDelegate(body));
+                        },
+                        ex =>
+                        {
+                            revert();
+                            fault(ex);
+                        });
+                };
+        }
+
+        static Action Replace<TFrom, TTo>(IDictionary<string, object> env, Func<TFrom, TTo> adapt)
+        {
+            object body;
+            if (env.TryGetValue("owin.RequestBody", out body) && body is TFrom)
+            {
+                env["owin.RequestBody"] = adapt((TFrom)body);
+                return () => env["owin.RequestBody"] = body;
+            }
+            return () => { };
         }
 
         public static BodyAction ToAction(this BodyDelegate body)
@@ -75,7 +98,7 @@ namespace Gate
         }
 
 
-        public static AppTaskDelegate ToTaskDelegate(this AppDelegate app)
+        public static AppTaskDelegate ToTaskDelegate(AppDelegate app)
         {
             return
                 env =>
@@ -83,13 +106,13 @@ namespace Gate
                     var tcs = new TaskCompletionSource<ResultTuple>();
                     app(
                         env,
-                        (status, headers, body) => tcs.SetResult(Tuple.Create(status, headers, body)),
+                        (status, headers, body) => tcs.SetResult(new ResultTuple(status, headers, body)),
                         tcs.SetException);
                     return tcs.Task;
                 };
         }
 
-        public static AppDelegate ToDelegate(this AppTaskDelegate app)
+        public static AppDelegate ToDelegate(AppTaskDelegate app)
         {
             return
                 (env, result, fault) =>

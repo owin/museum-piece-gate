@@ -97,7 +97,7 @@ namespace Gate.Wcf
                 Path = path,
                 QueryString = queryString,
                 Headers = headers,
-                Body = Body.FromStream(requestBody),
+                BodyAction = Body.FromStream(requestBody),
             };
             return env;
         }

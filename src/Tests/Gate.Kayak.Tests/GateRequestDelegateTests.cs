@@ -147,7 +147,7 @@ namespace Gate.Kayak.Tests
             var app = new StaticApp(
                     "200 OK", 
                     new Dictionary<string, string>(), 
-                    Delegates.ToDelegate((write, fault, end) =>
+                    Adapters.ToDelegate((write, fault, end) =>
                     {
                         write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("12345")), null);
                         write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")), null);
@@ -159,7 +159,7 @@ namespace Gate.Kayak.Tests
 
             requestDelegate.OnRequest(new HttpRequestHead() { }, null, mockResponseDelegate);
 
-            Assert.That(new Environment(app.Env).Body, Is.Null);
+            Assert.That(new Environment(app.Env).BodyAction, Is.Null);
             Assert.That(mockResponseDelegate.Head.Headers.Keys, Contains.Item("Content-Length"));
             Assert.That(mockResponseDelegate.Head.Headers["Content-Length"], Is.EqualTo("10"));
 
@@ -177,7 +177,7 @@ namespace Gate.Kayak.Tests
                     {
                         { "Transfer-Encoding", "chunked" }
                     },
-                    Delegates.ToDelegate((write, fault, end) =>
+                    Adapters.ToDelegate((write, fault, end) =>
                     {
                         write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("12345")), null);
                         write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")), null);
@@ -189,7 +189,7 @@ namespace Gate.Kayak.Tests
 
             requestDelegate.OnRequest(new HttpRequestHead() { }, null, mockResponseDelegate);
 
-            Assert.That(new Environment(app.Env).Body, Is.Null);
+            Assert.That(new Environment(app.Env).BodyAction, Is.Null);
             Assert.IsFalse(mockResponseDelegate.Head.Headers.Keys.Contains("Content-Length"), "should not contain Content-Length");
             // chunks are not chunked-encoded at this level. eventually kayak will do this automatically.
             var body = mockResponseDelegate.Body.Consume();
@@ -212,9 +212,9 @@ namespace Gate.Kayak.Tests
                 return () => { };
             }), mockResponseDelegate);
             
-            var bodyAction = new Environment(app.Env).Body; 
+            var bodyAction = new Environment(app.Env).BodyAction; 
             Assert.That(bodyAction, Is.Not.Null);
-            var body = Delegates.ToDelegate(bodyAction).Consume();
+            var body = Adapters.ToDelegate(bodyAction).Consume();
             Assert.That(body.Buffer.GetString(), Is.EqualTo("1234567890"));
             Assert.That(body.GotEnd, Is.True);
         }
@@ -267,7 +267,7 @@ namespace Gate.Kayak.Tests
 
             var env = new Environment(appContext);
 
-            Assert.That(env.Body, Is.Null);
+            Assert.That(env.BodyAction, Is.Null);
             Assert.That(env.Headers, Is.Not.Null);
             Assert.That(env.Method, Is.Not.Null);
             Assert.That(env.Path, Is.Not.Null);

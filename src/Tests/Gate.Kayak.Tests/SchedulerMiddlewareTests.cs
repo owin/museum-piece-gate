@@ -107,7 +107,7 @@ namespace Gate.Kayak.Tests
             app.OnRequest = () => {
                 var env = new Environment(app.Env);
 
-                env.Body((data, ack) => {
+                env.BodyAction((data, ack) => {
                     gotOnNext++;
 
                     if (gotOnNext == 1)
@@ -132,7 +132,7 @@ namespace Gate.Kayak.Tests
             scheduler.Post(() =>
             {
                 middleware.Invoke(new Environment() {
-                    Body = (onNext, onError, onComplete) => {
+                    BodyAction = (onNext, onError, onComplete) => {
                         onNext(default(ArraySegment<byte>), null);
                         onNext(default(ArraySegment<byte>), () => onComplete());
                         return () => { };

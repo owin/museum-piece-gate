@@ -167,7 +167,7 @@ namespace Gate.Tests.StartupTests.Loader
             var app = builder.Materialize();
 
             _alphaCalls = 0;
-            app(null, null, null);
+            app(new Dictionary<string, object>(), null, null);
             Assert.That(_alphaCalls, Is.EqualTo(1));
         }
 

@@ -55,7 +55,7 @@ namespace Gate.Tests
             Assert.That(environment.Method, Is.EqualTo("GET"));
             Assert.That(environment.Path, Is.EqualTo("/foo"));
             Assert.That(environment.Headers, Is.SameAs(headers));
-            Assert.That(environment.Body, Is.SameAs(body));
+            Assert.That(environment.BodyAction, Is.SameAs(body));
             Assert.That(environment.PathBase, Is.EqualTo("/my-app"));
             Assert.That(environment.QueryString, Is.EqualTo("hello=world"));
             Assert.That(environment.Scheme, Is.EqualTo("https"));
@@ -66,14 +66,14 @@ namespace Gate.Tests
         public void Environment_properties_may_be_used_to_initialize_env_dictionary()
         {
             var headers = new Dictionary<string, string>();
-            var body = new BodyDelegate((next, error, complete) => () => { }).ToAction();
+            BodyDelegate body = (next, error, complete) => () => { };
 
             var environment = new Environment()
             {
                 Method = "GET",
                 Path = "/foo",
                 Headers = headers,
-                Body = body,
+                BodyDelegate = body,
                 PathBase = "/my-app",
                 QueryString = "hello=world",
                 Scheme = "https",
@@ -84,7 +84,7 @@ namespace Gate.Tests
             Assert.That(environment.Method, Is.EqualTo("GET"));
             Assert.That(environment.Path, Is.EqualTo("/foo"));
             Assert.That(environment.Headers, Is.SameAs(headers));
-            Assert.That(environment.Body, Is.SameAs(body));
+            Assert.That(environment.BodyDelegate, Is.SameAs(body));
             Assert.That(environment.PathBase, Is.EqualTo("/my-app"));
             Assert.That(environment.QueryString, Is.EqualTo("hello=world"));
             Assert.That(environment.Scheme, Is.EqualTo("https"));

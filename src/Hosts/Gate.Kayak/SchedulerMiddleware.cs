@@ -37,10 +37,10 @@ namespace Gate.Kayak
             var env = (envDict as Environment ?? new Environment(envDict));
             var theScheduler = scheduler ?? (IScheduler)env["kayak.Scheduler"];
 
-            var oldBody = env.Body;
+            var oldBody = env.BodyAction;
 
             if (oldBody != null)
-                env.Body = (onNext, onError, onComplete) =>
+                env.BodyAction = (onNext, onError, onComplete) =>
                 {
                     theScheduler.Post(() =>
                     {

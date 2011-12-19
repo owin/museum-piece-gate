@@ -24,7 +24,7 @@ namespace Gate.Middleware
             return (env, result, fault) =>
             {
                 var owin = new Environment(env);
-                owin.Body = Wrap(owin.Body);
+                owin.BodyAction = Wrap(owin.BodyAction);
                 app(env, result, fault);
             };
         }

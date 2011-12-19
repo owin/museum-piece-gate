@@ -142,7 +142,7 @@ namespace Gate.AspNet
         }
 
 
-        static BodyAction RequestBody(Stream stream)
+        static BodyDelegate RequestBody(Stream stream)
         {
             return (next, error, complete) => new PipeRequest(stream, next, error, complete).Go();
         }

@@ -81,7 +81,7 @@ namespace Gate
             {
                 if (HasFormData || HasParseableData)
                 {
-                    var input = Body;
+                    var input = BodyAction;
                     if (input == null)
                     {
                         throw new InvalidOperationException("Missing input");

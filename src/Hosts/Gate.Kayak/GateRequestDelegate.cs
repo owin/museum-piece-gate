@@ -36,9 +36,9 @@ namespace Gate.Kayak
             env.Version = "1.0";
             
             if (body == null)
-                env.Body = null;
+                env.BodyDelegate = null;
             else
-                env.Body = (onData, onError, onEnd) =>
+                env.BodyDelegate = (onData, onError, onEnd) =>
                 {
                     var d = body.Connect(new DataConsumer(onData, onError, onEnd));
                     return () => { if (d != null) d.Dispose(); };

@@ -34,7 +34,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Mapping\Delegates.cs" />
+    <Compile Include="Adapters.cs" />
     <Compile Include="Mapping\MapBuilder.cs" />
     <Compile Include="Mapping\UrlMapper.cs" />
     <Compile Include="NotFound.cs" />

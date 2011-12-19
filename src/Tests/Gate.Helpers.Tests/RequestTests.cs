@@ -28,17 +28,17 @@ namespace Gate.Helpers.Tests
         [Test]
         public void Body_is_used_to_populate_Post_dictionary()
         {
-            var request = new Request(new Environment()) { Method = "POST", Body = Body.FromText("foo=bar") };
+            var request = new Request(new Environment()) { Method = "POST", BodyAction = Body.FromText("foo=bar") };
             Assert.That(request.Post["foo"], Is.EqualTo("bar"));
         }
 
         [Test]
         public void Changing_Body_in_environment_reparses_Post_dictionary()
         {
-            var request = new Request(new Environment()) { Method = "POST", Body = Body.FromText("foo=bar") };
+            var request = new Request(new Environment()) { Method = "POST", BodyAction = Body.FromText("foo=bar") };
             Assert.That(request.Post["foo"], Is.EqualTo("bar"));
 
-            request.Body = Body.FromText("foo=quux");
+            request.BodyAction = Body.FromText("foo=quux");
             Assert.That(request.Post["foo"], Is.EqualTo("quux"));
         }
 
