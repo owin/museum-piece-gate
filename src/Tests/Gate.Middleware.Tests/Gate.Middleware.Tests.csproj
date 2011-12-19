@@ -9,6 +9,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Gate.Middleware.Tests</RootNamespace>
     <AssemblyName>Gate.Middleware.Tests</AssemblyName>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\..\Gate\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -92,4 +94,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
 </Project>
