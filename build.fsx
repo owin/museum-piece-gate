@@ -5,7 +5,7 @@ open Fake
 
 // properties
 let projectName = "Gate"
-let version = "0.1.0"  
+let version = "0.2"  
 let projectSummary = "An OWIN utility library."
 let projectDescription = "An OWIN utility library."
 let authors = ["bvanderveen";"grumpydev";"jasonsirota";"loudej";"markrendle";"thecodejunkie";"panesofglass"]
@@ -25,9 +25,9 @@ let nunitPath = "./packages/NUnit.2.5.10.11092/Tools"
 
 // files
 let appReferences =
-    !+ "./src/Gate/**/*.*sproj"
-      ++ "./src/Gate.Helpers/**/*.*sproj"
+    !+ "./src/Main/**/*.*sproj"
       ++ "./src/Hosts/**/*.*sproj"
+      ++ "./src/Deploy/Deploy.csproj"
       |> Scan
 
 let testReferences =
@@ -82,7 +82,13 @@ Target "ZipDocumentation" (fun _ ->
 )
 
 Target "Deploy" (fun _ ->
-    !+ (buildDir + "/**/*.*")
+    CreateDir deployDir
+    !+ (buildDir + "/**/*.nupkg")
+        |> Scan
+        |> Copy deployDir
+
+    !+ (buildDir + "/**/Gate*.dll")
+        ++ (buildDir + "/**/Gate*.pdb")
         -- "*.zip"
         |> Scan
         |> Zip buildDir (deployDir + sprintf "%s-%s.zip" projectName version)
@@ -91,8 +97,8 @@ Target "Deploy" (fun _ ->
 // Build order
 "Clean"
   ==> "BuildApp" <=> "BuildTest"
-  ==> "Test" <=> "GenerateDocumentation"
-  ==> "ZipDocumentation"
+  ==> "Test" //<=> "GenerateDocumentation"
+  //==> "ZipDocumentation"
   ==> "Deploy"
 
 // Start build

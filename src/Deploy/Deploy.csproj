@@ -103,6 +103,6 @@
     <ItemGroup>
       <NuspecFiles Include="*.nuspec" />
     </ItemGroup>
-    <Exec Command="..\..\..\..\.nuget\nuget.exe pack %(NuspecFiles.Identity)" WorkingDirectory="$(OutputPath)" />
+    <Exec Command="$(ProjectDir)..\..\.nuget\nuget.exe pack %(NuspecFiles.Identity)" WorkingDirectory="$(OutputPath)" />
   </Target>
 </Project>
