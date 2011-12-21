@@ -65,7 +65,7 @@
     <Compile Include="RemoteHostClosedStream.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Gate\Gate.csproj">
+    <ProjectReference Include="..\..\Main\Gate\Gate.csproj">
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>
     </ProjectReference>
@@ -77,7 +77,7 @@
       <Project>{E4256EDF-0B54-4715-8E66-8D4D4887E15F}</Project>
       <Name>Gate.TestHelpers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Gate.Owin\Gate.Owin.csproj">
+    <ProjectReference Include="..\..\Main\Gate.Owin\Gate.Owin.csproj">
       <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
       <Name>Gate.Owin</Name>
     </ProjectReference>

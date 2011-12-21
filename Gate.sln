@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate", "src\Gate\Gate.csproj", "{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate", "src\Main\Gate\Gate.csproj", "{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Tests", "src\Tests\Gate.Tests\Gate.Tests.csproj", "{1BB1CEC7-EAAB-4B25-900B-4981DA873320}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Helpers", "src\Gate.Helpers\Gate.Helpers.csproj", "{85392B05-6564-472B-9A7B-58AFB721F2AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Helpers", "src\Main\Gate.Helpers\Gate.Helpers.csproj", "{85392B05-6564-472B-9A7B-58AFB721F2AE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Helpers.Tests", "src\Tests\Gate.Helpers.Tests\Gate.Helpers.Tests.csproj", "{CF3647E1-E3CD-472D-96E2-7B44497D52D8}"
 EndProject
@@ -35,13 +35,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Kayak", "src\Hosts\Gat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Kayak.Tests", "src\Tests\Gate.Kayak.Tests\Gate.Kayak.Tests.csproj", "{8AA0A98F-FCE3-4DEB-88A2-67B5C8F9845B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Owin", "src\Gate.Owin\Gate.Owin.csproj", "{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Owin", "src\Main\Gate.Owin\Gate.Owin.csproj", "{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Middleware", "src\Gate.Middleware\Gate.Middleware.csproj", "{60C36D8F-BE53-4733-BD92-CFA103D46020}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Middleware", "src\Main\Gate.Middleware\Gate.Middleware.csproj", "{60C36D8F-BE53-4733-BD92-CFA103D46020}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Middleware.Tests", "src\Tests\Gate.Middleware.Tests\Gate.Middleware.Tests.csproj", "{AFFF8587-C837-433F-913A-BF34B0885243}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Builder", "src\Gate.Builder\Gate.Builder.csproj", "{D26293A2-8533-4BF6-A9CC-A88455B0FF71}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Builder", "src\Main\Gate.Builder\Gate.Builder.csproj", "{D26293A2-8533-4BF6-A9CC-A88455B0FF71}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deploy", "src\Deploy\Deploy.csproj", "{4E3865FF-F9EC-4FD9-84DC-223C2FF34BDE}"
 EndProject
