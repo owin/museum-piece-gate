@@ -10,9 +10,9 @@ namespace Gate.Helpers
 
     public class Wilson 
     {
-        public static AppDelegate App(bool async)
+        public static AppDelegate App(bool asyncReply)
         {
-            return async ? AsyncApp() : App();
+            return asyncReply ? AsyncApp() : App();
         }
 
         public static AppDelegate App()

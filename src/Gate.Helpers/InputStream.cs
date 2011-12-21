@@ -60,8 +60,8 @@ namespace Gate.Helpers
 
             var asyncResult = new AsyncResult<int>(callback, state);
             var retval = new int[1];
-            var async = _spool.Pull(new ArraySegment<byte>(buffer, offset, count), retval, () => asyncResult.SetAsCompleted(retval[0], false));
-            if (async == false)
+            var delayed = _spool.Pull(new ArraySegment<byte>(buffer, offset, count), retval, () => asyncResult.SetAsCompleted(retval[0], false));
+            if (delayed == false)
                 asyncResult.SetAsCompleted(retval[0], true);
             return asyncResult;
         }
