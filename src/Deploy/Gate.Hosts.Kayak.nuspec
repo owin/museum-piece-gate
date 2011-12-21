@@ -11,7 +11,6 @@
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
     <tags></tags>
     <dependencies>
-      <dependency id="Gate" version="0.2"/>
       <dependency id="Gate.Builder" version="0.2"/>
       <dependency id="Gate.Owin" version="0.2"/>
       <dependency id="Kayak" version="0.7.2"/>

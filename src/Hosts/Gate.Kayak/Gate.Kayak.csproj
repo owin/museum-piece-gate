@@ -45,6 +45,7 @@
     <Compile Include="GateRequestDelegate.cs" />
     <Compile Include="HttpServerExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RequestEnvironment.cs" />
     <Compile Include="SchedulerMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
