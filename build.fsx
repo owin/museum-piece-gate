@@ -13,14 +13,15 @@ let mail = "b@bvanderveen.com"
 let homepage = "http://github.com/owin/gate"
 
 // directories
-let buildDir = "./build/"
-let testDir = "./test/"
-let deployDir = "./deploy/"
-let docsDir = "./docs/"
+let targetDir = "./target/"
+let buildDir = targetDir + "build/"
+let testDir = targetDir + "test/"
+let deployDir = targetDir + "deploy/"
+let docsDir = targetDir + "docs/"
 
 // tools
 let fakePath = "./packages/FAKE.1.52.6.0/tools"
-let nunitPath = "./packages/NUnit.2.5.9.10348/Tools"
+let nunitPath = "./packages/NUnit.2.5.10.11092/Tools"
 
 // files
 let appReferences =
@@ -40,7 +41,7 @@ let filesToZip =
 
 // targets
 Target "Clean" (fun _ ->
-    CleanDirs [buildDir; testDir; deployDir; docsDir]
+    CleanDirs [targetDir]
 )
 
 Target "BuildApp" (fun _ ->
