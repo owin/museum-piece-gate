@@ -21,24 +21,25 @@ namespace Gate.Kayak
 
         public void OnRequest(HttpRequestHead head, IDataProducer body, IHttpResponseDelegate response)
         {
-            var env = new Environment();
+            var env = new Dictionary<string, object>();
+            var request = new RequestEnvironment(env);
 
             if (context != null)
                 foreach (var kv in context)
                     env[kv.Key] = kv.Value;
 
-            env.Headers = head.Headers ?? new Dictionary<string, string>();
-            env.Method = head.Method ?? "";
-            env.Path = head.Path ?? "";
-            env.PathBase = "";
-            env.QueryString = head.QueryString ?? "";
-            env.Scheme = "http"; // XXX
-            env.Version = "1.0";
+            request.Headers = head.Headers ?? new Dictionary<string, string>();
+            request.Method = head.Method ?? "";
+            request.Path = head.Path ?? "";
+            request.PathBase = "";
+            request.QueryString = head.QueryString ?? "";
+            request.Scheme = "http"; // XXX
+            request.Version = "1.0";
             
             if (body == null)
-                env.BodyDelegate = null;
+                request.BodyDelegate = null;
             else
-                env.BodyDelegate = (onData, onError, onEnd) =>
+                request.BodyDelegate = (onData, onError, onEnd) =>
                 {
                     var d = body.Connect(new DataConsumer(onData, onError, onEnd));
                     return () => { if (d != null) d.Dispose(); };

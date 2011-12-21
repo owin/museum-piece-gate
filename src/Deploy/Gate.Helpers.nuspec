@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>Gate.Helpers</id>
+    <version>0.2</version>
+    <authors>Louis DeJardin, Benjamin van der Veen, and contributors</authors>
+    <owners></owners>
+    <description>Gate is a utility library for locating, manufacturing, and hosting OWIN applications.</description>
+    <language>en-US</language>
+    <projectUrl>https://github.com/owin/gate</projectUrl>
+    <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
+    <tags></tags>
+  </metadata>
+  <files>
+    <file src="Gate.Helpers.dll" target="lib\net40" />
+  </files>
+</package>

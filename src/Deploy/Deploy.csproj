@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4E3865FF-F9EC-4FD9-84DC-223C2FF34BDE}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Deploy</RootNamespace>
+    <AssemblyName>Deploy</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Main\Gate.Builder\Gate.Builder.csproj">
+      <Project>{D26293A2-8533-4BF6-A9CC-A88455B0FF71}</Project>
+      <Name>Gate.Builder</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Main\Gate.Helpers\Gate.Helpers.csproj">
+      <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
+      <Name>Gate.Helpers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Main\Gate.Middleware\Gate.Middleware.csproj">
+      <Project>{60C36D8F-BE53-4733-BD92-CFA103D46020}</Project>
+      <Name>Gate.Middleware</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Main\Gate.Owin\Gate.Owin.csproj">
+      <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
+      <Name>Gate.Owin</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Main\Gate\Gate.csproj">
+      <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
+      <Name>Gate</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Hosts\Gate.AspNet\Gate.AspNet.csproj">
+      <Project>{F32E456A-F26E-4C5D-93B8-311941A714E4}</Project>
+      <Name>Gate.AspNet</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Hosts\Gate.Kayak\Gate.Kayak.csproj">
+      <Project>{D96E8CF9-C2A5-4A35-814C-0B4FE9828B26}</Project>
+      <Name>Gate.Kayak</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Gate.Helpers.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Gate.Middleware.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Gate.Builder.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Gate.Hosts.AspNet.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Gate.Hosts.Kayak.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Gate.Owin.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Gate.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <Target Name="AfterBuild">
+    <ItemGroup>
+      <NuspecFiles Include="*.nuspec" />
+    </ItemGroup>
+    <Exec Command="$(ProjectDir)..\..\.nuget\nuget.exe pack %(NuspecFiles.Identity)" WorkingDirectory="$(OutputPath)" />
+  </Target>
+</Project>
