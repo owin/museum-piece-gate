@@ -43,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Middleware.Tests", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Builder", "src\Gate.Builder\Gate.Builder.csproj", "{D26293A2-8533-4BF6-A9CC-A88455B0FF71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Packages", "src\Packages\Packages.csproj", "{4E3865FF-F9EC-4FD9-84DC-223C2FF34BDE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deploy", "src\Deploy\Deploy.csproj", "{4E3865FF-F9EC-4FD9-84DC-223C2FF34BDE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
