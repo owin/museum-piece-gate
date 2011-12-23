@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>Gate.Hosts.AspNet</id>
+    <version>0.2</version>
+    <authors>Louis DeJardin, Benjamin van der Veen, and contributors</authors>
+    <owners></owners>
+    <description>Gate.AspNet provides OWIN hosting support for ASP.NET.</description>
+    <language>en-US</language>
+    <projectUrl>https://github.com/owin/gate</projectUrl>
+    <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
+    <tags></tags>
+    <dependencies>
+      <dependency id="Gate.Builder" version="0.2"/>
+      <dependency id="Gate.Owin" version="0.2"/>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Gate.AspNet.dll" target="lib\net40" />
+  </files>
+</package>

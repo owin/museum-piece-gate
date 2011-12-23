@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -13,6 +13,8 @@
     <RootNamespace>Sample.AspNet</RootNamespace>
     <AssemblyName>Sample.AspNet</AssemblyName>
     <UseIISExpress>true</UseIISExpress>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\..\Gate\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,11 +35,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Nancy, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\packages\Nancy.0.9.0\lib\net40\Nancy.dll</HintPath>
+    </Reference>
     <Reference Include="Nancy.Hosting.Owin">
       <HintPath>..\..\..\dependencies\nancy\binaries\Nancy.Hosting.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Nancy.ViewEngines.Spark">
-      <HintPath>..\..\..\dependencies\nancy\binaries\Nancy.ViewEngines.Spark.dll</HintPath>
+      <HintPath>..\..\..\packages\Nancy.Viewengines.Spark.0.9.0\lib\net40\Nancy.ViewEngines.Spark.dll</HintPath>
+    </Reference>
+    <Reference Include="Spark">
+      <HintPath>..\..\..\packages\Spark.1.5.1\lib\NET40\Spark.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -54,12 +63,6 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
-    <Reference Include="Nancy">
-      <HintPath>..\..\..\dependencies\nancy\binaries\Nancy.dll</HintPath>
-    </Reference>
-    <Reference Include="Spark">
-      <HintPath>..\..\..\dependencies\nancy\binaries\Spark.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Web.config">
@@ -77,11 +80,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Gate.Helpers\Gate.Helpers.csproj">
+    <ProjectReference Include="..\..\Main\Gate.Helpers\Gate.Helpers.csproj">
       <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
       <Name>Gate.Helpers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Gate\Gate.csproj">
+    <ProjectReference Include="..\..\Main\Gate\Gate.csproj">
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>
     </ProjectReference>
@@ -100,11 +103,14 @@
   <ItemGroup>
     <Content Include="Views\Index.spark" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
   <ProjectExtensions>
     <VisualStudio>
-      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+      <FlavorProperties GUID="{349C5851-65DF-11DA-9384-00065B846F21}">
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
@@ -125,6 +131,7 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

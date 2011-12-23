@@ -17,7 +17,7 @@ namespace Gate.Kayak
 
         public static IAppBuilder RescheduleCallbacks(this IAppBuilder builder, IScheduler scheduler)
         {
-            return builder.Use(del => new RescheduleCallbacksMiddleware(del, scheduler).Invoke);
+            return builder.Use<AppDelegate>(app => new RescheduleCallbacksMiddleware(app, scheduler).Invoke);
         }
     }
 
@@ -32,15 +32,15 @@ namespace Gate.Kayak
             this.scheduler = scheduler;
         }
 
-        public void Invoke(IDictionary<string, object> envDict, ResultDelegate result, Action<Exception> error)
+        public void Invoke(IDictionary<string, object> env, ResultDelegate result, Action<Exception> error)
         {
-            var env = (envDict as Environment ?? new Environment(envDict));
-            var theScheduler = scheduler ?? (IScheduler)env["kayak.Scheduler"];
+            var request = new RequestEnvironment(env);
+            var theScheduler = scheduler ?? request.Scheduler;
 
-            var oldBody = env.BodyAction;
+            var oldBody = request.BodyDelegate;
 
             if (oldBody != null)
-                env.BodyAction = (onNext, onError, onComplete) =>
+                request.BodyDelegate = (onNext, onError, onComplete) =>
                 {
                     theScheduler.Post(() =>
                     {

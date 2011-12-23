@@ -49,16 +49,16 @@ namespace Gate.Tests
         public void Pushing_data_with_no_continuation_is_synchronous()
         {
             var spool = new Spool();
-            var async = spool.Push(Data(100), null);
-            Assert.That(async, Is.False);
+            var delayed = spool.Push(Data(100), null);
+            Assert.That(delayed, Is.False);
         }
 
         [Test]
         public void Pushing_data_with_continuation_is_asynchronous()
         {
             var spool = new Spool();
-            var async = spool.Push(Data(100), () => { });
-            Assert.That(async, Is.True);
+            var delayed = spool.Push(Data(100), () => { });
+            Assert.That(delayed, Is.True);
         }
 
         [Test]
