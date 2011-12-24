@@ -17,7 +17,7 @@ namespace Gate.HttpListener.Tests
         [Test]
         public void ServerCanBeCreatedAndDisposed()
         {
-            var server = Server.Create(null, 8090, "");
+            var server = Server.Create((env, result, fault) => { throw new NotImplementedException(); }, 8090, "");
             server.Dispose();
         }
 
@@ -88,6 +88,23 @@ namespace Gate.HttpListener.Tests
 
                 var requestText = Encoding.Default.GetString(requestData.ToArray());
                 Assert.That(requestText, Is.EqualTo("This is a test"));
+            }
+        }
+
+        [Test]
+        public void StartupNameMayBeUsedAsParameterToCreate()
+        {
+            using (Server.Create("Gate.HttpListener.Tests.Startup.Custom", 8090))
+            {
+                var request = (HttpWebRequest)WebRequest.Create("http://localhost:8090");
+                using (var response = (HttpWebResponse)request.GetResponse())
+                {
+                    using (var reader = new StreamReader(response.GetResponseStream()))
+                    {
+                        var text = reader.ReadToEnd();
+                        Assert.That(text, Is.StringContaining("This is a custom page"));
+                    }
+                }
             }
         }
     }
