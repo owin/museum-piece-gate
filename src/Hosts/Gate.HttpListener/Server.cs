@@ -1,13 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Net;
+using Gate.Builder;
 using Gate.Owin;
 
 namespace Gate.HttpListener
 {
     public class Server
     {
+        public static IDisposable Create(int port)
+        {
+            return Create(port, "");
+        }
+
+        public static IDisposable Create(int port, string path)
+        {
+            return Create(ConfigurationManager.AppSettings["Gate.Startup"], port, path);
+        }
+
+        public static IDisposable Create(string startupName, int port)
+        {
+            return Create(startupName, port, "");
+        }
+
+        public static IDisposable Create(string startupName, int port, string path)
+        {
+            AppDelegate app = AppBuilder.BuildConfiguration(startupName);
+            return Create(app, port, path);
+        }
+
         public static IDisposable Create(AppDelegate app, int port)
         {
             return Create(app, port, "");
@@ -15,6 +39,8 @@ namespace Gate.HttpListener
 
         public static IDisposable Create(AppDelegate app, int port, string path)
         {
+            app = ErrorPage.Middleware(app);
+
             var effectivePath = path ?? "";
             if (!effectivePath.EndsWith("/"))
                 effectivePath += "/";
@@ -61,45 +87,35 @@ namespace Gate.HttpListener
                         {"owin.RequestPathBase", requestPathBase},
                         {"owin.RequestPath", requestPath},
                         {"owin.RequestQueryString", requestQueryString},
-                        {"owin.RequestHeaders", context.Request.Headers},
-                        {"owin.RequestBody", null},
+                        {"owin.RequestHeaders", requestHeaders},
+                        {"owin.RequestBody", RequestBody(context.Request.InputStream)},
                         {"System.Net.HttpListenerContext", context},
                         {"server.CLIENT_IP", context.Request.RemoteEndPoint.Address.ToString()},
                     };
 
-                    try
-                    {
-                        app(env,
-                            (status, headers, body) =>
+                    app(env,
+                        (status, headers, body) =>
+                        {
+                            context.Response.StatusCode = int.Parse(status.Substring(0, 3));
+                            context.Response.StatusDescription = status.Substring(4);
+                            foreach (var kv in headers)
                             {
-                                context.Response.StatusCode = int.Parse(status.Substring(0, 3));
-                                context.Response.StatusDescription = status.Substring(4);
-                                foreach (var kv in headers)
+                                foreach (var v in kv.Value.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
                                 {
-                                    foreach (var v in kv.Value.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
-                                    {
-                                        context.Response.Headers.Add(kv.Key, v);
-                                    }
+                                    context.Response.Headers.Add(kv.Key, v);
                                 }
-                                var pipeResponse = new PipeResponse(
-                                    context.Response.OutputStream,
-                                    ex => { context.Response.Close(); },
-                                    () => { context.Response.Close(); });
-                                pipeResponse.Go(body);
-                            },
-                            ex =>
-                            {
-                                context.Response.StatusCode = 500;
-                                context.Response.StatusDescription = "Server Error";
-                                context.Response.Close();
-                            });
-                    }
-                    catch (Exception ex)
-                    {
-                        context.Response.StatusCode = 500;
-                        context.Response.StatusDescription = "Server Error";
-                        context.Response.Close();
-                    }
+                            }
+                            var pipeResponse = new PipeResponse(
+                                context.Response.OutputStream,
+                                ex => context.Response.Close(),
+                                () => context.Response.Close());
+                            pipeResponse.Go(body);
+                        },
+                        ex =>
+                        {
+                            // This should never be called
+                            throw new NotImplementedException();
+                        });
                 },
                 null);
 
@@ -110,6 +126,12 @@ namespace Gate.HttpListener
                 go = () => { };
                 listener.Stop();
             });
+        }
+
+
+        static BodyDelegate RequestBody(Stream stream)
+        {
+            return (next, error, complete) => new PipeRequest(stream, next, error, complete).Go();
         }
 
         public class Disposable : IDisposable
