@@ -56,9 +56,9 @@ namespace Gate.Middleware
             {
                 result(
                     "401 Authorization Required",
-                    new Dictionary<string, string>()
+                    new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase)
                     {
-                        { "WWW-Authenticate", "Basic Realm=\"" + realm + "\"" }
+                        { "WWW-Authenticate", new[]{"Basic Realm=\"" + realm + "\"" }}
                     },
                     (Func<ArraySegment<byte>, Action, bool> onData, Action<Exception> onError, Action onComplete) =>
                     {

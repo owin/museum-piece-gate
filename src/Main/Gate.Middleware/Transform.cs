@@ -6,7 +6,7 @@ using Gate.Owin;
 
 namespace Gate.Middleware
 {
-    using Response = Tuple<string, IDictionary<string, string>, BodyDelegate>;
+    using Response = Tuple<string, IDictionary<string, IEnumerable<string>>, BodyDelegate>;
 
     public static class TransformExtesnsions
     {

@@ -34,8 +34,9 @@ namespace Gate.Middleware
                 env,
                 (status, headers, body) =>
                 {
-                    if (!headers.Any(kv => string.Equals(kv.Key, "Content-Type", StringComparison.OrdinalIgnoreCase)))
-                        headers.Add("Content-Type", contentType);
+                    if (!headers.HasHeader("Content-Type"))
+                        headers.SetHeader("Content-Type", contentType);
+
                     result(status, headers, body);
                 },
                 fault);
