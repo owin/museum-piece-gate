@@ -43,14 +43,22 @@ namespace Gate.Hosts.Manos
         {
             app = ErrorPage.Middleware(app);
 
+            var effectivePath = path;
+
             var endpoint = new IPEndPoint(IPAddress.Any, port);
             var context = Context.Create();
             var httpServer = new HttpServer(
                 context,
                 transaction =>
                 {
-                    var requestPathBase = "";
-                    var requestPath = "/";
+                    var requestPathBase = effectivePath;
+                    if (requestPathBase == "/" || requestPathBase == null)
+                        requestPathBase = "";
+
+                    var requestPath = transaction.Request.Path;
+                    if (requestPath.StartsWith(requestPathBase, StringComparison.OrdinalIgnoreCase))
+                        requestPath = requestPath.Substring(requestPathBase.Length);
+
 
                     var requestQueryString = RequestQueryString(transaction.Request.QueryData);
 
@@ -58,7 +66,7 @@ namespace Gate.Hosts.Manos
                     var env = new Dictionary<string, object>
                     { 
                         {"owin.Version", "1.0"},
-                        {"owin.RequestMethod", transaction.Request.Method.ToString()},
+                        {"owin.RequestMethod", transaction.Request.Method.ToString().Substring(5)},
                         {"owin.RequestScheme", "http"},
                         {"owin.RequestPathBase", requestPathBase},
                         {"owin.RequestPath", requestPath},
