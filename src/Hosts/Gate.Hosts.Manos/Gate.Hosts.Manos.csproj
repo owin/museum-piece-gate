@@ -36,6 +36,16 @@
     <Reference Include="Manos">
       <HintPath>..\..\..\dependencies\Manos.0.1.4-SNAPSHOT\lib\net40\Manos.dll</HintPath>
     </Reference>
+    <Reference Include="Manos.IO, Version=0.1.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\dependencies\Manos.0.1.4-SNAPSHOT\lib\net40\Manos.IO.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.C5">
+      <HintPath>..\..\..\dependencies\Mono.2.10.2\lib\net40\Mono.C5.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.CSharp">
+      <HintPath>..\..\..\dependencies\Mono.2.10.2\lib\net40\Mono.CSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -46,6 +56,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ErrorPage.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
