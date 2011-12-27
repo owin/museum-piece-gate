@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package>
   <metadata>
-    <id>Gate.Hosts.AspNet</id>
+    <id>Gate.Hosts.Manos</id>
     <version>0.2.0</version>
-    <authors>Louis DeJardin, Benjamin van der Veen, and contributors</authors>
+    <authors>Louis DeJardin</authors>
     <owners></owners>
-    <description>Gate.AspNet provides OWIN hosting support for ASP.NET.</description>
+    <description>Gate.Hosts.Manos provides OWIN hosting support for Manos.</description>
     <language>en-US</language>
     <projectUrl>https://github.com/owin/gate</projectUrl>
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
@@ -16,6 +16,10 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Gate.AspNet.dll" target="lib\net40" />
+    <file src="Gate.Hosts.Manos.dll" target="lib\net40" />
+    <file src="Manos.dll" target="lib\net40" />
+    <file src="Manos.IO.dll" target="lib\net40" />
+    <file src="Mono.C5.dll" target="lib\net40" />
+    <file src="Mono.CSharp.dll" target="lib\net40" />
   </files>
 </package>

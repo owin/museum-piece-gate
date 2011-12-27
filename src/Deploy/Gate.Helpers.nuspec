@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Gate.Helpers</id>
-    <version>0.2</version>
+    <version>0.2.0</version>
     <authors>Louis DeJardin, Benjamin van der Veen, and contributors</authors>
     <owners></owners>
     <description>Gate is a utility library for locating, manufacturing, and hosting OWIN applications.</description>

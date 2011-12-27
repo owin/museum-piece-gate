@@ -41,6 +41,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Hosts\Gate.Hosts.Manos\Gate.Hosts.Manos.csproj">
+      <Project>{A3C2FFB6-663E-4C94-884A-41ADB22DB724}</Project>
+      <Name>Gate.Hosts.Manos</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Hosts\Gate.HttpListener\Gate.HttpListener.csproj">
+      <Project>{A1A94BF6-7E05-430E-947D-B046A2A00CAF}</Project>
+      <Name>Gate.HttpListener</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Main\Gate.Builder\Gate.Builder.csproj">
       <Project>{D26293A2-8533-4BF6-A9CC-A88455B0FF71}</Project>
       <Name>Gate.Builder</Name>
@@ -71,6 +79,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Gate.Hosts.Manos.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Gate.Hosts.HttpListener.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Gate.Helpers.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -92,6 +106,11 @@
     <None Include="Gate.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Mono.CSharp">
+      <HintPath>..\..\dependencies\Mono.2.10.2\lib\net40\Mono.CSharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

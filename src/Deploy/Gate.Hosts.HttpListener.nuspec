@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package>
   <metadata>
-    <id>Gate.Middleware</id>
+    <id>Gate.Hosts.HttpListener</id>
     <version>0.2.0</version>
-    <authors>Louis DeJardin, Benjamin van der Veen, and contributors</authors>
+    <authors>Louis DeJardin</authors>
     <owners></owners>
-    <description>Gate is a utility library for locating, manufacturing, and hosting OWIN applications.</description>
+    <description>Gate.Hosts.HttpListener provides OWIN hosting support for HttpListener.</description>
     <language>en-US</language>
     <projectUrl>https://github.com/owin/gate</projectUrl>
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
     <tags></tags>
     <dependencies>
+      <dependency id="Gate.Builder" version="0.2.0"/>
       <dependency id="Gate.Owin" version="0.2.0"/>
     </dependencies>
   </metadata>
   <files>
-    <file src="Gate.Middleware.dll" target="lib\net40" />
+    <file src="Gate.HttpListener.dll" target="lib\net40" />
   </files>
 </package>
