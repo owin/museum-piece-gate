@@ -59,6 +59,7 @@
     <Compile Include="ErrorPage.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Workaround.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Main\Gate.Builder\Gate.Builder.csproj">
