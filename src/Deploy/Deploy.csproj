@@ -15,6 +15,7 @@
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\Gate\</SolutionDir>
+    <PackageVersion Condition="$(PackageVersion) == '' Or $(PackageVersion) == '*Undefined*'">0.2.0</PackageVersion>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -124,7 +125,7 @@
     <ItemGroup>
       <NuspecFiles Include="*.nuspec" />
     </ItemGroup>
-    <Exec Command="$(ProjectDir)..\..\.nuget\nuget.exe pack %(NuspecFiles.Identity)" WorkingDirectory="$(OutputPath)" />
+    <Exec Command='$(ProjectDir)..\..\.nuget\nuget.exe pack %(NuspecFiles.Identity) -Version $(PackageVersion) -Properties "id=%(NuspecFiles.Filename);authors=HTTP Abstractions Working Group"' WorkingDirectory="$(OutputPath)" />
   </Target>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
 </Project>

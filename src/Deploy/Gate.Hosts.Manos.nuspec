@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package>
   <metadata>
-    <id>Gate.Hosts.Manos</id>
-    <version>0.2.0</version>
-    <authors>Louis DeJardin</authors>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$authors$</authors>
     <owners></owners>
     <description>Gate.Hosts.Manos provides OWIN hosting support for Manos.</description>
     <language>en-US</language>
@@ -11,8 +11,8 @@
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
     <tags></tags>
     <dependencies>
-      <dependency id="Gate.Builder" version="0.2.0"/>
-      <dependency id="Gate.Owin" version="0.2.0"/>
+      <dependency id="Gate.Builder" version="$version$"/>
+      <dependency id="Gate.Owin" version="$version$"/>
     </dependencies>
   </metadata>
   <files>
