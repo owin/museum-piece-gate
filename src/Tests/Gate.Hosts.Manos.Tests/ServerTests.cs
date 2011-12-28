@@ -14,16 +14,16 @@ namespace Gate.Hosts.Manos.Tests
         [Test]
         public void ServerCanBeCreatedAndDisposed()
         {
-            var server = Server.Create((env, result, fault) => { throw new NotImplementedException(); }, 8089, "");
+            var server = Server.Create((env, result, fault) => { throw new NotImplementedException(); }, 9089, "");
             server.Dispose();
         }
 
         [Test]
         public void ServerWillRespondToRequests()
         {
-            using (Server.Create(Wilson.App(), 8090))
+            using (Server.Create(Wilson.App(), 9090))
             {
-                var request = (HttpWebRequest)WebRequest.Create("http://localhost:8090");
+                var request = (HttpWebRequest)WebRequest.Create("http://localhost:9090");
                 using (var response = (HttpWebResponse)request.GetResponse())
                 {
                     using (var reader = new StreamReader(response.GetResponseStream()))
@@ -38,9 +38,9 @@ namespace Gate.Hosts.Manos.Tests
         [Test]
         public void ExceptionsWillReturnStatus500()
         {
-            using (Server.Create(Wilson.App(), 8091))
+            using (Server.Create(Wilson.App(), 9091))
             {
-                var request = (HttpWebRequest)WebRequest.Create("http://localhost:8091/?flip=crash");
+                var request = (HttpWebRequest)WebRequest.Create("http://localhost:9091/?flip=crash");
 
                 var exception = Assert.Throws<WebException>(() => request.GetResponse().Close());
                 var response = (HttpWebResponse)exception.Response;
@@ -64,9 +64,9 @@ namespace Gate.Hosts.Manos.Tests
                 () => Wilson.App().Invoke(env, result, fault));
             };
 
-            using (Server.Create(app, 8092))
+            using (Server.Create(app, 9092))
             {
-                var request = (HttpWebRequest)WebRequest.Create("http://localhost:8092/");
+                var request = (HttpWebRequest)WebRequest.Create("http://localhost:9092/");
                 request.Method = "POST";
                 using (var requestStream = request.GetRequestStream())
                 {
@@ -84,9 +84,9 @@ namespace Gate.Hosts.Manos.Tests
         [Test]
         public void StartupNameMayBeUsedAsParameterToCreate()
         {
-            using (Server.Create("Gate.Hosts.Manos.Tests.Startup.Custom", 8093))
+            using (Server.Create("Gate.Hosts.Manos.Tests.Startup.Custom", 9093))
             {
-                var request = (HttpWebRequest)WebRequest.Create("http://localhost:8093");
+                var request = (HttpWebRequest)WebRequest.Create("http://localhost:9093");
                 using (var response = (HttpWebResponse)request.GetResponse())
                 {
                     using (var reader = new StreamReader(response.GetResponseStream()))
