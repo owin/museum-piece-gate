@@ -89,7 +89,7 @@ namespace Gate.Middleware
 
         public void Invoke(IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault)
         {
-            var path = env["owin.RequestPath"].ToString();
+            var path = env[OwinConstants.RequestPath].ToString();
 
             if (urls.Any(path.StartsWith))
             {

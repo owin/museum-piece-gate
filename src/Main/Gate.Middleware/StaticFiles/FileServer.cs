@@ -30,7 +30,7 @@ namespace Gate.Middleware.StaticFiles
 
         public void Invoke(IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault)
         {
-            pathInfo = env["owin.RequestPath"].ToString();
+            pathInfo = env[OwinConstants.RequestPath].ToString();
 
             if (pathInfo.StartsWith("/"))
             {

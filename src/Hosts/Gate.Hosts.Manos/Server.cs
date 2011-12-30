@@ -65,14 +65,14 @@ namespace Gate.Hosts.Manos
                     var requestHeaders = transaction.Request.Headers.Keys.ToDictionary(k => k, k => transaction.Request.Headers[k], StringComparer.OrdinalIgnoreCase);
                     var env = new Dictionary<string, object>
                     { 
-                        {"owin.Version", "1.0"},
-                        {"owin.RequestMethod", transaction.Request.Method.ToString().Substring(5)},
-                        {"owin.RequestScheme", "http"},
-                        {"owin.RequestPathBase", requestPathBase},
-                        {"owin.RequestPath", requestPath},
-                        {"owin.RequestQueryString", requestQueryString},
-                        {"owin.RequestHeaders", requestHeaders},
-                        {"owin.RequestBody", RequestBody(transaction.Request.PostBody, transaction.Request.ContentEncoding)},
+                        {OwinConstants.Version, "1.0"},
+                        {OwinConstants.RequestMethod, transaction.Request.Method.ToString().Substring(5)},
+                        {OwinConstants.RequestScheme, "http"},
+                        {OwinConstants.RequestPathBase, requestPathBase},
+                        {OwinConstants.RequestPath, requestPath},
+                        {OwinConstants.RequestQueryString, requestQueryString},
+                        {OwinConstants.RequestHeaders, requestHeaders},
+                        {OwinConstants.RequestBody, RequestBody(transaction.Request.PostBody, transaction.Request.ContentEncoding)},
                         {"Manos.Http.IHttpTransaction", transaction},
                         {"server.CLIENT_IP", transaction.Request.Socket.RemoteEndpoint.Address.ToString()},
                     };

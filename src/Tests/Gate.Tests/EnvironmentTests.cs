@@ -41,14 +41,14 @@ namespace Gate.Tests
 
             var env = new Dictionary<string, object>
             {
-                {"owin.RequestMethod", "GET"},
-                {"owin.RequestPath", "/foo"},
-                {"owin.RequestHeaders", headers},
-                {"owin.RequestBody", body},
-                {"owin.RequestPathBase", "/my-app"},
-                {"owin.RequestQueryString", "hello=world"},
-                {"owin.RequestScheme", "https"},
-                {"owin.Version", "1.0"},
+                {OwinConstants.RequestMethod, "GET"},
+                {OwinConstants.RequestPath, "/foo"},
+                {OwinConstants.RequestHeaders, headers},
+                {OwinConstants.RequestBody, body},
+                {OwinConstants.RequestPathBase, "/my-app"},
+                {OwinConstants.RequestQueryString, "hello=world"},
+                {OwinConstants.RequestScheme, "https"},
+                {OwinConstants.Version, "1.0"},
             };
 
             var environment = new Environment(env);

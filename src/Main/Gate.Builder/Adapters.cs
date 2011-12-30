@@ -79,10 +79,10 @@ namespace Gate.Builder
         static Action Replace<TFrom, TTo>(IDictionary<string, object> env, Func<TFrom, TTo> adapt)
         {
             object body;
-            if (env.TryGetValue("owin.RequestBody", out body) && body is TFrom)
+            if (env.TryGetValue(OwinConstants.RequestBody, out body) && body is TFrom)
             {
-                env["owin.RequestBody"] = adapt((TFrom)body);
-                return () => env["owin.RequestBody"] = body;
+                env[OwinConstants.RequestBody] = adapt((TFrom)body);
+                return () => env[OwinConstants.RequestBody] = body;
             }
             return () => { };
         }

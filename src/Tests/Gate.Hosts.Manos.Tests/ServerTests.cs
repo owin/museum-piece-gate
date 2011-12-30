@@ -54,7 +54,7 @@ namespace Gate.Hosts.Manos.Tests
             var requestData = new MemoryStream();
             AppDelegate app = (env, result, fault) =>
             {
-                var body = (BodyDelegate)env["owin.RequestBody"];
+                var body = (BodyDelegate)env[OwinConstants.RequestBody];
                 body((data, continuation) =>
                 {
                     requestData.Write(data.Array, data.Offset, data.Count);

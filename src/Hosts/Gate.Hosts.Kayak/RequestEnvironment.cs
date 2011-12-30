@@ -7,14 +7,14 @@ namespace Gate.Hosts.Kayak
 {
     public class RequestEnvironment
     {
-        public const string RequestMethodKey = "owin.RequestMethod";
-        public const string RequestPathBaseKey = "owin.RequestPathBase";
-        public const string RequestPathKey = "owin.RequestPath";
-        public const string RequestQueryStringKey = "owin.RequestQueryString";
-        public const string RequestBodyKey = "owin.RequestBody";
-        public const string RequestHeadersKey = "owin.RequestHeaders";
-        public const string RequestSchemeKey = "owin.RequestScheme";
-        public const string VersionKey = "owin.Version";
+        public const string RequestMethodKey = OwinConstants.RequestMethod;
+        public const string RequestPathBaseKey = OwinConstants.RequestPathBase;
+        public const string RequestPathKey = OwinConstants.RequestPath;
+        public const string RequestQueryStringKey = OwinConstants.RequestQueryString;
+        public const string RequestBodyKey = OwinConstants.RequestBody;
+        public const string RequestHeadersKey = OwinConstants.RequestHeaders;
+        public const string RequestSchemeKey = OwinConstants.RequestScheme;
+        public const string VersionKey = OwinConstants.Version;
         public const string SchedulerKey = "kayak.Scheduler";
 
         readonly IDictionary<string, object> _env;

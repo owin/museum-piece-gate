@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Gate.Middleware.Utils;
+using Gate.Owin;
 using NUnit.Framework;
 
 namespace Gate.Middleware.Tests
@@ -27,7 +28,7 @@ namespace Gate.Middleware.Tests
         {
             return new Dictionary<string, object>
             {
-                {"owin.RequestHeaders", new Dictionary<string, string>
+                {OwinConstants.RequestHeaders, new Dictionary<string, string>
                 {
                     {"Range", rangeHeader}
                 }}
@@ -75,7 +76,7 @@ namespace Gate.Middleware.Tests
         {
             return RangeHeader.Parse(new Dictionary<string, object>
             {
-                {"owin.RequestHeaders", new Dictionary<string, string>
+                {OwinConstants.RequestHeaders, new Dictionary<string, string>
                 {
                     {"Range", rangeString}
                 }}

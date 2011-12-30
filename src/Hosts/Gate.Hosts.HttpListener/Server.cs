@@ -81,14 +81,14 @@ namespace Gate.Hosts.HttpListener
 
                     var env = new Dictionary<string, object>
                     { 
-                        {"owin.Version", "1.0"},
-                        {"owin.RequestMethod", context.Request.HttpMethod},
-                        {"owin.RequestScheme", context.Request.Url.Scheme},
-                        {"owin.RequestPathBase", requestPathBase},
-                        {"owin.RequestPath", requestPath},
-                        {"owin.RequestQueryString", requestQueryString},
-                        {"owin.RequestHeaders", requestHeaders},
-                        {"owin.RequestBody", RequestBody(context.Request.InputStream)},
+                        {OwinConstants.Version, "1.0"},
+                        {OwinConstants.RequestMethod, context.Request.HttpMethod},
+                        {OwinConstants.RequestScheme, context.Request.Url.Scheme},
+                        {OwinConstants.RequestPathBase, requestPathBase},
+                        {OwinConstants.RequestPath, requestPath},
+                        {OwinConstants.RequestQueryString, requestQueryString},
+                        {OwinConstants.RequestHeaders, requestHeaders},
+                        {OwinConstants.RequestBody, RequestBody(context.Request.InputStream)},
                         {"System.Net.HttpListenerContext", context},
                         {"server.CLIENT_IP", context.Request.RemoteEndPoint.Address.ToString()},
                     };

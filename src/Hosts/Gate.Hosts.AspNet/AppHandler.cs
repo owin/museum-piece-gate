@@ -49,14 +49,14 @@ namespace Gate.Hosts.AspNet
 
             var env = new Dictionary<string, object>
             { 
-                {"owin.Version", "1.0"},
-                {"owin.RequestMethod", httpRequest.HttpMethod},
-                {"owin.RequestScheme", httpRequest.Url.Scheme},
-                {"owin.RequestPathBase", pathBase},
-                {"owin.RequestPath", path},
-                {"owin.RequestQueryString", serverVariables.QueryString},
-                {"owin.RequestHeaders", requestHeaders},
-                {"owin.RequestBody", RequestBody(httpRequest.InputStream)},
+                {OwinConstants.Version, "1.0"},
+                {OwinConstants.RequestMethod, httpRequest.HttpMethod},
+                {OwinConstants.RequestScheme, httpRequest.Url.Scheme},
+                {OwinConstants.RequestPathBase, pathBase},
+                {OwinConstants.RequestPath, path},
+                {OwinConstants.RequestQueryString, serverVariables.QueryString},
+                {OwinConstants.RequestHeaders, requestHeaders},
+                {OwinConstants.RequestBody, RequestBody(httpRequest.InputStream)},
                 {"aspnet.HttpContextBase", httpContext},
             };
             foreach (var kv in serverVariables.AddToEnvironment())

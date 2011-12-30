@@ -76,8 +76,8 @@ namespace Gate.Mapping
                 _env = env;
             }
 
-            const string RequestPathBaseKey = "owin.RequestPathBase";
-            const string RequestPathKey = "owin.RequestPath";
+            const string RequestPathBaseKey = OwinConstants.RequestPathBase;
+            const string RequestPathKey = OwinConstants.RequestPath;
 
             public string Path
             {

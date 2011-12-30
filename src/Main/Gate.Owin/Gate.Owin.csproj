@@ -35,6 +35,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OwinConstants.cs" />
     <Compile Include="Delegates.cs" />
     <Compile Include="IAppBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

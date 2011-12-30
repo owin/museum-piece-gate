@@ -64,7 +64,7 @@ namespace Gate.Hosts.HttpListener.Tests
             var requestData = new MemoryStream();
             AppDelegate app = (env, result, fault) =>
             {
-                BodyDelegate body = (BodyDelegate)env["owin.RequestBody"];
+                BodyDelegate body = (BodyDelegate)env[OwinConstants.RequestBody];
                 body((data, continuation) =>
                 {
                     requestData.Write(data.Array, data.Offset, data.Count);
