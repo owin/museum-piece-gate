@@ -79,7 +79,7 @@
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Hosts\Gate.Wcf\Gate.Hosts.Wcf.csproj">
+    <ProjectReference Include="..\..\Hosts\Gate.Hosts.Wcf\Gate.Hosts.Wcf.csproj">
       <Project>{E7602355-82C2-4698-AB61-128B8A6E53CE}</Project>
       <Name>Gate.Hosts.Wcf</Name>
     </ProjectReference>
