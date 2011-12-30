@@ -65,7 +65,7 @@
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Hosts\Gate.Kayak\Gate.Hosts.Kayak.csproj">
+    <ProjectReference Include="..\..\Hosts\Gate.Hosts.Kayak\Gate.Hosts.Kayak.csproj">
       <Project>{D96E8CF9-C2A5-4A35-814C-0B4FE9828B26}</Project>
       <Name>Gate.Hosts.Kayak</Name>
     </ProjectReference>

@@ -31,9 +31,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.App", "src\Samples\S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.App.Tests", "src\Samples\Sample.App.Tests\Sample.App.Tests.csproj", "{F31F4DF8-AA81-4FBC-BD33-16AEE1F53B86}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.Kayak", "src\Hosts\Gate.Kayak\Gate.Hosts.Kayak.csproj", "{D96E8CF9-C2A5-4A35-814C-0B4FE9828B26}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.Kayak", "src\Hosts\Gate.Hosts.Kayak\Gate.Hosts.Kayak.csproj", "{D96E8CF9-C2A5-4A35-814C-0B4FE9828B26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.Kayak.Tests", "src\Tests\Gate.Kayak.Tests\Gate.Hosts.Kayak.Tests.csproj", "{8AA0A98F-FCE3-4DEB-88A2-67B5C8F9845B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.Kayak.Tests", "src\Tests\Gate.Hosts.Kayak.Tests\Gate.Hosts.Kayak.Tests.csproj", "{8AA0A98F-FCE3-4DEB-88A2-67B5C8F9845B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Owin", "src\Main\Gate.Owin\Gate.Owin.csproj", "{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}"
 EndProject
