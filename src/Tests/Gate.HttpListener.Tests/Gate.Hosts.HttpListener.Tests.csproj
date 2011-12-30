@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{A1A94BF6-7E05-430E-947D-B046A2A00CAF}</ProjectGuid>
+    <ProjectGuid>{6BD54361-C499-4F93-A8FE-015FFE0DBF6F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Gate.HttpListener</RootNamespace>
-    <AssemblyName>Gate.HttpListener</AssemblyName>
+    <RootNamespace>Gate.Hosts.HttpListener.Tests</RootNamespace>
+    <AssemblyName>Gate.Hosts.HttpListener.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\..\Gate\</SolutionDir>
@@ -33,8 +33,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\..\packages\NUnit.2.5.10.11092\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.mocks">
+      <HintPath>..\..\..\packages\NUnit.2.5.10.11092\lib\nunit.mocks.dll</HintPath>
+    </Reference>
+    <Reference Include="pnunit.framework">
+      <HintPath>..\..\..\packages\NUnit.2.5.10.11092\lib\pnunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -43,17 +51,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ErrorPage.cs" />
-    <Compile Include="PipeRequest.cs" />
-    <Compile Include="PipeResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Server.cs" />
+    <Compile Include="ServerTests.cs" />
+    <Compile Include="Startup.cs" />
     <Compile Include="Workaround.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Main\Gate.Builder\Gate.Builder.csproj">
-      <Project>{D26293A2-8533-4BF6-A9CC-A88455B0FF71}</Project>
-      <Name>Gate.Builder</Name>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Hosts\Gate.HttpListener\Gate.Hosts.HttpListener.csproj">
+      <Project>{A1A94BF6-7E05-430E-947D-B046A2A00CAF}</Project>
+      <Name>Gate.Hosts.HttpListener</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Main\Gate.Helpers\Gate.Helpers.csproj">
+      <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
+      <Name>Gate.Helpers</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Main\Gate.Owin\Gate.Owin.csproj">
       <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>

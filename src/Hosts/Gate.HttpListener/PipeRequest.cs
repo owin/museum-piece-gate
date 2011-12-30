@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading;
 
-namespace Gate.HttpListener
+namespace Gate.Hosts.HttpListener
 {
     class PipeRequest
     {

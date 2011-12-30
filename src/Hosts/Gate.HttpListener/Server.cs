@@ -7,7 +7,7 @@ using System.Net;
 using Gate.Builder;
 using Gate.Owin;
 
-namespace Gate.HttpListener
+namespace Gate.Hosts.HttpListener
 {
     public class Server
     {

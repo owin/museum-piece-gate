@@ -9,7 +9,7 @@ using Gate.Helpers;
 using Gate.Owin;
 using NUnit.Framework;
 
-namespace Gate.HttpListener.Tests
+namespace Gate.Hosts.HttpListener.Tests
 {
     [TestFixture]
     public class ServerTests
@@ -94,7 +94,7 @@ namespace Gate.HttpListener.Tests
         [Test]
         public void StartupNameMayBeUsedAsParameterToCreate()
         {
-            using (Server.Create("Gate.HttpListener.Tests.Startup.Custom", 8090))
+            using (Server.Create("Gate.Hosts.HttpListener.Tests.Startup.Custom", 8090))
             {
                 var request = (HttpWebRequest)WebRequest.Create("http://localhost:8090");
                 using (var response = (HttpWebResponse)request.GetResponse())

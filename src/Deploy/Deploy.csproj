@@ -46,9 +46,9 @@
       <Project>{A3C2FFB6-663E-4C94-884A-41ADB22DB724}</Project>
       <Name>Gate.Hosts.Manos</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Hosts\Gate.HttpListener\Gate.HttpListener.csproj">
+    <ProjectReference Include="..\Hosts\Gate.HttpListener\Gate.Hosts.HttpListener.csproj">
       <Project>{A1A94BF6-7E05-430E-947D-B046A2A00CAF}</Project>
-      <Name>Gate.HttpListener</Name>
+      <Name>Gate.Hosts.HttpListener</Name>
     </ProjectReference>
     <ProjectReference Include="..\Main\Gate.Builder\Gate.Builder.csproj">
       <Project>{D26293A2-8533-4BF6-A9CC-A88455B0FF71}</Project>

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Gate.Owin;
 
-namespace Gate.HttpListener.Tests
+namespace Gate.Hosts.HttpListener.Tests
 {
     public static class Startup
     {

@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using Gate.Owin;
 
-namespace Gate.HttpListener
+namespace Gate.Hosts.HttpListener
 {
     class PipeResponse
     {

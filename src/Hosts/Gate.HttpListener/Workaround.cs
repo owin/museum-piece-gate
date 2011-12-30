@@ -1,6 +1,6 @@
 ﻿using Gate.Owin;
 
-namespace Gate.HttpListener
+namespace Gate.Hosts.HttpListener
 {
     class Workaround
     {

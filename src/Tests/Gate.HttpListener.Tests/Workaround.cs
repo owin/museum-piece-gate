@@ -1,7 +1,7 @@
 ﻿using System;
 using Gate.Owin;
 
-namespace Gate.HttpListener.Tests
+namespace Gate.Hosts.HttpListener.Tests
 {
     class Workaround
     {

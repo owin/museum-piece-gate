@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Gate.Owin;
 
-namespace Gate.HttpListener
+namespace Gate.Hosts.HttpListener
 {
     public static class ErrorPage
     {
