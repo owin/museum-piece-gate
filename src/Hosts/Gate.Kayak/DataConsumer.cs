@@ -1,7 +1,7 @@
 ﻿using System;
 using Kayak;
 
-namespace Gate.Kayak
+namespace Gate.Hosts.Kayak
 {
     class DataConsumer : IDataConsumer
     {

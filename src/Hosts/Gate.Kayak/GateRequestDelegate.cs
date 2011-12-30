@@ -6,7 +6,7 @@ using Gate.Owin;
 using Kayak;
 using Kayak.Http;
 
-namespace Gate.Kayak
+namespace Gate.Hosts.Kayak
 {
     class GateRequestDelegate : IHttpRequestDelegate
     {

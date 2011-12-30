@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Gate.Kayak
+namespace Gate.Hosts.Kayak
 {
     class Disposable : IDisposable
     {

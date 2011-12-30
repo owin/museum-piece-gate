@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Gate.Owin;
 using Kayak;
 
-namespace Gate.Kayak
+namespace Gate.Hosts.Kayak
 {
     public class RequestEnvironment
     {

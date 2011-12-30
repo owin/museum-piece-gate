@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Gate;
-using Gate.Kayak;
+using Gate.Hosts.Kayak;
 using Gate.Owin;
 using NUnit.Framework;
 using Kayak.Http;
 using Kayak;
 
-namespace Gate.Kayak.Tests
+namespace Gate.Hosts.Kayak.Tests
 {
     class Buffer
     {

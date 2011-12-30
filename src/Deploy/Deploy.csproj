@@ -74,9 +74,9 @@
       <Project>{F32E456A-F26E-4C5D-93B8-311941A714E4}</Project>
       <Name>Gate.Hosts.AspNet</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Hosts\Gate.Kayak\Gate.Kayak.csproj">
+    <ProjectReference Include="..\Hosts\Gate.Kayak\Gate.Hosts.Kayak.csproj">
       <Project>{D96E8CF9-C2A5-4A35-814C-0B4FE9828B26}</Project>
-      <Name>Gate.Kayak</Name>
+      <Name>Gate.Hosts.Kayak</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +97,7 @@
     </None>
     <None Include="Gate.Hosts.AspNet.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
     <None Include="Gate.Hosts.Kayak.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

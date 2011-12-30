@@ -5,7 +5,7 @@
     <version>$version$</version>
     <authors>$authors$</authors>
     <owners></owners>
-    <description>Gate.Kayak provides OWIN hosting support for Kayak.</description>
+    <description>Gate.Hosts.Kayak provides OWIN hosting support for Kayak.</description>
     <language>en-US</language>
     <projectUrl>https://github.com/owin/gate</projectUrl>
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
@@ -17,6 +17,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Gate.Kayak.dll" target="lib\net40" />
+    <file src="Gate.Hosts.Kayak.dll" target="lib\net40" />
   </files>
 </package>

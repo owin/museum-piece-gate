@@ -9,7 +9,7 @@ using Kayak.Http;
 using System.Diagnostics;
 using System.Net;
 
-namespace Gate.Kayak
+namespace Gate.Hosts.Kayak
 {
     public static class KayakGate
     {

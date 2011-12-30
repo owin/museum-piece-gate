@@ -2,7 +2,7 @@
 using Gate.Owin;
 using Kayak;
 
-namespace Gate.Kayak
+namespace Gate.Hosts.Kayak
 {
     class DataProducer : IDataProducer
     {

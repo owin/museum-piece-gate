@@ -6,7 +6,7 @@ using NUnit.Framework;
 using Kayak;
 using Kayak.Http;
 
-namespace Gate.Kayak.Tests
+namespace Gate.Hosts.Kayak.Tests
 {
     class MockScheduler : IScheduler
     {
