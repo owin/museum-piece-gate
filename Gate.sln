@@ -45,9 +45,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Builder", "src\Main\Ga
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deploy", "src\Deploy\Deploy.csproj", "{4E3865FF-F9EC-4FD9-84DC-223C2FF34BDE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.HttpListener", "src\Hosts\Gate.HttpListener\Gate.Hosts.HttpListener.csproj", "{A1A94BF6-7E05-430E-947D-B046A2A00CAF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.HttpListener", "src\Hosts\Gate.Hosts.HttpListener\Gate.Hosts.HttpListener.csproj", "{A1A94BF6-7E05-430E-947D-B046A2A00CAF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.HttpListener.Tests", "src\Tests\Gate.HttpListener.Tests\Gate.Hosts.HttpListener.Tests.csproj", "{6BD54361-C499-4F93-A8FE-015FFE0DBF6F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.HttpListener.Tests", "src\Tests\Gate.Hosts.HttpListener.Tests\Gate.Hosts.HttpListener.Tests.csproj", "{6BD54361-C499-4F93-A8FE-015FFE0DBF6F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.Manos", "src\Hosts\Gate.Hosts.Manos\Gate.Hosts.Manos.csproj", "{A3C2FFB6-663E-4C94-884A-41ADB22DB724}"
 EndProject
