@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using Gate.Owin;
 
-namespace Gate.AspNet
+namespace Gate.Hosts.AspNet
 {
     class PipeResponse
     {

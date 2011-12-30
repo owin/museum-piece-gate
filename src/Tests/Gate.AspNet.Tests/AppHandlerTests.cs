@@ -9,7 +9,7 @@ using FakeItEasy;
 using Gate.TestHelpers;
 using NUnit.Framework;
 
-namespace Gate.AspNet.Tests
+namespace Gate.Hosts.AspNet.Tests
 {
     [TestFixture]
     public class AppHandlerTests

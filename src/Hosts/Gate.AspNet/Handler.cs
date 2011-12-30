@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Web;
 
-namespace Gate.AspNet
+namespace Gate.Hosts.AspNet
 {
     public class Handler : IHttpAsyncHandler
     {

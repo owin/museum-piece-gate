@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 
-namespace Gate.AspNet.Tests
+namespace Gate.Hosts.AspNet.Tests
 {
     [TestFixture]
     public class AppHandlerSingletonTests

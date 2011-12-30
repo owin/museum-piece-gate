@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{04624DF3
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{26168DEC-6A14-498B-89F4-34881B625D60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.AspNet", "src\Hosts\Gate.AspNet\Gate.AspNet.csproj", "{F32E456A-F26E-4C5D-93B8-311941A714E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.AspNet", "src\Hosts\Gate.AspNet\Gate.Hosts.AspNet.csproj", "{F32E456A-F26E-4C5D-93B8-311941A714E4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{C84C3CDC-FC22-4AF2-8759-4B407BF5AD56}"
 EndProject
@@ -25,7 +25,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Wcf", "src\Hosts\Gate.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Wcf", "src\Samples\Sample.Wcf\Sample.Wcf.csproj", "{25EC3795-B2D8-4588-8139-8BD428269DB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.AspNet.Tests", "src\Tests\Gate.AspNet.Tests\Gate.AspNet.Tests.csproj", "{7459D8FB-7AF8-41FD-AA70-5D88FCC430A0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.AspNet.Tests", "src\Tests\Gate.AspNet.Tests\Gate.Hosts.AspNet.Tests.csproj", "{7459D8FB-7AF8-41FD-AA70-5D88FCC430A0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.App", "src\Samples\Sample.App\Sample.App.csproj", "{0E89EFE3-63CE-4222-9C0B-DD1F5559DAAF}"
 EndProject

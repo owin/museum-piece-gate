@@ -2,7 +2,7 @@
 using System.Configuration;
 using Gate.Builder;
 
-namespace Gate.AspNet
+namespace Gate.Hosts.AspNet
 {
     public static class AppHandlerSingleton
     {

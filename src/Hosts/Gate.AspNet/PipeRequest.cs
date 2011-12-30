@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading;
 
-namespace Gate.AspNet
+namespace Gate.Hosts.AspNet
 {
     class PipeRequest
     {

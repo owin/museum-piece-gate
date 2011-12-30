@@ -2,7 +2,7 @@
 using System.IO;
 using System.Web;
 
-namespace Gate.AspNet.Tests
+namespace Gate.Hosts.AspNet.Tests
 {
     public class RemoteHostClosedStream : Stream
     {

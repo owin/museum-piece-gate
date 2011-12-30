@@ -8,8 +8,8 @@
     <ProjectGuid>{F32E456A-F26E-4C5D-93B8-311941A714E4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Gate.AspNet</RootNamespace>
-    <AssemblyName>Gate.AspNet</AssemblyName>
+    <RootNamespace>Gate.Hosts.AspNet</RootNamespace>
+    <AssemblyName>Gate.Hosts.AspNet</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\..\Gate\</SolutionDir>
     <RestorePackages>true</RestorePackages>
