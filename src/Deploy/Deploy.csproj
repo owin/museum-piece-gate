@@ -70,7 +70,7 @@
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Hosts\Gate.AspNet\Gate.Hosts.AspNet.csproj">
+    <ProjectReference Include="..\Hosts\Gate.Hosts.AspNet\Gate.Hosts.AspNet.csproj">
       <Project>{F32E456A-F26E-4C5D-93B8-311941A714E4}</Project>
       <Name>Gate.Hosts.AspNet</Name>
     </ProjectReference>
