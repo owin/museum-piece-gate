@@ -13,7 +13,7 @@ using Gate.Builder;
 using Gate.Helpers;
 using Gate.Owin;
 
-namespace Gate.Wcf
+namespace Gate.Hosts.Wcf
 {
     [ServiceContract]
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]

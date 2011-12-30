@@ -1,5 +1,5 @@
 ﻿using System;
-using Gate.Wcf;
+using Gate.Hosts.Wcf;
 
 namespace Sample.Wcf
 {

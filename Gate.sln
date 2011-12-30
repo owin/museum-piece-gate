@@ -21,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.AspNet", "src\Sample
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.TestHelpers", "src\Tests\Gate.TestHelpers\Gate.TestHelpers.csproj", "{E4256EDF-0B54-4715-8E66-8D4D4887E15F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Wcf", "src\Hosts\Gate.Wcf\Gate.Wcf.csproj", "{E7602355-82C2-4698-AB61-128B8A6E53CE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.Wcf", "src\Hosts\Gate.Wcf\Gate.Hosts.Wcf.csproj", "{E7602355-82C2-4698-AB61-128B8A6E53CE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Wcf", "src\Samples\Sample.Wcf\Sample.Wcf.csproj", "{25EC3795-B2D8-4588-8139-8BD428269DB1}"
 EndProject

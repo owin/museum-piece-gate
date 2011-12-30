@@ -8,8 +8,8 @@
     <ProjectGuid>{E7602355-82C2-4698-AB61-128B8A6E53CE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Gate.Wcf</RootNamespace>
-    <AssemblyName>Gate.Wcf</AssemblyName>
+    <RootNamespace>Gate.Hosts.Wcf</RootNamespace>
+    <AssemblyName>Gate.Hosts.Wcf</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\..\Gate\</SolutionDir>
