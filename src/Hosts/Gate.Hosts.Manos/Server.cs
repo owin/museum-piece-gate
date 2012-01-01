@@ -95,12 +95,12 @@ namespace Gate.Hosts.Manos
                                 }
                             }
 
-                            transaction.Response.Headers.SetHeader("Connection", "close");
-
                             body(
                                 (data, continuation) =>
                                 {
-                                    transaction.Response.Write(data.Array, data.Offset, data.Count);
+                                    var duplicate = new byte[data.Count];
+                                    Array.Copy(data.Array, data.Offset, duplicate, 0, data.Count);
+                                    transaction.Response.Write(duplicate);
                                     return false;
                                 },
                                 ex =>
