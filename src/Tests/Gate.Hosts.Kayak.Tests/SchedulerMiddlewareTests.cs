@@ -132,9 +132,10 @@ namespace Gate.Hosts.Kayak.Tests
             scheduler.Post(() =>
             {
                 middleware.Invoke(new Environment() {
-                    BodyAction = (onNext, onError, onComplete) => {
+                    BodyDelegate = (onNext, onError, onComplete) => {
                         onNext(default(ArraySegment<byte>), null);
-                        onNext(default(ArraySegment<byte>), () => onComplete());
+                        if (!onNext(default(ArraySegment<byte>), onComplete))
+                            onComplete();
                         return () => { };
                     }
                 }, (status, headers, body) =>
