@@ -59,20 +59,23 @@ namespace Gate.Hosts.Kayak
                 theScheduler.Post(() => result(status, headers, (onNext, onError, onComplete) =>
                 {
                     return body(
-                        (data, _) => { 
-                                    
-                            // if the writer is async (continuation non-null)
-                            // then we could keep track of the number of outstanding
-                            // buffers and apply back pressure if it's > 0. invoke
-                            // continuation when drained.
+                        (data, continuation) =>
+                        {
+                            // cannot reschedule a call that is sent synchronously...
+                            if (continuation == null)
+                            {
+                                onNext(data, null);
+                                return false;
+                            }
 
-                            // XXX pool buffers
+                            // reschedule any async calls, and call continuation if host does not
+                            theScheduler.Post(() =>
+                            {
+                                if (!onNext(data, continuation))
+                                    continuation();
+                            });
 
-                            var buf = new byte[data.Count];
-                            Buffer.BlockCopy(data.Array, data.Offset, buf, 0, buf.Length);
-                            theScheduler.Post(() => onNext(new ArraySegment<byte>(buf), null));
-                                    
-                            return false;
+                            return true;
                         },
                         bodyError => theScheduler.Post(() => onError(bodyError)),
                         () => theScheduler.Post(() => onComplete()));
