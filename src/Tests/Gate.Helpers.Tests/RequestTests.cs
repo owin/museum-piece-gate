@@ -53,7 +53,7 @@ namespace Gate.Helpers.Tests
         [Test]
         public void Host_should_favor_Host_header_if_present()
         {
-            var headers = new Dictionary<string, string> {{"Host", "Beta"}};
+            var headers = Headers.New().SetHeader("Host", "Beta");
             var env = new Dictionary<string, object>
             {
                 {"server.SERVER_NAME", "Alpha"},
@@ -69,7 +69,7 @@ namespace Gate.Helpers.Tests
             var env = new Dictionary<string, object>
             {
                 {"server.SERVER_NAME", "Alpha"},
-                {"owin.RequestHeaders", new Dictionary<string, string> {{"Host", "Beta:8080"}}}
+                {"owin.RequestHeaders", Headers.New().SetHeader("Host", "Beta:8080")}
             };
             var request = new Request(env);
             Assert.That(request.Host, Is.EqualTo("Beta"));
@@ -88,7 +88,7 @@ namespace Gate.Helpers.Tests
         {
             var env = new Dictionary<string, object>
             {
-                {"owin.RequestHeaders", new Dictionary<string, string> {{"Content-Type", "text/plain"}}}
+                {"owin.RequestHeaders", Headers.New().SetHeader("Content-Type", "text/plain")}
             };
             var request = new Request(env);
             Assert.That(request.ContentType, Is.EqualTo("text/plain"));
@@ -100,7 +100,7 @@ namespace Gate.Helpers.Tests
         {
             var env = new Dictionary<string, object>
             {
-                {"owin.RequestHeaders", new Dictionary<string, string> {{"Content-Type", "text/html; charset=utf-8"}}}
+                {"owin.RequestHeaders", Headers.New().SetHeader("Content-Type", "text/html; charset=utf-8")}
             };
             var request = new Request(env);
             Assert.That(request.ContentType, Is.EqualTo("text/html; charset=utf-8"));
@@ -112,7 +112,7 @@ namespace Gate.Helpers.Tests
         {
             var env = new Dictionary<string, object>
             {
-                {"owin.RequestHeaders", new Dictionary<string, string>()}
+                {"owin.RequestHeaders", new Dictionary<string, IEnumerable<string>>()}
             };
             var request = new Request(env);
             Assert.That(request.ContentType, Is.Null);

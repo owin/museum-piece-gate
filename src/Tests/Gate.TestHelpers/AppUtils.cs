@@ -44,12 +44,12 @@ namespace Gate.TestHelpers
             };
         }
 
-        public static IDictionary<string, string> CreateHeaderDictionary()
+        public static IDictionary<string, IEnumerable<string>> CreateHeaderDictionary()
         {
-            return new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            return Headers.New();
         }
 
-        public static IDictionary<string, string> CreateHeaderDictionary(Action<IDictionary<string, string>> setup)
+        public static IDictionary<string, IEnumerable<string>> CreateHeaderDictionary(Action<IDictionary<string, IEnumerable<string>>> setup)
         {
             var h = CreateHeaderDictionary();
             setup(h);
@@ -66,17 +66,17 @@ namespace Gate.TestHelpers
             return new FakeApp(status).AppDelegate;
         }
 
-        public static AppDelegate Simple(string status, IDictionary<string, string> headers)
+        public static AppDelegate Simple(string status, IDictionary<string, IEnumerable<string>> headers)
         {
             return new FakeApp(status) { Headers = headers }.AppDelegate;
         }
 
-        public static AppDelegate Simple(string status, IDictionary<string, string> headers, string body)
+        public static AppDelegate Simple(string status, IDictionary<string, IEnumerable<string>> headers, string body)
         {
             return new FakeApp(status, body) {Headers = headers}.AppDelegate;
         }
 
-        public static AppDelegate Simple(string status, IDictionary<string, string> headers, BodyDelegate body)
+        public static AppDelegate Simple(string status, IDictionary<string, IEnumerable<string>> headers, BodyDelegate body)
         {
             return new FakeApp(status, body) {Headers = headers}.AppDelegate;
         }
@@ -101,17 +101,17 @@ namespace Gate.TestHelpers
             return builder.Run(Simple(status, body));
         }
 
-        public static IAppBuilder Simple(this IAppBuilder builder, string status, IDictionary<string, string> headers)
+        public static IAppBuilder Simple(this IAppBuilder builder, string status, IDictionary<string, IEnumerable<string>> headers)
         {
             return builder.Run(Simple(status, headers));
         }
 
-        public static IAppBuilder Simple(this IAppBuilder builder, string status, IDictionary<string, string> headers, BodyDelegate body)
+        public static IAppBuilder Simple(this IAppBuilder builder, string status, IDictionary<string, IEnumerable<string>> headers, BodyDelegate body)
         {
             return builder.Run(Simple(status, headers, body));
         }
 
-        public static IAppBuilder Simple(this IAppBuilder builder, string status, IDictionary<string, string> headers, string body)
+        public static IAppBuilder Simple(this IAppBuilder builder, string status, IDictionary<string, IEnumerable<string>> headers, string body)
         {
             return builder.Run(Simple(status, headers, body));
         }

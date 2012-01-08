@@ -26,7 +26,7 @@ namespace Gate.Middleware.Tests
         public void Cascade_with_app_calls_through()
         {
             var app = new FakeApp("200 OK", "Hello world");
-            app.Headers["Content-Type"] = "text/plain";
+            app.Headers.SetHeader("Content-Type", "text/plain");
             var cascade = AppBuilder.BuildConfiguration(b => b.Cascade(app.AppDelegate));
             var host = new FakeHost(cascade);
             var response = host.GET("/");
@@ -40,7 +40,7 @@ namespace Gate.Middleware.Tests
         {
             var app1 = new FakeApp("404 Not Found", "");
             var app2 = new FakeApp("200 OK", "Hello world");
-            app2.Headers["Content-Type"] = "text/plain";
+            app2.Headers.SetHeader("Content-Type", "text/plain");
             var app3 = new FakeApp("404 Not Found", "");
             var cascade = AppBuilder.BuildConfiguration(b => b.Cascade(app1.AppDelegate, app2.AppDelegate, app3.AppDelegate));
             var host = new FakeHost(cascade);
@@ -57,7 +57,7 @@ namespace Gate.Middleware.Tests
         {
             var app1 = new FakeApp("404 Not Found", "") {SendAsync = true};
             var app2 = new FakeApp("200 OK", "Hello world") {SendAsync = true};
-            app2.Headers["Content-Type"] = "text/plain";
+            app2.Headers.SetHeader("Content-Type", "text/plain");
             var app3 = new FakeApp("404 Not Found", "") {SendAsync = true};
             var cascade = AppBuilder.BuildConfiguration(b => b.Cascade(app1.AppDelegate, app2.AppDelegate, app3.AppDelegate));
             var host = new FakeHost(cascade);

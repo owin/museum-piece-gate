@@ -16,9 +16,13 @@ namespace Gate.Middleware.Tests
         {
             var response = AppUtils.Call(AppBuilder.BuildConfiguration(b => b
                 .Chunked()
-                .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
-                    { { "Content-Length", "12" }, { "Content-Type", "text/plain" } },
-                    (onNext, onError, onComplete) => {
+                .Run(AppUtils.Simple("200 OK", new Dictionary<string, IEnumerable<string>>(StringComparer.InvariantCultureIgnoreCase)
+                {
+                    { "Content-Length", new[] { "12" } }, 
+                    { "Content-Type", new[]{"text/plain"} },
+                },
+                    (onNext, onError, onComplete) =>
+                    {
                         onNext(new ArraySegment<byte>(Encoding.ASCII.GetBytes("hello ")), null);
                         onNext(new ArraySegment<byte>(Encoding.ASCII.GetBytes("world.")), null);
                         onComplete();
@@ -28,33 +32,40 @@ namespace Gate.Middleware.Tests
             Assert.That(response.Headers.ContainsKey("transfer-encoding"), Is.False);
             Assert.That(response.BodyText, Is.EqualTo("hello world."));
         }
-        
+
         [Test]
         public void Does_not_endcode_if_transfer_encoding_is_not_chunked()
         {
             var response = AppUtils.Call(AppBuilder.BuildConfiguration(b => b
                 .Chunked()
-                .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
-                    { { "transfer-encoding", "girl" }, { "Content-Type", "text/plain" } },
-                    (onNext, onError, onComplete) => {
+                .Run(AppUtils.Simple("200 OK", new Dictionary<string, IEnumerable<string>>(StringComparer.InvariantCultureIgnoreCase)
+                {
+                    { "transfer-encoding", new[]{"girl"} }, 
+                    { "Content-Type", new[]{"text/plain"} },
+                },
+                    (onNext, onError, onComplete) =>
+                    {
                         onNext(new ArraySegment<byte>(Encoding.ASCII.GetBytes("hello ")), null);
                         onNext(new ArraySegment<byte>(Encoding.ASCII.GetBytes("world.")), null);
                         onComplete();
                         return null;
                     }))));
 
-            Assert.That(response.Headers["Transfer-Encoding"], Is.EqualTo("girl"));
+            Assert.That(response.Headers.GetHeader("Transfer-Encoding"), Is.EqualTo("girl"));
             Assert.That(response.BodyText, Is.EqualTo("hello world."));
         }
-        
+
         [Test]
         public void Encodes_if_content_length_is_not_present()
         {
             var response = AppUtils.Call(AppBuilder.BuildConfiguration(b => b
                 .Chunked()
-                .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
-                    { { "Content-Type", "text/plain" } },
-                    (onNext, onError, onComplete) => {
+                .Run(AppUtils.Simple("200 OK", new Dictionary<string, IEnumerable<string>>(StringComparer.InvariantCultureIgnoreCase)
+                {
+                    { "Content-Type", new[]{"text/plain"} }
+                },
+                    (onNext, onError, onComplete) =>
+                    {
                         onNext(new ArraySegment<byte>(Encoding.ASCII.GetBytes("hello ")), null);
                         onNext(new ArraySegment<byte>(Encoding.ASCII.GetBytes("world.")), null);
                         onComplete();
@@ -62,7 +73,7 @@ namespace Gate.Middleware.Tests
                     }))));
 
             Assert.That(response.BodyText, Is.EqualTo("6\r\nhello \r\n6\r\nworld.\r\n0\r\n\r\n"));
-            Assert.That(response.Headers["Transfer-Encoding"], Is.EqualTo("chunked"));
+            Assert.That(response.Headers.GetHeader("Transfer-Encoding"), Is.EqualTo("chunked"));
         }
     }
 }

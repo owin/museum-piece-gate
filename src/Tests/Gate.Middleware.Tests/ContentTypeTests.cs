@@ -17,8 +17,8 @@ namespace Gate.Middleware.Tests
         {
             var callResult = AppUtils.CallPipe(b => b
                 .UseContentType()
-                .Simple("200 OK", new Dictionary<string, string>(), "Hello World!"));
-            Assert.That(callResult.Headers["Content-Type"], Is.EqualTo("text/html"));
+                .Simple("200 OK", Headers.New(), "Hello World!"));
+            Assert.That(callResult.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
         }
 
         [Test]
@@ -26,8 +26,8 @@ namespace Gate.Middleware.Tests
         {
             var callResult = AppUtils.CallPipe(b => b
                 .UseContentType("application/octet-stream")
-                .Simple("200 OK", new Dictionary<string, string>(), "Hello World!"));
-            Assert.That(callResult.Headers["Content-Type"], Is.EqualTo("application/octet-stream"));
+                .Simple("200 OK", Headers.New(), "Hello World!"));
+            Assert.That(callResult.Headers.GetHeader("Content-Type"), Is.EqualTo("application/octet-stream"));
         }
 
         [Test]
@@ -35,8 +35,8 @@ namespace Gate.Middleware.Tests
         {
             var callResult = AppUtils.CallPipe(b => b
                 .UseContentType()
-                .Simple("200 OK", AppUtils.CreateHeaderDictionary(h => h["CONTENT-Type"] = "foo/bar"), "Hello World!"));
-            Assert.That(callResult.Headers["Content-Type"], Is.EqualTo("foo/bar"));
+                .Simple("200 OK", Headers.New().SetHeader("CONTENT-Type", "foo/bar"), "Hello World!"));
+            Assert.That(callResult.Headers.GetHeader("Content-Type"), Is.EqualTo("foo/bar"));
         }
 
         [Test]
@@ -44,9 +44,9 @@ namespace Gate.Middleware.Tests
         {
             var callResult = AppUtils.CallPipe(b => b
                 .UseContentType()
-                .Simple("200 OK", new Dictionary<string, string> {{"CONTENT-Type", "foo/bar"}}, "Hello World!"));
+                .Simple("200 OK", Headers.New().SetHeader("CONTENT-Type", "foo/bar"), "Hello World!"));
 
-            Assert.That(callResult.Headers["CONTENT-Type"], Is.EqualTo("foo/bar"));
+            Assert.That(callResult.Headers.GetHeader("CONTENT-Type"), Is.EqualTo("foo/bar"));
         }
     }
 }

@@ -13,18 +13,18 @@ namespace Gate.Helpers.Tests
     public class ResponseTests
     {
         string _status;
-        IDictionary<string, string> _headers;
+        IDictionary<string, IEnumerable<string>> _headers;
         BodyDelegate _body;
 
         [SetUp]
         public void Init()
         {
             _status = null;
-            _headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            _headers = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
             _body = null;
         }
 
-        void Result(string status, IDictionary<string, string> headers, BodyDelegate body)
+        void Result(string status, IDictionary<string, IEnumerable<string>> headers, BodyDelegate body)
         {
             _status = status;
             _headers = headers;
@@ -59,7 +59,7 @@ namespace Gate.Helpers.Tests
             Assert.That(_status, Is.Null);
             response.Finish();
             Assert.That(_status, Is.EqualTo("200 Blah"));
-            Assert.That(_headers["Content-Type"], Is.EqualTo("text/blah"));
+            Assert.That(_headers.GetHeader("Content-Type"), Is.EqualTo("text/blah"));
         }
 
         [Test]

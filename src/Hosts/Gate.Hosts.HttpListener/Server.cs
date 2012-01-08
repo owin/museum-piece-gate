@@ -100,7 +100,7 @@ namespace Gate.Hosts.HttpListener
                             context.Response.StatusDescription = status.Substring(4);
                             foreach (var kv in headers)
                             {
-                                foreach (var v in kv.Value.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
+                                foreach (var v in kv.Value)
                                 {
                                     context.Response.Headers.Add(kv.Key, v);
                                 }

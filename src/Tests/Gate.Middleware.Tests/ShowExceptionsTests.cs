@@ -21,7 +21,7 @@ namespace Gate.Middleware.Tests
         public void Normal_request_should_pass_through_unchanged()
         {
             var app = new FakeApp("200 OK", "Hello");
-            app.Headers["Content-Type"] = "text/plain";
+            app.Headers.SetHeader("Content-Type", "text/plain");
 
             var stack = Build(b => b
                 .UseShowExceptions()
@@ -49,7 +49,7 @@ namespace Gate.Middleware.Tests
             var response = host.GET("/");
 
             Assert.That(response.Status, Is.EqualTo("500 Internal Server Error"));
-            Assert.That(response.Headers["Content-Type"], Is.EqualTo("text/html"));
+            Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
             Assert.That(response.BodyText, Is.StringContaining("ApplicationException"));
             Assert.That(response.BodyText, Is.StringContaining("Kaboom"));
         }
@@ -58,7 +58,7 @@ namespace Gate.Middleware.Tests
         public void Exception_in_response_body_stream_should_be_formatted_as_it_passes_through()
         {
             var app = new FakeApp {Status = "200 OK"};
-            app.Headers["Content-Type"] = "text/html";
+            app.Headers.SetHeader("Content-Type", "text/html");
             app.Body = (next, error, complete) =>
             {
                 next(new ArraySegment<byte>(Encoding.UTF8.GetBytes("<p>so far so good</p>")), null);
@@ -75,7 +75,7 @@ namespace Gate.Middleware.Tests
             var response = host.GET("/");
 
             Assert.That(response.Status, Is.EqualTo("200 OK"));
-            Assert.That(response.Headers["Content-Type"], Is.EqualTo("text/html"));
+            Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
             Assert.That(response.BodyText, Is.StringContaining("<p>so far so good</p>"));
             Assert.That(response.BodyText, Is.StringContaining("failed sending body"));
         }

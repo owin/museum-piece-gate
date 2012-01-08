@@ -18,7 +18,7 @@ namespace Gate.Middleware.Tests
                 .UseMethodOverride()
                 .Run(AppUtils.ShowEnvironment))).Invoke(r => {
                     r.Method = "POST";
-                    r.Headers = new Dictionary<string, string>() { { "x-http-method-override", "DELETE" } };
+                    r.Headers = Headers.New().SetHeader("x-http-method-override", "DELETE");
                 });
 
             Assert.That(result.BodyXml.Element(Environment.RequestMethodKey).Value, Is.EqualTo("DELETE"));
@@ -32,7 +32,7 @@ namespace Gate.Middleware.Tests
                 .Run(AppUtils.ShowEnvironment))).Invoke(r =>
                 {
                     r.Method = "POST";
-                    r.Headers = new Dictionary<string, string>();
+                    r.Headers = Headers.New();
                 });
 
             Assert.That(result.BodyXml.Element(Environment.RequestMethodKey).Value, Is.EqualTo("POST"));

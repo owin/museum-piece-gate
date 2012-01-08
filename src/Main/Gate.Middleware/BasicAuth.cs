@@ -13,7 +13,7 @@ namespace Gate.Middleware
             if (!e.Headers.ContainsKey("authorization"))
                 return null;
 
-            string authHeader = e.Headers["authorization"];
+            string authHeader = e.Headers.GetHeader("authorization");
 
             if (!authHeader.StartsWith("Basic "))
                 return null;

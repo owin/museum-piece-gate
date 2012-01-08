@@ -47,7 +47,7 @@ namespace Gate
             string name)
         {
             IEnumerable<string> value;
-            return headers.TryGetValue(name, out value) ? value : null;
+            return headers != null && headers.TryGetValue(name, out value) ? value : null;
         }
 
         public static string GetHeader(this IDictionary<string, IEnumerable<string>> headers,

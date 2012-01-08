@@ -24,12 +24,13 @@ namespace Gate.Middleware
             return (env, result, fault) =>
             {
                 var owin = new Environment(env);
-                owin.BodyAction = Wrap(owin.BodyAction);
+                owin.BodyDelegate = Wrap(owin.BodyDelegate);
                 app(env, result, fault);
             };
         }
 
-        public static Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> Wrap(Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> body)
+        
+        public static BodyDelegate Wrap(BodyDelegate body)
         {
             if (body == null)
             {
@@ -42,23 +43,10 @@ namespace Gate.Middleware
             return new Wrapper(body, DefaultTempFileThresholdBytes).Invoke;
         }
 
-        public static BodyDelegate Wrap(BodyDelegate body)
-        {
-            if (body == null)
-            {
-                return null;
-            }
-            if (body.Method == RewindableBodyInvoke)
-            {
-                return body;
-            }
-            return new Wrapper(body.ToAction(), DefaultTempFileThresholdBytes).Invoke;
-        }
-
 
         class Wrapper // : IDisposable
         {
-            readonly Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> _body;
+            readonly BodyDelegate _body;
             readonly Spool _spool = new Spool();
             readonly Signal _spoolComplete = new Signal();
 
@@ -69,7 +57,7 @@ namespace Gate.Middleware
             FileStream _tempFile;
 
             public Wrapper(
-                Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action> body,
+                BodyDelegate body,
                 int tempFileThresholdBytes)
             {
                 _body = body;

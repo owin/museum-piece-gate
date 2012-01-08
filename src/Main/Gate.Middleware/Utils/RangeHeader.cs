@@ -13,11 +13,7 @@ namespace Gate.Middleware.Utils
         {
             var headers = new Environment(env).Headers;
 
-            string httpRange;
-            if (!headers.TryGetValue("Range", out httpRange))
-            {
-                return false; // No Range header.
-            }
+            var httpRange = headers.GetHeader("Range");
 
             var isValid = (httpRange != null && httpRange.StartsWith(ValuePrefix, StringComparison.InvariantCultureIgnoreCase)) && httpRange.Length > ValuePrefix.Length;
 
@@ -31,7 +27,7 @@ namespace Gate.Middleware.Utils
                 throw new InvalidOperationException("Validate the Range header prior to parsing.");
             }
 
-            var httpRange = new Environment(env).Headers["Range"];
+            var httpRange = new Environment(env).Headers.GetHeader("Range");
 
             var ranges = new List<Tuple<long, long>>();
 

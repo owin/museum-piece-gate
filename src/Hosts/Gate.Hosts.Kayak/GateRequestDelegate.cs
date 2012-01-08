@@ -28,14 +28,17 @@ namespace Gate.Hosts.Kayak
                 foreach (var kv in context)
                     env[kv.Key] = kv.Value;
 
-            request.Headers = head.Headers ?? new Dictionary<string, string>();
+            if (head.Headers == null)
+                request.Headers = Headers.New();
+            else
+                request.Headers = head.Headers.ToDictionary(kv => kv.Key, kv => (IEnumerable<string>)new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
             request.Method = head.Method ?? "";
             request.Path = head.Path ?? "";
             request.PathBase = "";
             request.QueryString = head.QueryString ?? "";
             request.Scheme = "http"; // XXX
             request.Version = "1.0";
-            
+
             if (body == null)
                 request.BodyDelegate = null;
             else
@@ -53,11 +56,11 @@ namespace Gate.Hosts.Kayak
             return (status, headers, body) =>
             {
                 if (headers == null)
-                    headers = new Dictionary<string, string>();
+                    headers = Headers.New();
 
                 if (body != null &&
                     !headers.ContainsKey("Content-Length") &&
-                    !(headers.ContainsKey("Transfer-Encoding") && headers["Transfer-Encoding"] == "chunked"))
+                    headers.GetHeader("Transfer-Encoding") != "chunked")
                 {
                     // consume body and calculate Content-Length
                     BufferBody(response)(status, headers, body);
@@ -67,7 +70,7 @@ namespace Gate.Hosts.Kayak
                     response.OnResponse(new HttpResponseHead()
                     {
                         Status = status,
-                        Headers = headers
+                        Headers = headers.ToDictionary(kv => kv.Key, kv => string.Join("\r\n", kv.Value.ToArray()), StringComparer.OrdinalIgnoreCase),
                     }, body == null ? null : new DataProducer(body));
                 }
             };
@@ -95,7 +98,8 @@ namespace Gate.Hosts.Kayak
 
                     if (contentLength > 0)
                     {
-                        headers["Content-Length"] = contentLength.ToString();
+                        headers.SetHeader("Content-Length", contentLength.ToString());
+
                         responseBody = new DataProducer((onData, onError, onComplete) =>
                         {
                             bool cancelled = false;
@@ -118,7 +122,7 @@ namespace Gate.Hosts.Kayak
                     response.OnResponse(new HttpResponseHead()
                     {
                         Status = status,
-                        Headers = headers
+                        Headers = headers.ToDictionary(kv => kv.Key, kv => string.Join("\r\n", kv.Value.ToArray()), StringComparer.OrdinalIgnoreCase),
                     }, responseBody);
                 });
             };

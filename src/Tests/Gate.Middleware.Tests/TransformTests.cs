@@ -10,7 +10,7 @@ using Gate.Middleware;
 
 namespace Gate.Middleware.Tests
 {
-    using Response = Tuple<string, IDictionary<string, string>, BodyDelegate>;
+    using Response = Tuple<string, IDictionary<string, IEnumerable<string>>, BodyDelegate>;
 
     [TestFixture]
     class TransformTests

@@ -36,10 +36,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\Nancy.0.9.0\lib\net40\Nancy.dll</HintPath>
     </Reference>
-    <Reference Include="Nancy.Hosting.Owin, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Nancy.Hosting.Owin.0.9.0\lib\net40\Nancy.Hosting.Owin.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -56,6 +52,10 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Adapters\Gate.Adapters.Nancy\Gate.Adapters.Nancy.csproj">
+      <Project>{4C561FAE-24FD-470A-8E38-C725980DEE01}</Project>
+      <Name>Gate.Adapters.Nancy</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Main\Gate.Helpers\Gate.Helpers.csproj">
       <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
       <Name>Gate.Helpers</Name>

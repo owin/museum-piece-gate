@@ -28,9 +28,9 @@ namespace Gate.Middleware.Tests
         {
             return new Dictionary<string, object>
             {
-                {OwinConstants.RequestHeaders, new Dictionary<string, string>
+                {OwinConstants.RequestHeaders, new Dictionary<string, IEnumerable<string>>
                 {
-                    {"Range", rangeHeader}
+                    {"Range", new[]{rangeHeader}}
                 }}
             };
         }
@@ -76,9 +76,9 @@ namespace Gate.Middleware.Tests
         {
             return RangeHeader.Parse(new Dictionary<string, object>
             {
-                {OwinConstants.RequestHeaders, new Dictionary<string, string>
+                {OwinConstants.RequestHeaders, new Dictionary<string, IEnumerable<string>>
                 {
-                    {"Range", rangeString}
+                    {"Range", new[]{rangeString}}
                 }}
             }, size);
         }

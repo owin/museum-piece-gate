@@ -29,7 +29,7 @@ namespace Gate.Middleware.Tests
                 .ContentLength()
                 .Simple("200 OK", body));
 
-            Assert.That(result.Headers["content-length"], Is.EqualTo("0"));
+            Assert.That(result.Headers.GetHeader("content-length"), Is.EqualTo("0"));
         }
 
         [Test]
@@ -44,27 +44,27 @@ namespace Gate.Middleware.Tests
                 .ContentLength()
                 .Simple("200 OK", body));
 
-            Assert.That(result.Headers["content-length"], Is.EqualTo("12"));
+            Assert.That(result.Headers.GetHeader("content-length"), Is.EqualTo("12"));
         }
 
         [Test]
         public void Content_length_is_not_changed()
         {
             var headers = AppUtils.CreateHeaderDictionary();
-            headers["content-length"] = "69";
+            headers.SetHeader("content-length", "69");
 
             var result = AppUtils.CallPipe(b => b
                 .ContentLength()
                 .Simple("200 OK", headers, (onNext, onError, onComplete) => { onComplete(); return null; }));
 
-            Assert.That(result.Headers["content-length"], Is.EqualTo("69"));
+            Assert.That(result.Headers.GetHeader("content-length"), Is.EqualTo("69"));
         }
 
         [Test]
         public void Content_length_is_not_added_if_transfer_encoding_is_present()
         {
             var headers = AppUtils.CreateHeaderDictionary();
-            headers["transfer-encoding"] = "chunked";
+            headers.SetHeader("transfer-encoding", "chunked");
 
             var result = AppUtils.CallPipe(b => b
                 .ContentLength()

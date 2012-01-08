@@ -15,7 +15,7 @@ namespace Gate.Hosts.HttpListener.Tests
         static AppDelegate App(AppDelegate arg)
         {
             return (env, result, fault) => result("200 OK",
-                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {{"Content-Type", "text/plain"}},
+                new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase) { { "Content-Type", new[] { "text/plain" } } },
                 (next, error, complete) =>
                 {
                     var bytes = Encoding.Default.GetBytes("This is a custom page");

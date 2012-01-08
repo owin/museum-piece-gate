@@ -45,7 +45,7 @@ namespace Gate.Hosts.AspNet
                 path = path.Substring(pathBase.Length);
 
             var requestHeaders = httpRequest.Headers.AllKeys
-                .ToDictionary(x => x, x => httpRequest.Headers.Get(x), StringComparer.OrdinalIgnoreCase);
+                .ToDictionary(x => x, x => (IEnumerable<string>)httpRequest.Headers.GetValues(x), StringComparer.OrdinalIgnoreCase);
 
             var env = new Dictionary<string, object>
             { 
@@ -74,9 +74,12 @@ namespace Gate.Hosts.AspNet
                         httpContext.Response.BufferOutput = false;
 
                         httpContext.Response.Status = status;
-                        foreach (var header in headers.SelectMany(kv => kv.Value.Split("\r\n".ToArray(), StringSplitOptions.RemoveEmptyEntries).Select(v => new { kv.Key, Value = v })))
+                        foreach (var header in headers)
                         {
-                            httpContext.Response.AddHeader(header.Key, header.Value);
+                            foreach(var value in header.Value)
+                            {
+                                httpContext.Response.AddHeader(header.Key, value);
+                            }
                         }
 
                         ResponseBody(

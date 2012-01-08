@@ -39,7 +39,7 @@ namespace Gate.TestHelpers
             {
                 Version = "1.0",
                 Scheme = "http",
-                Headers = new Dictionary<string, string>(),
+                Headers = Headers.New(),
             };
             requestSetup(request);
 
@@ -57,11 +57,9 @@ namespace Gate.TestHelpers
                         response.Consumer = new FakeConsumer(true);
                         response.Consumer.InvokeBodyDelegate(body, true);
 
-                        string contentType;
-                        if (!headers.TryGetValue("Content-Type", out contentType))
-                            contentType = "";
+                        var contentType = headers.GetHeader("Content-Type");
     
-                        if (contentType.StartsWith("text/"))
+                        if (contentType != null && contentType.StartsWith("text/"))
                         {
                             response.BodyText = Encoding.UTF8.GetString(response.Consumer.ConsumedData);
                             if (contentType.StartsWith("text/xml"))

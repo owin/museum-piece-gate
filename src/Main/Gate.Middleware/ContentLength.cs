@@ -5,7 +5,7 @@ using Gate.Owin;
 
 namespace Gate.Middleware
 {
-    using Response = Tuple<string, IDictionary<string, string>, BodyDelegate>;
+    using Response = Tuple<string, IDictionary<string, IEnumerable<string>>, BodyDelegate>;
 
     public static class ContentLengthExtensions
     {
@@ -31,7 +31,7 @@ namespace Gate.Middleware
                     fault,
                     () => {
                         headers.SetHeader("Content-Length", buffer.GetCount().ToString());
-                        respond(Tuple.Create<string, IDictionary<string, string>, BodyDelegate>(status, headers, (onNext, onError, onComplete) => {
+                        respond(Tuple.Create<string, IDictionary<string, IEnumerable<string>>, BodyDelegate>(status, headers, (onNext, onError, onComplete) => {
                             buffer.Each(d => onNext(new ArraySegment<byte>(d), null));
                             onComplete();
                             return null;

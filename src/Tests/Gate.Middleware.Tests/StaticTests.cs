@@ -52,7 +52,7 @@ namespace Gate.Middleware.Tests
         public void Static_calls_down_the_chain_if_URL_root_is_unknown()
         {
             var app = new FakeApp("200 OK", "Hello World");
-            app.Headers["Content-Type"] = "text/plain";
+            app.Headers.SetHeader("Content-Type", "text/plain");
             var config = AppBuilder.BuildConfiguration(b => b.UseStatic().Run(app.AppDelegate));
             var host = new FakeHost(config);
             var response = host.GET("/johnson/and/johnson");
