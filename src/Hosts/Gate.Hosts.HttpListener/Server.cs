@@ -71,6 +71,8 @@ namespace Gate.Hosts.HttpListener
                         requestPathBase = "";
 
                     var requestPath = context.Request.Url.GetComponents(UriComponents.Path, UriFormat.UriEscaped);
+                    if (string.IsNullOrEmpty(requestPath))
+                        requestPath = "/";
                     if (requestPath.StartsWith(requestPathBase, StringComparison.OrdinalIgnoreCase))
                         requestPath = requestPath.Substring(requestPathBase.Length);
 
