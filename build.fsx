@@ -1,11 +1,12 @@
-#I "./packages/FAKE.1.52.6.0/tools"
+#I "./packages/FAKE.1.62.1/tools"
 #r "FakeLib.dll"
 
 open Fake 
 
+
 // properties
 let projectName = "Gate"
-let version = "0.2"  
+let version = "0.2.1"  
 let projectSummary = "An OWIN utility library."
 let projectDescription = "An OWIN utility library."
 let authors = ["bvanderveen";"grumpydev";"jasonsirota";"loudej";"markrendle";"thecodejunkie";"panesofglass"]
@@ -44,14 +45,28 @@ Target "Clean" (fun _ ->
     CleanDirs [targetDir]
 )
 
+let ApplyVersion files =
+  for file in files do
+    ReplaceAssemblyInfoVersions (fun p ->
+          {p with 
+            AssemblyVersion = version;
+            AssemblyFileVersion = version;
+            OutputFileName = file; })
+
+Target "Version" (fun _ ->
+    !+ ("./src/**/AssemblyInfo.cs")
+        |> Scan
+        |> ApplyVersion
+)
+
 Target "BuildApp" (fun _ ->
-    MSBuildRelease buildDir "Build" appReferences
+    MSBuild buildDir "Build" ["Configuration","Release"; "PackageVersion",version] appReferences
         |> Log "AppBuild-Output: "
 )
 
 Target "BuildTest" (fun _ ->
     printfn "%A" testReferences
-    MSBuildDebug testDir "Build" testReferences
+    MSBuild testDir "Build"  ["Configuration","Debug"] testReferences
         |> Log "TestBuild-Output: "
 )
 
@@ -96,6 +111,7 @@ Target "Deploy" (fun _ ->
 
 // Build order
 "Clean"
+  ==> "Version"
   ==> "BuildApp" <=> "BuildTest"
   ==> "Test" //<=> "GenerateDocumentation"
   //==> "ZipDocumentation"
@@ -103,3 +119,5 @@ Target "Deploy" (fun _ ->
 
 // Start build
 Run "Deploy"
+
+
