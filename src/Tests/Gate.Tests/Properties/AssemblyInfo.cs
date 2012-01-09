@@ -3,8 +3,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Gate.Tests")]
 [assembly: AssemblyProduct("Gate.Tests")]
-[assembly: AssemblyVersion("0.2.0")]
-[assembly: AssemblyFileVersion("0.2.0")]
+[assembly: AssemblyVersion("0.2.1")]
+[assembly: AssemblyFileVersion("0.2.1")]
 
 [assembly: InternalsVisibleTo("Gate.Tests.Tests")]
 
