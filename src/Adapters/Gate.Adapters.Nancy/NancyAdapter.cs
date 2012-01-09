@@ -74,8 +74,14 @@ namespace Gate.Adapters.Nancy
                                 var nancyResponse = context.Response;
                                 var status = String.Format("{0} {1}", (int)nancyResponse.StatusCode, nancyResponse.StatusCode);
                                 var headers = nancyResponse.Headers.ToDictionary(kv => kv.Key, kv => (IEnumerable<string>)new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
-                                headers["Content-Type"] = new[] { nancyResponse.ContentType };
-                                headers["Set-Cookie"] = nancyResponse.Cookies.Select(cookie => cookie.ToString());
+                                if (!string.IsNullOrWhiteSpace(nancyResponse.ContentType))
+                                {
+                                    headers["Content-Type"] = new[] { nancyResponse.ContentType };
+                                }
+                                if (nancyResponse.Cookies != null && nancyResponse.Cookies.Count != 0)
+                                {
+                                    headers["Set-Cookie"] = nancyResponse.Cookies.Select(cookie => cookie.ToString());
+                                }
 
                                 result(
                                     status,
