@@ -77,7 +77,7 @@ namespace Gate.Hosts.HttpListener
                     var requestQueryString = context.Request.Url.GetComponents(UriComponents.Query, UriFormat.UriEscaped);
 
                     var requestHeaders = context.Request.Headers.AllKeys
-                        .ToDictionary(x => x, x => context.Request.Headers.Get(x), StringComparer.OrdinalIgnoreCase);
+                        .ToDictionary(x => x, x => (IEnumerable<string>)context.Request.Headers.GetValues(x), StringComparer.OrdinalIgnoreCase);
 
                     var env = new Dictionary<string, object>
                     { 
