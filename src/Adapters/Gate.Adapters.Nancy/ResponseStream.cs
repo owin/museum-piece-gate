@@ -6,9 +6,9 @@ namespace Gate.Adapters.Nancy
 {
     class ResponseStream : Stream
     {
-        readonly Func<ArraySegment<byte>, Action, bool> _next;
-        readonly Action<Exception> _error;
-        readonly Action _complete;
+        Func<ArraySegment<byte>, Action, bool> _next;
+        Action<Exception> _error;
+        Action _complete;
 
         public ResponseStream(Func<ArraySegment<byte>, Action, bool> next, Action<Exception> error, Action complete)
         {
@@ -19,7 +19,9 @@ namespace Gate.Adapters.Nancy
 
         public override void Close()
         {
-            _complete();
+            _next = (_, __) => false;
+            _error = _ => { };
+            Interlocked.Exchange(ref _complete, ()=> { }).Invoke();
         }
 
         public override void Flush()
