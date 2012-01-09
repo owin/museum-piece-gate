@@ -36,8 +36,8 @@ namespace Gate.Tests
         [Test]
         public void All_environment_variables_from_spec_are_available_as_typed_properties()
         {
-            var headers = new Dictionary<string, string>();
-            var body = new BodyDelegate((next, error, complete) => () => { }).ToAction();
+            var headers = new Dictionary<string, IEnumerable<string>>();
+            var body = (Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>) ((next1, error1, complete1) => new BodyDelegate((next, error, complete) => () => { })(next1, error1, complete1));
 
             var env = new Dictionary<string, object>
             {
@@ -65,7 +65,7 @@ namespace Gate.Tests
         [Test]
         public void Environment_properties_may_be_used_to_initialize_env_dictionary()
         {
-            var headers = new Dictionary<string, string>();
+            var headers = Headers.New();
             BodyDelegate body = (next, error, complete) => () => { };
 
             var environment = new Environment()

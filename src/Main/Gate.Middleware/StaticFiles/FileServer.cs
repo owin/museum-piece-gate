@@ -61,22 +61,15 @@ namespace Gate.Middleware.StaticFiles
             }
         }
 
-        private static AppDelegate Fail(string status, string body, IDictionary<string, string> headers = null)
+        private static AppDelegate Fail(string status, string body, IDictionary<string, IEnumerable<string>> headers = null)
         {
-            if (headers == null)
-            {
-                headers = new Dictionary<string, string>();
-            }
-
             return (env, res, err) =>
                 res(
                     status,
-                    new Dictionary<string, string>(headers)
-                      {
-                          {"Content-Type", "text/plain"},
-                          {"Content-Length", body.Length.ToString()},
-                          {"X-Cascade", "pass"}
-                      },
+                    Headers.New(headers)
+                        .SetHeader("Content-Type", "text/plain")
+                        .SetHeader("Content-Length", body.Length.ToString())
+                        .SetHeader("X-Cascade", "pass"),
                     TextBody.Create(body, Encoding.UTF8)
                   );
         }
@@ -87,11 +80,9 @@ namespace Gate.Middleware.StaticFiles
             var size = fileInfo.Length;
 
             string status;
-            var headers = new Dictionary<string, string>
-                              {
-                                  {"Last-Modified", fileInfo.LastWriteTimeUtc.ToHttpDateString()},
-                                  {"Content-Type", Mime.MimeType(fileInfo.Extension, "text/plain")}
-                              };
+            var headers = Headers.New()
+                .SetHeader("Last-Modified", fileInfo.LastWriteTimeUtc.ToHttpDateString())
+                .SetHeader("Content-Type", Mime.MimeType(fileInfo.Extension, "text/plain"));
 
             if (!RangeHeader.IsValid(environment))
             {
@@ -106,7 +97,7 @@ namespace Gate.Middleware.StaticFiles
                 {
                     // Unsatisfiable.  Return error and file size.
                     return Fail(RequestedRangeNotSatisfiable, "Byte range unsatisfiable",
-                                new Dictionary<string, string> { { "Content-Range", "bytes */" + size } });
+                                Headers.New().SetHeader("Content-Range", "bytes */" + size));
                 }
 
                 if (ranges.Count() > 1)
@@ -120,12 +111,12 @@ namespace Gate.Middleware.StaticFiles
                     // Partial content
                     range = ranges.First();
                     status = PartialContent;
-                    headers["Content-Range"] = "bytes " + range.Item1 + "-" + range.Item2 + "/" + size;
+                    headers.SetHeader("Content-Range", "bytes " + range.Item1 + "-" + range.Item2 + "/" + size);
                     size = range.Item2 - range.Item1 + 1;
                 }
             }
 
-            headers["Content-Length"] = size.ToString();
+            headers.SetHeader("Content-Length", size.ToString());
 
             return (env, res, err) =>
             {

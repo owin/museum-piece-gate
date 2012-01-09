@@ -12,7 +12,7 @@ namespace Gate.Tests.StartupTests
         IDictionary<string, object>, // env
         Action< // result
             string, // status
-            IDictionary<string, string>, // headers
+            IDictionary<string, IEnumerable<string>>, // headers
             Func< // body
                 Func< // next
                     ArraySegment<byte>, // data
@@ -29,7 +29,7 @@ namespace Gate.Tests.StartupTests
         // ReSharper disable InconsistentNaming
         static readonly AppDelegate TwoHundredFoo = (env, result, fault) => result(
             "200 Foo",
-            new Dictionary<string, string> { { "Content-Type", "text/plain" } },
+            Headers.New().SetHeader("Content-Type", "text/plain"),
             (next, error, complete) =>
             {
                 next(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")), null);
@@ -39,7 +39,7 @@ namespace Gate.Tests.StartupTests
 
         static readonly AppAction TwoHundredFooAction = (env, result, fault) => result(
             "200 Foo",
-            new Dictionary<string, string> { { "Content-Type", "text/plain" } },
+            Headers.New().SetHeader("Content-Type", "text/plain"),
             (next, error, complete) =>
             {
                 next(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")), null);
@@ -194,7 +194,7 @@ namespace Gate.Tests.StartupTests
             var withMiddleware = new WithMiddleware();
             var app = Build(b => b
                 .Use(withMiddleware.Middleware)
-                .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(), "Hello world"))
+                .Run(AppUtils.Simple("200 OK", Headers.New(), "Hello world"))
                 );
             var callResult = AppUtils.Call(app);
             Assert.That(callResult.Status, Is.EqualTo("200 OKWithMiddleware"));
@@ -206,7 +206,7 @@ namespace Gate.Tests.StartupTests
             var withMiddleware2 = new WithMiddleware();
             var app = Build(b => b
                 .Use(withMiddleware2.Middleware, "AppendCustom")
-                .Run(AppUtils.Simple("200 OK", new Dictionary<string, string>(), "Hello world"))
+                .Run(AppUtils.Simple("200 OK", Headers.New(), "Hello world"))
                 );
             var callResult = AppUtils.Call(app);
             Assert.That(callResult.Status, Is.EqualTo("200 OKAppendCustom"));
@@ -306,7 +306,7 @@ namespace Gate.Tests.StartupTests
 
         public AppDelegate App(string status, string content)
         {
-            return AppUtils.Simple(status, new Dictionary<string, string>(), content);
+            return AppUtils.Simple(status, Headers.New(), content);
         }
     }
 

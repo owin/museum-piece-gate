@@ -13,23 +13,21 @@ namespace Gate.Middleware.Tests
         [Test]
         public void GetBasicAuth_returns_null_if_no_auth_header()
         {
-            var e = new Environment() { Headers = new Dictionary<string, string>() };
+            var e = new Environment() { Headers = Headers.New() };
             Assert.That(e.GetBasicAuth(), Is.Null);
         }
 
         [Test]
         public void GetBasicAuth_return_null_if_auth_header_value_isnt_Basic()
         {
-            var e = new Environment() { Headers = new Dictionary<string, string>()
-                { { "authorization", "Foo" } } };
+            var e = new Environment() { Headers = Headers.New().SetHeader("authorization", "Foo") };
             Assert.That(e.GetBasicAuth(), Is.Null);
         }
 
         [Test]
         public void GetBasicAuth_decodes_basic_auth()
         {
-            var e = new Environment() { Headers = new Dictionary<string, string>()
-                { { "authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" } } };
+            var e = new Environment() { Headers = Headers.New().SetHeader("authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==") };
             Assert.That(e.GetBasicAuth(), Is.EqualTo("Aladdin:open sesame"));
         }
 
@@ -51,7 +49,7 @@ namespace Gate.Middleware.Tests
                 .Simple("200 OK"));
 
             Assert.That(result.Status, Is.EqualTo("401 Authorization Required"));
-            Assert.That(result.Headers["WWW-Authenticate"], Is.EqualTo("Basic Realm=\"RealmString\""));
+            Assert.That(result.Headers.GetHeader("WWW-Authenticate"), Is.EqualTo("Basic Realm=\"RealmString\""));
         }
     }
 }

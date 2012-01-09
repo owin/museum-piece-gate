@@ -87,11 +87,11 @@ namespace Gate.Hosts.Manos
                                 if (string.Equals(header.Key, "Set-Cookie", StringComparison.OrdinalIgnoreCase))
                                 {
                                     // use a header-injection to avoid re-parsing values into Manos HttpCookie structure
-                                    transaction.Response.SetHeader(header.Key, header.Value.Replace("\r\n", "\r\nSet-Cookie: "));
+                                    transaction.Response.SetHeader(header.Key, string.Join("\r\nSet-Cookie: ", header.Value.ToArray()));
                                 }
                                 else
                                 {
-                                    transaction.Response.SetHeader(header.Key, header.Value.Replace("\r\n", ","));
+                                    transaction.Response.SetHeader(header.Key, string.Join(",", header.Value.ToArray()));
                                 }
                             }
 

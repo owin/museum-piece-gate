@@ -2,7 +2,7 @@
 using Gate.Helpers;
 using Gate.Middleware;
 using Gate.Owin;
-using Nancy.Hosting.Owin;
+using Gate.Adapters.Nancy;
 
 namespace Sample.App
 {
@@ -10,7 +10,6 @@ namespace Sample.App
     {
         public void Configuration(IAppBuilder builder)
         {
-            var nancyOwinHost = new NancyOwinHost();
             builder
                 .UseRewindableBody()
                 .UseShowExceptions()
@@ -19,7 +18,7 @@ namespace Sample.App
                 .Map("/wilsonasync", map => map.Run(Wilson.App, true))
                 .Cascade(
                     x => x.Run(DefaultPage.App),
-                    x => x.Run(nancyOwinHost.ProcessRequest));
+                    x => x.RunNancy());
         }
     }
 }

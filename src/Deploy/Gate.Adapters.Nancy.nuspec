@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$authors$</authors>
+    <owners></owners>
+    <description>Gate.Adapters.Nuspec provides OWIN adapter support for Nancy.</description>
+    <language>en-US</language>
+    <projectUrl>https://github.com/owin/gate</projectUrl>
+    <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
+    <tags></tags>
+    <dependencies>
+      <dependency id="Gate.Owin" version="$version$"/>
+      <dependency id="Nancy" version="0.9.0"/>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Gate.Adapters.Nancy.dll" target="lib\net40" />
+  </files>
+</package>

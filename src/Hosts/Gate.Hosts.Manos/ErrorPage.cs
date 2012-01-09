@@ -16,7 +16,7 @@ namespace Gate.Hosts.Manos
 <p>The requested URL was not found on this server.</p>
 </body></html>
 "));
-        static readonly Dictionary<string, string> ResponseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { { "Content-Type", "text/html" } };
+        static readonly Dictionary<string, IEnumerable<string>> ResponseHeaders = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase) { { "Content-Type", new[] { "text/html" } } };
 
         public static AppDelegate Middleware(AppDelegate app)
         {

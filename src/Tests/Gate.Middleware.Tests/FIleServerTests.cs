@@ -43,7 +43,7 @@ namespace Gate.Middleware.Tests
 
             var result = AppUtils.Call(fileServer.Invoke, "/kayak.png");
 
-            Assert.That(result.Headers["Last-Modified"], Is.EqualTo(fileInfo.LastWriteTimeUtc.ToHttpDateString()));
+            Assert.That(result.Headers.GetHeader("Last-Modified"), Is.EqualTo(fileInfo.LastWriteTimeUtc.ToHttpDateString()));
         }
 
         [Test]
@@ -68,11 +68,11 @@ namespace Gate.Middleware.Tests
         {
             var result = AppUtils.CallPipe(b => b.Run(fileServer.Invoke),
                 FakeHostRequest.GetRequest("/test.txt", req =>
-                    req.Headers["Range"] = "bytes=22-33"));
+                    req.Headers.SetHeader("Range", "bytes=22-33")));
 
             Assert.That(result.Status, Is.EqualTo("206 Partial Content"));
-            Assert.That(result.Headers["Content-Length"], Is.EqualTo("12"));
-            Assert.That(result.Headers["Content-Range"], Is.EqualTo("bytes 22-33/193"));
+            Assert.That(result.Headers.GetHeader("Content-Length"), Is.EqualTo("12"));
+            Assert.That(result.Headers.GetHeader("Content-Range"), Is.EqualTo("bytes 22-33/193"));
             Assert.That(result.BodyText, Is.EqualTo("-*- test -*-"));
         }
 
@@ -81,10 +81,10 @@ namespace Gate.Middleware.Tests
         {
             var result = AppUtils.CallPipe(b => b.Run(fileServer.Invoke),
                 FakeHostRequest.GetRequest("/test.txt", req =>
-                    req.Headers["Range"] = "bytes=1234-5678"));
+                    req.Headers.SetHeader("Range", "bytes=1234-5678")));
             
             Assert.That(result.Status, Is.EqualTo("416 Requested Range Not Satisfiable"));
-            Assert.That(result.Headers["Content-Range"], Is.EqualTo("bytes */193"));
+            Assert.That(result.Headers.GetHeader("Content-Range"), Is.EqualTo("bytes */193"));
         }
     }
 }

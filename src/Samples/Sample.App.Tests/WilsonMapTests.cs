@@ -1,4 +1,5 @@
-﻿using Gate.TestHelpers;
+﻿using Gate;
+using Gate.TestHelpers;
 using NUnit.Framework;
 
 namespace Sample.App.Tests
@@ -20,7 +21,7 @@ namespace Sample.App.Tests
             var response = _host.GET("/wilson");
 
             Assert.That(response.Status, Is.EqualTo("200 OK"));
-            Assert.That(response.Headers["Content-Type"], Is.EqualTo("text/html"));
+            Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
             Assert.That(response.BodyText, Is.StringContaining("left - right"));
         }
 
@@ -30,7 +31,7 @@ namespace Sample.App.Tests
             var response = _host.GET("/wilson?flip=left");
 
             Assert.That(response.Status, Is.EqualTo("200 OK"));
-            Assert.That(response.Headers["Content-Type"], Is.EqualTo("text/html"));
+            Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
             Assert.That(response.BodyText, Is.StringContaining("thgir - tfel"));
         }
 
@@ -40,7 +41,7 @@ namespace Sample.App.Tests
             var response = _host.GET("/wilson?flip=crash");
 
             Assert.That(response.Status, Is.EqualTo("500 Internal Server Error"));
-            Assert.That(response.Headers["Content-Type"], Is.EqualTo("text/html"));
+            Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
             Assert.That(response.BodyText, Is.StringContaining("<title>ApplicationException at /wilson</title>"));
         }
 
@@ -51,7 +52,7 @@ namespace Sample.App.Tests
             var response = _host.GET("/wilsonasync");
 
             Assert.That(response.Status, Is.EqualTo("200 OK"));
-            Assert.That(response.Headers["Content-Type"], Is.EqualTo("text/html"));
+            Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
             Assert.That(response.BodyText, Is.StringContaining("left - right"));
         }
 
@@ -61,7 +62,7 @@ namespace Sample.App.Tests
             var response = _host.GET("/wilsonasync?flip=left");
 
             Assert.That(response.Status, Is.EqualTo("200 OK"));
-            Assert.That(response.Headers["Content-Type"], Is.EqualTo("text/html"));
+            Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
             Assert.That(response.BodyText, Is.StringContaining("thgir - tfel"));
         }
 
@@ -71,7 +72,7 @@ namespace Sample.App.Tests
             var response = _host.GET("/wilsonasync?flip=crash");
 
             Assert.That(response.Status, Is.EqualTo("500 Internal Server Error"));
-            Assert.That(response.Headers["Content-Type"], Is.EqualTo("text/html"));
+            Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
             Assert.That(response.BodyText, Is.StringContaining("<title>ApplicationException at /wilson</title>"));
         }
     }

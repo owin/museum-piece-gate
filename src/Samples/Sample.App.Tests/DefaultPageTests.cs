@@ -1,4 +1,5 @@
-﻿using Gate.TestHelpers;
+﻿using Gate;
+using Gate.TestHelpers;
 using NUnit.Framework;
 
 namespace Sample.App.Tests
@@ -20,7 +21,7 @@ namespace Sample.App.Tests
             var response = _host.GET("/");
 
             Assert.That(response.Status, Is.EqualTo("200 OK"));
-            Assert.That(response.Headers["Content-Type"], Is.EqualTo("text/html"));
+            Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
             Assert.That(response.BodyText, Is.StringContaining("<h1>Sample.App</h1>"));
             Assert.That(response.BodyText, Is.StringContaining("Wilson"));
             Assert.That(response.BodyText, Is.StringContaining("Nancy"));

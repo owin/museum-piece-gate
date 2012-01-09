@@ -40,7 +40,7 @@ namespace Gate.Hosts.Wcf
         public static WebServiceHost Create(Uri baseUri, AppDelegate app)
         {
             var host = new WebServiceHost(new GateWcfService(app), baseUri);
-            host.AddServiceEndpoint(typeof (GateWcfService), new WebHttpBinding(), "");
+            host.AddServiceEndpoint(typeof(GateWcfService), new WebHttpBinding(), "");
             host.Open();
             return host;
         }
@@ -66,7 +66,7 @@ namespace Gate.Hosts.Wcf
 
         public Message EndHandleRequests(IAsyncResult asyncResult)
         {
-            var task = (Task<Message>) asyncResult;
+            var task = (Task<Message>)asyncResult;
             return task.Result;
         }
 
@@ -84,7 +84,7 @@ namespace Gate.Hosts.Wcf
             var queryString = requestUri.Query.TrimStart('?');
 
             var headers = incomingRequest.Headers.AllKeys
-                .ToDictionary(key => key, incomingRequest.Headers.Get);
+                .ToDictionary(key => key, key => (IEnumerable<string>)incomingRequest.Headers.GetValues(key));
 
             var env = new Dictionary<string, object>();
 
@@ -105,22 +105,25 @@ namespace Gate.Hosts.Wcf
         static Message CreateOwinResponse(
             WebOperationContext webResponse,
             string status,
-            IDictionary<string, string> headers,
+            IDictionary<string, IEnumerable<string>> headers,
             BodyDelegate body)
         {
             //TODO: hardenning
 
             var statusCode = int.Parse(status.Substring(0, 3));
-            webResponse.OutgoingResponse.StatusCode = (HttpStatusCode) statusCode;
+            webResponse.OutgoingResponse.StatusCode = (HttpStatusCode)statusCode;
             webResponse.OutgoingResponse.StatusDescription = status.Substring(4);
 
-            foreach (var header in Split(headers))
+            foreach (var header in headers)
             {
-                webResponse.OutgoingResponse.Headers.Add(header.Key, header.Value);
+                foreach (var value in header.Value)
+                {
+                    webResponse.OutgoingResponse.Headers.Add(header.Key, value);
+                }
             }
 
-            string contentType;
-            if (!headers.TryGetValue("Content-Type", out contentType))
+            var contentType = headers.GetHeader("Content-Type");
+            if (string.IsNullOrWhiteSpace(contentType))
                 contentType = "text/plain";
 
             return webResponse.CreateStreamResponse(

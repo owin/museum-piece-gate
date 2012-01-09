@@ -14,8 +14,8 @@ namespace Gate.Middleware
             return (env, result, fault) =>
             {
                 var req = new Request(env);
-                string method;
-                if (req.Headers.TryGetValue("x-http-method-override", out method))
+                var method = req.Headers.GetHeader("x-http-method-override");
+                if (!string.IsNullOrWhiteSpace(method))
                     req.Method = method;
 
                 app(env, result, fault);

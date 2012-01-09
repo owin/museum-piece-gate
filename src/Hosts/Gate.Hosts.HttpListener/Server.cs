@@ -71,13 +71,15 @@ namespace Gate.Hosts.HttpListener
                         requestPathBase = "";
 
                     var requestPath = context.Request.Url.GetComponents(UriComponents.Path, UriFormat.UriEscaped);
+                    if (string.IsNullOrEmpty(requestPath))
+                        requestPath = "/";
                     if (requestPath.StartsWith(requestPathBase, StringComparison.OrdinalIgnoreCase))
                         requestPath = requestPath.Substring(requestPathBase.Length);
 
                     var requestQueryString = context.Request.Url.GetComponents(UriComponents.Query, UriFormat.UriEscaped);
 
                     var requestHeaders = context.Request.Headers.AllKeys
-                        .ToDictionary(x => x, x => context.Request.Headers.Get(x), StringComparer.OrdinalIgnoreCase);
+                        .ToDictionary(x => x, x => (IEnumerable<string>)context.Request.Headers.GetValues(x), StringComparer.OrdinalIgnoreCase);
 
                     var env = new Dictionary<string, object>
                     { 
@@ -100,7 +102,7 @@ namespace Gate.Hosts.HttpListener
                             context.Response.StatusDescription = status.Substring(4);
                             foreach (var kv in headers)
                             {
-                                foreach (var v in kv.Value.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
+                                foreach (var v in kv.Value)
                                 {
                                     context.Response.Headers.Add(kv.Key, v);
                                 }

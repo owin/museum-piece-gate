@@ -68,9 +68,9 @@ namespace Gate
         /// <summary>
         /// "owin.RequestHeaders" An instance of IDictionary&lt;string, string&gt; which represents the HTTP headers present in the request (the request header dictionary).
         /// </summary>
-        public IDictionary<string, string> Headers
+        public IDictionary<string, IEnumerable<string>> Headers
         {
-            get { return Get<IDictionary<string, string>>(RequestHeadersKey); }
+            get { return Get<IDictionary<string, IEnumerable<string>>>(RequestHeadersKey); }
             set { this[RequestHeadersKey] = value; }
         }
 
@@ -113,7 +113,7 @@ namespace Gate
                     return null;
 
                 if (body is BodyDelegate)
-                    return ((BodyDelegate)body).ToAction();
+                    return (next, error, complete) => ((BodyDelegate)body)(next, error, complete);
 
                 return (BodyAction)body;
             }
@@ -132,7 +132,7 @@ namespace Gate
                     return null;
 
                 if (body is BodyAction)
-                    return ((BodyAction)body).ToDelegate();
+                    return (next, error, complete) => ((BodyAction)body)(next, error, complete);
 
                 return (BodyDelegate)body;
             }

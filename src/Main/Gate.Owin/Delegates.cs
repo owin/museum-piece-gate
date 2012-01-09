@@ -11,7 +11,7 @@ namespace Gate.Owin
 
     public delegate void ResultDelegate(
         string status,
-        IDictionary<string, string> headers,
+        IDictionary<string, IEnumerable<string>> headers,
         BodyDelegate body);
 
     public delegate Action /* cancel */ BodyDelegate(
@@ -23,7 +23,6 @@ namespace Gate.Owin
         Action<Exception> error,
         Action complete);
 
-    public delegate Task<Tuple<string /* status */, IDictionary<String, String> /* headers */, BodyDelegate /* body */>> 
+    public delegate Task<Tuple<string /* status */, IDictionary<String, IEnumerable<string>> /* headers */, BodyDelegate /* body */>> 
         AppTaskDelegate(IDictionary<string, object> env);
 }
-    

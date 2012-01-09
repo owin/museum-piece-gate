@@ -21,7 +21,9 @@ namespace Gate.Hosts.Kayak.Tests
         }
         public void Add(ArraySegment<byte> data)
         {
-            buffer.Add(data);
+            var copy = new byte[data.Count];
+            Array.Copy(data.Array, data.Offset, copy, 0, data.Count);
+            buffer.Add(new ArraySegment<byte>(copy));
         }
 
         public string GetString()
@@ -108,13 +110,13 @@ namespace Gate.Hosts.Kayak.Tests
     public class StaticApp
     {
         string status;
-        IDictionary<string, string> headers;
+        IDictionary<string, IEnumerable<string>> headers;
         BodyDelegate body;
 
         public Action OnRequest;
         public IDictionary<string, object> Env;
 
-        public StaticApp(string status, IDictionary<string, string> headers, BodyDelegate body)
+        public StaticApp(string status, IDictionary<string, IEnumerable<string>> headers, BodyDelegate body)
         {
             this.status = status;
             this.headers = headers;
@@ -146,14 +148,14 @@ namespace Gate.Hosts.Kayak.Tests
         {
             var app = new StaticApp(
                     "200 OK", 
-                    new Dictionary<string, string>(), 
-                    Adapters.ToDelegate((write, fault, end) =>
+                    new Dictionary<string, IEnumerable<string>>(), 
+                    (next, error, complete) => ((Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>) ((write, fault, end) =>
                     {
                         write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("12345")), null);
                         write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")), null);
                         end();
                         return () => { };
-                    }));
+                    }))(next, error, complete));
 
             var requestDelegate = new GateRequestDelegate(app.Invoke, new Dictionary<string, object>());
 
@@ -173,17 +175,17 @@ namespace Gate.Hosts.Kayak.Tests
         {
             var app = new StaticApp(
                     "200 OK",
-                    new Dictionary<string, string>()
+                    new Dictionary<string, IEnumerable<string>>()
                     {
-                        { "Transfer-Encoding", "chunked" }
+                        { "Transfer-Encoding", new[]{"chunked"} }
                     },
-                    Adapters.ToDelegate((write, fault, end) =>
+                    (next, error, complete) => ((Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>) ((write, fault, end) =>
                     {
                         write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("12345")), null);
                         write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")), null);
                         end();
                         return () => { };
-                    }));
+                    }))(next, error, complete));
 
             var requestDelegate = new GateRequestDelegate(app.Invoke, new Dictionary<string, object>());
 
@@ -214,7 +216,7 @@ namespace Gate.Hosts.Kayak.Tests
             
             var bodyAction = new Environment(app.Env).BodyAction; 
             Assert.That(bodyAction, Is.Not.Null);
-            var body = Adapters.ToDelegate(bodyAction).Consume();
+            var body = ((BodyDelegate) ((next, error, complete) => bodyAction(next, error, complete))).Consume();
             Assert.That(body.Buffer.GetString(), Is.EqualTo("1234567890"));
             Assert.That(body.GotEnd, Is.True);
         }

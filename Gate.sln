@@ -55,6 +55,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.Manos.Tests", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Manos", "src\Samples\Sample.Manos\Sample.Manos.csproj", "{95887DCF-4194-4A89-8BA8-7C6C7F263B63}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Adapters", "Adapters", "{8637EACC-A4F7-4A21-9D4F-91E3D604B4D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Adapters.Nancy", "src\Adapters\Gate.Adapters.Nancy\Gate.Adapters.Nancy.csproj", "{4C561FAE-24FD-470A-8E38-C725980DEE01}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -305,6 +309,16 @@ Global
 		{95887DCF-4194-4A89-8BA8-7C6C7F263B63}.Release|Mixed Platforms.Build.0 = Release|x86
 		{95887DCF-4194-4A89-8BA8-7C6C7F263B63}.Release|x86.ActiveCfg = Release|x86
 		{95887DCF-4194-4A89-8BA8-7C6C7F263B63}.Release|x86.Build.0 = Release|x86
+		{4C561FAE-24FD-470A-8E38-C725980DEE01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C561FAE-24FD-470A-8E38-C725980DEE01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C561FAE-24FD-470A-8E38-C725980DEE01}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4C561FAE-24FD-470A-8E38-C725980DEE01}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4C561FAE-24FD-470A-8E38-C725980DEE01}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4C561FAE-24FD-470A-8E38-C725980DEE01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C561FAE-24FD-470A-8E38-C725980DEE01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C561FAE-24FD-470A-8E38-C725980DEE01}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4C561FAE-24FD-470A-8E38-C725980DEE01}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4C561FAE-24FD-470A-8E38-C725980DEE01}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -328,5 +342,6 @@ Global
 		{0E89EFE3-63CE-4222-9C0B-DD1F5559DAAF} = {C84C3CDC-FC22-4AF2-8759-4B407BF5AD56}
 		{F31F4DF8-AA81-4FBC-BD33-16AEE1F53B86} = {C84C3CDC-FC22-4AF2-8759-4B407BF5AD56}
 		{95887DCF-4194-4A89-8BA8-7C6C7F263B63} = {C84C3CDC-FC22-4AF2-8759-4B407BF5AD56}
+		{4C561FAE-24FD-470A-8E38-C725980DEE01} = {8637EACC-A4F7-4A21-9D4F-91E3D604B4D3}
 	EndGlobalSection
 EndGlobal

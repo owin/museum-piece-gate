@@ -191,8 +191,8 @@ namespace Gate.Hosts.AspNet.Tests
 
             var headers = new Environment(app.Env).Headers;
 
-            Assert.That(headers["Content-Type"], Is.EqualTo("text/plain"));
-            Assert.That(headers["CONTENT-TYPE"], Is.EqualTo("text/plain"));
+            Assert.That(headers.GetHeader("Content-Type"), Is.EqualTo("text/plain"));
+            Assert.That(headers.GetHeader("CONTENT-TYPE"), Is.EqualTo("text/plain"));
             Assert.That(headers.Keys.ToArray().Contains("Content-Type"), Is.True);
             Assert.That(headers.Keys.ToArray().Contains("CONTENT-TYPE"), Is.False);
         }

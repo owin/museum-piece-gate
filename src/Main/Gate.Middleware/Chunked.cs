@@ -9,26 +9,30 @@ namespace Gate.Middleware
     {
         public static IAppBuilder Chunked(this IAppBuilder builder)
         {
-            return builder.Transform((r, cb, ex) => {
+            return builder.Transform((r, cb, ex) =>
+            {
                 var headers = r.Item2;
                 var body = r.Item3;
 
-                if (!headers.ContainsKey("content-length") &&
-                    (!headers.ContainsKey("transfer-encoding") || headers["transfer-encoding"] == "chunked")) {
-                    headers["Transfer-Encoding"] = "chunked";
-                    body = (onNext, onError, onComplete) => {
+                if (!headers.HasHeader("Content-Length") &&
+                    (!headers.HasHeader("Transfer-Encoding") || headers.GetHeader("Transfer-Encoding") == "chunked"))
+                {
+                    headers.SetHeader("Transfer-Encoding", "chunked");
+                    body = (onNext, onError, onComplete) =>
+                    {
                         var chunked = new ChunkedBody();
                         return r.Item3(
                             (data, ack) => onNext(chunked.EncodeChunk(data), ack),
                             onError,
-                            () => {
+                            () =>
+                            {
                                 onNext(ChunkedBody.TerminalChunk, null);
                                 onComplete();
                             });
                     };
                 }
 
-                cb(Tuple.Create<string, IDictionary<string, string>, BodyDelegate>(r.Item1, headers, body));
+                cb(Tuple.Create(r.Item1, headers, body));
             });
         }
 

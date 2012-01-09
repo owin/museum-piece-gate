@@ -57,8 +57,7 @@ namespace Gate
         {
             get
             {
-                string value;
-                return (Headers != null && Headers.TryGetValue("Content-Type", out value)) ? value : null;
+                return Headers.GetHeader("Content-Type");
             }
         }
 
@@ -132,10 +131,8 @@ namespace Gate
         {
             get
             {
-                string hostHeader;
-                if (Headers != null &&
-                    Headers.TryGetValue("Host", out hostHeader) &&
-                        !string.IsNullOrWhiteSpace(hostHeader))
+                var hostHeader = Headers.GetHeader("Host");
+                if (!string.IsNullOrWhiteSpace(hostHeader))
                 {
                     return hostHeader;
                 }
@@ -153,10 +150,8 @@ namespace Gate
         {
             get
             {
-                string hostHeader;
-                if (Headers != null &&
-                    Headers.TryGetValue("Host", out hostHeader) &&
-                        !string.IsNullOrWhiteSpace(hostHeader))
+                var hostHeader = Headers.GetHeader("Host");
+                if (!string.IsNullOrWhiteSpace(hostHeader))
                 {
                     var delimiter = hostHeader.IndexOf(':');
                     return delimiter < 0 ? hostHeader : hostHeader.Substring(0, delimiter);

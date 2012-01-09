@@ -11,7 +11,7 @@ namespace Gate.Builder.Loader
         IDictionary<string, object>, // env
         Action< // result
             string, // status
-            IDictionary<string, string>, // headers
+            IDictionary<string, IEnumerable<string>>, // headers
             Func< // body
                 Func< // next
                     ArraySegment<byte>, // data

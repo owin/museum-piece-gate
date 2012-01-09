@@ -16,17 +16,60 @@ namespace Gate
             _result = result;
 
             Status = "200 OK";
-            Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Headers = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
             Encoding = Encoding.UTF8;
         }
 
         public string Status { get; set; }
-        public IDictionary<string, string> Headers { get; set; }
+        public IDictionary<string, IEnumerable<string>> Headers { get; set; }
         public Encoding Encoding { get; set; }
 
         string GetHeader(string name)
         {
-            string value;
+            var values = GetHeaders(name);
+            if (values == null)
+            {
+                return null;
+            }
+
+            if (values is string[])
+            {
+                var valueArray = (string[])values;
+                switch (valueArray.Length)
+                {
+                    case 0:
+                        return string.Empty;
+                    case 1:
+                        return valueArray[0];
+                    default:
+                        return string.Join(",", valueArray);
+                }
+            }
+
+            var enumerator = values.GetEnumerator();
+            if (!enumerator.MoveNext())
+                return string.Empty;
+
+            var string1 = enumerator.Current;
+            if (!enumerator.MoveNext())
+                return string1;
+
+            var string2 = enumerator.Current;
+            if (!enumerator.MoveNext())
+                return string1 + "," + string2;
+
+            var sb = new StringBuilder(string1 + "," + string2 + "," + enumerator.Current);
+            while (enumerator.MoveNext())
+            {
+                sb.Append(',');
+                sb.Append(enumerator.Current);
+            }
+            return sb.ToString();
+        }
+
+        IEnumerable<string> GetHeaders(string name)
+        {
+            IEnumerable<string> value;
             return Headers.TryGetValue(name, out value) ? value : null;
         }
 
@@ -35,7 +78,7 @@ namespace Gate
             if (string.IsNullOrWhiteSpace(value))
                 Headers.Remove(value);
             else
-                Headers[name] = value;
+                Headers[name] = new[] {value};
         }
 
         public string ContentType
@@ -91,9 +134,9 @@ namespace Gate
 
                     body(this, error, _spool.PushComplete);
 
-                    for (;;)
+                    for (; ; )
                     {
-                        var count = new[] {0};
+                        var count = new[] { 0 };
                         _spool.Pull(new ArraySegment<byte>(buffer), count, null);
                         if (count[0] == 0)
                             break;
