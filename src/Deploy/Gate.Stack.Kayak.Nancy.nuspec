@@ -5,17 +5,18 @@
     <version>$version$</version>
     <authors>$authors$</authors>
     <owners></owners>
-    <description>Gate is a utility library for locating, manufacturing, and hosting OWIN applications.</description>
+    <description>Adds OWIN web stack to a project for Kayak and Nancy.</description>
     <language>en-US</language>
     <projectUrl>https://github.com/owin/gate</projectUrl>
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
     <tags></tags>
     <dependencies>
-      <dependency id="Gate.Owin" version="$version$"/>
-      <dependency id="Gate" version="$version$"/>
+      <dependency id="Gate.Hosts.Kayak" version="$version$"/>
+      <dependency id="Gate.Adapters.Nancy" version="$version$"/>
+      <dependency id="Gate.Middleware" version="$version$"/>
     </dependencies>
   </metadata>
   <files>
-    <file src="Gate.Middleware.dll" target="lib\net40" />
+    <file src="Stack.Kayak.Nancy\**" target="content" />
   </files>
 </package>

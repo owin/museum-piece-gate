@@ -40,8 +40,27 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="Stack.HttpListener.Nancy\Example-HttpListenerStarter.cs.pp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Stack.HttpListener.Nancy\Example-Startup.cs.pp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Gate.Stack.HttpListener.Nancy.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Stack.Kayak.Nancy\Example-KayakStarter.cs.pp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Stack.Kayak.Nancy\Example-Startup.cs.pp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Adapters\Gate.Adapters.Nancy\Gate.Adapters.Nancy.csproj">
+      <Project>{4C561FAE-24FD-470A-8E38-C725980DEE01}</Project>
+      <Name>Gate.Adapters.Nancy</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Hosts\Gate.Hosts.Manos\Gate.Hosts.Manos.csproj">
       <Project>{A3C2FFB6-663E-4C94-884A-41ADB22DB724}</Project>
       <Name>Gate.Hosts.Manos</Name>
@@ -80,6 +99,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Gate.Stack.Kayak.Nancy.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Gate.Adapters.Nancy.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Gate.Hosts.Manos.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -113,7 +138,9 @@
     <Reference Include="Mono.CSharp">
       <HintPath>..\..\dependencies\Mono.2.10.2\lib\net40\Mono.CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
