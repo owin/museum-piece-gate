@@ -60,7 +60,7 @@ namespace Gate.Hosts.Kayak
 
                 if (body != null &&
                     !headers.ContainsKey("Content-Length") &&
-                    headers.GetHeader("Transfer-Encoding") != "chunked")
+                    !headers.ContainsKey("Transfer-Encoding"))
                 {
                     // consume body and calculate Content-Length
                     BufferBody(response)(status, headers, body);
