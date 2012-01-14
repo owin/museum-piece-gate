@@ -7,20 +7,17 @@ namespace Gate.Adapters.Nancy
     class ResponseStream : Stream
     {
         Func<ArraySegment<byte>, Action, bool> _next;
-        Action<Exception> _error;
         Action _complete;
 
-        public ResponseStream(Func<ArraySegment<byte>, Action, bool> next, Action<Exception> error, Action complete)
+        public ResponseStream(Func<ArraySegment<byte>, Action, bool> next, Action complete)
         {
             _next = next;
-            _error = error;
             _complete = complete;
         }
 
         public override void Close()
         {
             _next = (_, __) => false;
-            _error = _ => { };
             Interlocked.Exchange(ref _complete, ()=> { }).Invoke();
         }
 

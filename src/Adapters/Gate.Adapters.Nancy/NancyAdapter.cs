@@ -90,7 +90,7 @@ namespace Gate.Adapters.Nancy
                                     {
                                         try
                                         {
-                                            using (var stream = new ResponseStream(next, error, complete))
+                                            using (var stream = new ResponseStream(next, complete))
                                             {
                                                 nancyResponse.Contents(stream);
                                             }
