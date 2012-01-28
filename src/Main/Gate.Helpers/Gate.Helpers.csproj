@@ -42,7 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncResult.cs" />
-    <Compile Include="Body.cs" />
+    <None Include="Body.cs" />
     <Compile Include="InputStream.cs" />
     <Compile Include="OutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

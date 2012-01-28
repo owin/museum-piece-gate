@@ -40,50 +40,40 @@ namespace Gate.Hosts.Kayak
             var oldBody = request.BodyDelegate;
 
             if (oldBody != null)
-                request.BodyDelegate = (onNext, onError, onComplete) =>
-                {
+            {
+                request.BodyDelegate = RescheduleBody(theScheduler, request.BodyDelegate);
+            }
+            wrapped(
+                env,
+                (status, headers, body) =>
                     theScheduler.Post(() =>
-                    {
-                        oldBody(
-                            (data, ack) => onNext(data, ack == null ? (Action)ack : () => theScheduler.Post(ack)), 
-                            onError, 
-                            onComplete);
-                    });
+                        result(status, headers, RescheduleBody(theScheduler, body))),
+                e =>
+                    theScheduler.Post(() =>
+                        error(e)));
+        }
 
-                    // XXX could properly provide this if the scheduler post above was hot.
-                    // or could wait/block.
-                    return () => { };
-                };
+        static BodyDelegate RescheduleBody(IScheduler theScheduler, BodyDelegate body)
+        {
+            // flush and end are tranported on theScheduler.
+            // write is not, because you want the return value to be
+            // false when the data is not buffering.
 
-            wrapped(env, (status, headers, body) => {
-                theScheduler.Post(() => result(status, headers, (onNext, onError, onComplete) =>
-                {
-                    return body(
-                        (data, continuation) =>
+            return (write, flush, end, cancel) =>
+                theScheduler.Post(() =>
+                    body(
+                        write,
+                        drained =>
                         {
-                            // cannot reschedule a call that is sent synchronously...
-                            if (continuation == null)
-                            {
-                                onNext(data, null);
-                                return false;
-                            }
-
-                            // reschedule any async calls, and call continuation if host does not
                             theScheduler.Post(() =>
                             {
-                                if (!onNext(data, continuation))
-                                    continuation();
+                                if (!flush(() => theScheduler.Post(drained)))
+                                    drained.Invoke();
                             });
-
                             return true;
                         },
-                        bodyError => theScheduler.Post(() => onError(bodyError)),
-                        () => theScheduler.Post(() => onComplete()));
-                }));
-            },
-            e => {
-                theScheduler.Post(() => error(e));
-            });
+                        ex => theScheduler.Post(() => end(ex)),
+                        cancel));
         }
     }
 }

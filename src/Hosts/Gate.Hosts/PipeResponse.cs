@@ -3,11 +3,11 @@ using System.IO;
 using System.Threading;
 using Gate.Owin;
 
-namespace Gate.Hosts.AspNet
+namespace Gate.Hosts
 {
     class PipeResponse
     {
-        readonly Stream _stream;
+        Stream _stream;
         readonly Action<Exception> _error;
         readonly Action _complete;
 
@@ -25,22 +25,46 @@ namespace Gate.Hosts.AspNet
 
         bool OnWrite(ArraySegment<byte> data)
         {
-            _stream.Write(data.Array, data.Offset, data.Count);
+            try
+            {
+                if (_stream != null)
+                {
+                    _stream.Write(data.Array, data.Offset, data.Count);
+                }
+            }
+            catch (Exception ex)
+            {
+                OnEnd(ex);
+            }
             return false;
         }
 
         bool OnFlush(Action continuation)
         {
-            _stream.Flush();
+            try
+            {
+                if (_stream != null)
+                {
+                    _stream.Flush();
+                }
+            }
+            catch (Exception ex)
+            {
+                OnEnd(ex);
+            }
             return false;
         }
 
         void OnEnd(Exception exception)
         {
-            if (exception == null)
-                _complete();
-            else
-                _error(exception);
+            if (_stream != null)
+            {
+                _stream = null;
+                if (exception == null)
+                    _complete();
+                else
+                    _error(exception);
+            }
         }
 
         protected CancellationToken CancellationToken { get; set; }

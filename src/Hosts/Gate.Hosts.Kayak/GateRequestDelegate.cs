@@ -42,10 +42,13 @@ namespace Gate.Hosts.Kayak
             if (body == null)
                 request.BodyDelegate = null;
             else
-                request.BodyDelegate = (onData, onError, onEnd) =>
+                request.BodyDelegate = (write, flush, end, cancellationToken) =>
                 {
-                    var d = body.Connect(new DataConsumer(onData, onError, onEnd));
-                    return () => { if (d != null) d.Dispose(); };
+                    var d = body.Connect(new DataConsumer(
+                        (data, continuation) => write(data) && continuation != null && flush(continuation),
+                        ex => end(ex),
+                        () => end(null)));
+                    cancellationToken.Register(d.Dispose);
                 };
 
             appDelegate(env, HandleResponse(response), HandleError(response));

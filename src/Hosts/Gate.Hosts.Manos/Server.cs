@@ -51,6 +51,8 @@ namespace Gate.Hosts.Manos
                 context,
                 transaction =>
                 {
+                    var cts = new CancellationTokenSource();
+
                     var requestPathBase = effectivePath;
                     if (requestPathBase == "/" || requestPathBase == null)
                         requestPathBase = "";
@@ -75,6 +77,7 @@ namespace Gate.Hosts.Manos
                         {OwinConstants.RequestBody, RequestBody(transaction.Request.PostBody, transaction.Request.ContentEncoding)},
                         {"Manos.Http.IHttpTransaction", transaction},
                         {"server.CLIENT_IP", transaction.Request.Socket.RemoteEndpoint.Address.ToString()},
+                        {"System.Threading.CancellationToken", cts.Token}
                     };
 
                     app(
@@ -96,21 +99,16 @@ namespace Gate.Hosts.Manos
                             }
 
                             body(
-                                (data, continuation) =>
+                                data =>
                                 {
                                     var duplicate = new byte[data.Count];
                                     Array.Copy(data.Array, data.Offset, duplicate, 0, data.Count);
                                     transaction.Response.Write(duplicate);
                                     return false;
                                 },
-                                ex =>
-                                {
-                                    transaction.Response.End();
-                                },
-                                () =>
-                                {
-                                    transaction.Response.End();
-                                });
+                                _ => false,
+                                ex => transaction.Response.End(),
+                                cts.Token);
                         },
                         ex =>
                         {
@@ -185,12 +183,18 @@ namespace Gate.Hosts.Manos
 
         static BodyDelegate RequestBody(string postBody, Encoding encoding)
         {
-            return (next, error, complete) =>
+            return (write, flush, end, cancel) =>
             {
-                var data = new ArraySegment<byte>(encoding.GetBytes(postBody));
-                if (!next(data, complete))
-                    complete();
-                return () => { };
+                try
+                {
+                    var data = new ArraySegment<byte>(encoding.GetBytes(postBody));
+                    write(data);
+                    end(null);
+                }
+                catch (Exception ex)
+                {
+                    end(ex);
+                }
             };
         }
 

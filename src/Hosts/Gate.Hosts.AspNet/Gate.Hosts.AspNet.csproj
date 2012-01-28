@@ -38,12 +38,16 @@
     <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Gate.Hosts\PipeRequest.cs">
+      <Link>PipeRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Gate.Hosts\PipeResponse.cs">
+      <Link>PipeResponse.cs</Link>
+    </Compile>
     <Compile Include="AppHandler.cs" />
     <Compile Include="AppHandlerSingleton.cs" />
     <Compile Include="Handler.cs" />
     <Compile Include="Module.cs" />
-    <Compile Include="PipeRequest.cs" />
-    <Compile Include="PipeResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

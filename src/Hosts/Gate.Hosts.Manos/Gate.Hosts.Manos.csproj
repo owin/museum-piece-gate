@@ -56,7 +56,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ErrorPage.cs" />
+    <Compile Include="..\Gate.Hosts\ErrorPage.cs">
+      <Link>ErrorPage.cs</Link>
+    </Compile>
     <Compile Include="Server.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Workaround.cs" />

@@ -2,23 +2,20 @@
 using System.IO;
 using System.Threading;
 
-namespace Gate.Hosts.AspNet
+namespace Gate.Hosts
 {
     class PipeRequest
     {
         readonly Stream _stream;
         readonly Func<ArraySegment<byte>, bool> _write;
         readonly Func<Action, bool> _flush;
-        readonly Action<Exception> _end;
+        Action<Exception> _end;
         readonly CancellationToken _cancellationToken;
 
         readonly byte[] _buffer;
         ArraySegment<byte> _segment;
 
         bool _running;
-
-        Tuple<Action<Exception>, Action> _finalAction;
-        static readonly Tuple<Action<Exception>, Action> FinalNoop = new Tuple<Action<Exception>, Action>(ex => { }, () => { });
 
 
 
@@ -33,7 +30,7 @@ namespace Gate.Hosts.AspNet
             _write = write;
             _flush = flush;
             _end = end;
-            _cancellationToken = cancellationToken; 
+            _cancellationToken = cancellationToken;
             _buffer = new byte[1024];
         }
 
@@ -79,7 +76,7 @@ namespace Gate.Hosts.AspNet
                                 FireComplete();
                                 return;
                             }
-                            
+
                             if (_write(_segment))
                             {
                                 if (_flush(NextCallback))
@@ -128,13 +125,13 @@ namespace Gate.Hosts.AspNet
         void FireError(Exception ex)
         {
             _running = false;
-            Interlocked.Exchange(ref _finalAction, FinalNoop).Item1(ex);
+            Interlocked.Exchange(ref _end, _ => { }).Invoke(ex);
         }
 
         void FireComplete()
         {
             _running = false;
-            Interlocked.Exchange(ref _finalAction, FinalNoop).Item2();
+            Interlocked.Exchange(ref _end, _ => { }).Invoke(null);
         }
 
     }

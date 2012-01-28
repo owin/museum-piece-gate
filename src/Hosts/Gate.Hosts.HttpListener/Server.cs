@@ -133,7 +133,7 @@ namespace Gate.Hosts.HttpListener
 
         static BodyDelegate RequestBody(Stream stream)
         {
-            return (next, error, complete) => new PipeRequest(stream, next, error, complete).Go();
+            return (write, flush, end, cancel) => new PipeRequest(stream, write, flush, end, cancel).Go();
         }
 
         public class Disposable : IDisposable
