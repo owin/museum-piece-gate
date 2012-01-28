@@ -33,7 +33,7 @@ namespace Ghost.Engine.CommandLine
                         return assembly;
                     }
 
-                    var shortName = b.Name.Split(new[] { ',' }, 2, StringSplitOptions.None).FirstOrDefault();
+                    var shortName = new AssemblyName(b.Name).Name;
                     var path = Path.Combine(directory, shortName + ".dll");
                     if (File.Exists(path))
                     {
