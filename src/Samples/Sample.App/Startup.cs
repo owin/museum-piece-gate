@@ -1,4 +1,5 @@
-﻿using Gate;
+﻿using System.Reflection;
+using Gate;
 using Gate.Middleware;
 using Gate.Owin;
 using Gate.Adapters.Nancy;
@@ -9,6 +10,8 @@ namespace Sample.App
     {
         public void Configuration(IAppBuilder builder)
         {
+            Assembly.Load("Nancy.Viewengines.Spark");
+
             builder
                 //.UseRewindableBody()
                 .UseShowExceptions()

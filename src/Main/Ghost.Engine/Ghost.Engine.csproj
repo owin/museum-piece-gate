@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{A6FB399F-6D35-45DB-87E6-C841764D5892}</ProjectGuid>
+    <ProjectGuid>{C225EB2E-E7A7-463F-B058-1705F204978E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Gate.Hosts</RootNamespace>
-    <AssemblyName>Gate.Hosts</AssemblyName>
+    <RootNamespace>Ghost.Engine</RootNamespace>
+    <AssemblyName>Ghost.Engine</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\..\Gate\</SolutionDir>
@@ -33,12 +33,26 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ErrorPage.cs" />
-    <Compile Include="PipeRequest.cs" />
-    <Compile Include="PipeResponse.cs" />
+    <Compile Include="CommandLine\DomainManager.cs" />
+    <Compile Include="CommandLine\Program.cs" />
+    <Compile Include="CommandLine\Arguments.cs" />
+    <Compile Include="CommandLine\Parser.cs" />
+    <Compile Include="IGhostEngine.cs" />
+    <Compile Include="Utils\Disposable.cs" />
+    <Compile Include="Settings\IGhostSettings.cs" />
+    <Compile Include="GhostEngine.cs" />
+    <Compile Include="Settings\GhostSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StartInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Main\Gate.Builder\Gate.Builder.csproj">
+      <Project>{D26293A2-8533-4BF6-A9CC-A88455B0FF71}</Project>
+      <Name>Gate.Builder</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Main\Gate.Owin\Gate.Owin.csproj">
       <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
       <Name>Gate.Owin</Name>

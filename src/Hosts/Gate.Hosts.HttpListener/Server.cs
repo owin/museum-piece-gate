@@ -1,42 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
-using Gate.Builder;
+using Gate.Hosts.HttpListener;
 using Gate.Owin;
+
+[assembly: ServerFactory]
 
 namespace Gate.Hosts.HttpListener
 {
-    public class Server
+    public class ServerFactory : Attribute
     {
-        public static IDisposable Create(int port)
-        {
-            return Create(port, "");
-        }
-
-        public static IDisposable Create(int port, string path)
-        {
-            return Create(ConfigurationManager.AppSettings["Gate.Startup"], port, path);
-        }
-
-        public static IDisposable Create(string startupName, int port)
-        {
-            return Create(startupName, port, "");
-        }
-
-        public static IDisposable Create(string startupName, int port, string path)
-        {
-            AppDelegate app = AppBuilder.BuildConfiguration(startupName);
-            return Create(app, port, path);
-        }
-
-        public static IDisposable Create(AppDelegate app, int port)
-        {
-            return Create(app, port, "");
-        }
-
         public static IDisposable Create(AppDelegate app, int port, string path)
         {
             app = ErrorPage.Middleware(app);
@@ -70,7 +45,7 @@ namespace Gate.Hosts.HttpListener
                     if (requestPathBase == "/" || requestPathBase == null)
                         requestPathBase = "";
 
-                    var requestPath = context.Request.Url.GetComponents(UriComponents.Path, UriFormat.UriEscaped);
+                    var requestPath = context.Request.Url.AbsolutePath;
                     if (string.IsNullOrEmpty(requestPath))
                         requestPath = "/";
                     if (requestPath.StartsWith(requestPathBase, StringComparison.OrdinalIgnoreCase))
