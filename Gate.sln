@@ -297,25 +297,13 @@ Global
 		{4C561FAE-24FD-470A-8E38-C725980DEE01}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{4C561FAE-24FD-470A-8E38-C725980DEE01}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{4C561FAE-24FD-470A-8E38-C725980DEE01}.Release|x86.ActiveCfg = Release|Any CPU
-		{B087FF7C-1BFE-4D98-84A6-0A0C6DBF0DEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B087FF7C-1BFE-4D98-84A6-0A0C6DBF0DEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B087FF7C-1BFE-4D98-84A6-0A0C6DBF0DEB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{B087FF7C-1BFE-4D98-84A6-0A0C6DBF0DEB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{B087FF7C-1BFE-4D98-84A6-0A0C6DBF0DEB}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B087FF7C-1BFE-4D98-84A6-0A0C6DBF0DEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B087FF7C-1BFE-4D98-84A6-0A0C6DBF0DEB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B087FF7C-1BFE-4D98-84A6-0A0C6DBF0DEB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{B087FF7C-1BFE-4D98-84A6-0A0C6DBF0DEB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{B087FF7C-1BFE-4D98-84A6-0A0C6DBF0DEB}.Release|x86.ActiveCfg = Release|Any CPU
 		{A6FB399F-6D35-45DB-87E6-C841764D5892}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A6FB399F-6D35-45DB-87E6-C841764D5892}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6FB399F-6D35-45DB-87E6-C841764D5892}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A6FB399F-6D35-45DB-87E6-C841764D5892}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{A6FB399F-6D35-45DB-87E6-C841764D5892}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{A6FB399F-6D35-45DB-87E6-C841764D5892}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6FB399F-6D35-45DB-87E6-C841764D5892}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A6FB399F-6D35-45DB-87E6-C841764D5892}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{A6FB399F-6D35-45DB-87E6-C841764D5892}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A6FB399F-6D35-45DB-87E6-C841764D5892}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution

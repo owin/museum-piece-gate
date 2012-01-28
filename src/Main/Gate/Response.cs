@@ -47,6 +47,7 @@ namespace Gate
         public string Status { get; set; }
         public IDictionary<string, IEnumerable<string>> Headers { get; set; }
         public Encoding Encoding { get; set; }
+        public bool Buffer { get; set; }
 
         string GetHeader(string name)
         {
@@ -177,22 +178,24 @@ namespace Gate
 
         public void End()
         {
-            _responseEnd.Invoke(null);
+            OnEnd(null);
         }
 
         public void End(string text)
         {
-            Write(text).End();
+            Write(text);
+            OnEnd(null);
         }
 
         public void End(ArraySegment<byte> data)
         {
-            Write(data).End();
+            Write(data);
+            OnEnd(null);
         }
 
         public void Error(Exception error)
         {
-            _responseEnd.Invoke(error);
+            OnEnd(error);
         }
 
         void ResponseBody(
@@ -237,27 +240,46 @@ namespace Gate
                     _onStart = () =>
                     {
                         prior.Invoke();
-                        notify.Invoke();
+                        CallNotify(notify);
                     };
                     return;
                 }
             }
-            notify.Invoke();
+            CallNotify(notify);
+        }
+
+        void OnEnd(Exception error)
+        {
+            Interlocked.Exchange(ref _responseEnd, _ => { }).Invoke(error);
+        }
+
+        void CallNotify(Action notify)
+        {
+            try
+            {
+                notify.Invoke();
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
         }
 
         bool EarlyResponseWrite(ArraySegment<byte> data)
         {
-            Autostart();
             var copy = new byte[data.Count];
             Array.Copy(data.Array, data.Offset, copy, 0, data.Count);
             OnStart(() => _responseWrite(new ArraySegment<byte>(copy)));
+            if (!Buffer)
+            {
+                Autostart();
+            }
             return true;
         }
 
 
         bool EarlyResponseFlush(Action drained)
         {
-            Autostart();
             OnStart(() =>
             {
                 if (!_responseFlush.Invoke(drained))
@@ -265,13 +287,14 @@ namespace Gate
                     drained.Invoke();
                 }
             });
+            Autostart();
             return true;
         }
 
         void EarlyResponseEnd(Exception ex)
         {
+            OnStart(() => OnEnd(ex));
             Autostart();
-            OnStart(() => _responseEnd(ex));
         }
     }
 }

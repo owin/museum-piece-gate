@@ -66,16 +66,24 @@ namespace Gate.TestHelpers
             this.sync.Reset();
 
             this.dataStream = new MemoryStream();
-            bodyDelegate.Invoke(this.OnWrite, this.OnFlush, this.OnEnd, this.CancellationToken);
-            this.bodyDelegateInvoked = true;
 
             if (waitForComplete)
             {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    bodyDelegate.Invoke(this.OnWrite, this.OnFlush, this.OnEnd, this.CancellationToken);
+                    this.bodyDelegateInvoked = true;
+                });
                 this.sync.Wait();
+            }
+            else
+            {
+                bodyDelegate.Invoke(this.OnWrite, this.OnFlush, this.OnEnd, this.CancellationToken);
+                this.bodyDelegateInvoked = true;
             }
         }
 
-        
+
 
 
         /// <summary>

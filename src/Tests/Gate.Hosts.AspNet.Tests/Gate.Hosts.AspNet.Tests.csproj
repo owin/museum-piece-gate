@@ -60,7 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHandlerSingletonTests.cs" />
-    <Compile Include="AppHandlerTests.cs" />
+    <None Include="AppHandlerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemoteHostClosedStream.cs" />
   </ItemGroup>

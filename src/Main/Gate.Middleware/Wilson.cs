@@ -6,7 +6,7 @@ using Timer = System.Timers.Timer;
 
 namespace Gate.Middleware
 {
-    public class Wilson 
+    public class Wilson
     {
         public static AppDelegate App(bool asyncReply)
         {
@@ -18,18 +18,17 @@ namespace Gate.Middleware
             return (env, result, fault) =>
             {
                 var request = new Request(env);
-                var response = new Response(result) {ContentType = "text/html"};
+                var response = new Response(result) { Buffer = true, ContentType = "text/html" };
                 var wilson = "left - right\r\n123456789012\r\nhello world!\r\n";
 
                 var href = "?flip=left";
                 if (request.Query["flip"] == "left")
                 {
-                    wilson = wilson.Split(new[] {System.Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
+                    wilson = wilson.Split(new[] { System.Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
                         .Select(line => new string(line.Reverse().ToArray()))
                         .Aggregate("", (agg, line) => agg + line + System.Environment.NewLine);
                     href = "?flip=right";
                 }
-
                 response.Write("<title>Wilson</title>");
                 response.Write("<pre>");
                 response.Write(wilson);
@@ -62,7 +61,7 @@ namespace Gate.Middleware
                         var href = "?flip=left";
                         if (request.Query["flip"] == "left")
                         {
-                            wilson = wilson.Split(new[] {System.Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
+                            wilson = wilson.Split(new[] { System.Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
                                 .Select(line => new string(line.Reverse().ToArray()))
                                 .Aggregate("", (agg, line) => agg + line + System.Environment.NewLine);
                             href = "?flip=right";
