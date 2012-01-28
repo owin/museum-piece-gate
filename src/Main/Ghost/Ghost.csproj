@@ -52,7 +52,7 @@
       <Project>{A3C2FFB6-663E-4C94-884A-41ADB22DB724}</Project>
       <Name>Gate.Hosts.Manos</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Hosts\Ghost.Engine\Ghost.Engine.csproj">
+    <ProjectReference Include="..\Ghost.Engine\Ghost.Engine.csproj">
       <Project>{C225EB2E-E7A7-463F-B058-1705F204978E}</Project>
       <Name>Ghost.Engine</Name>
     </ProjectReference>
