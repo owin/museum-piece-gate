@@ -56,21 +56,15 @@
     <Compile Include="EnvironmentTests.cs" />
     <Compile Include="NotFoundTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StartupTests\AppBuilderTests.cs" />
+    <Compile Include="RequestTests.cs" />
+    <Compile Include="ResponseTests.cs" />
+    <None Include="StartupTests\AppBuilderTests.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="UrlMapperTests.cs" />
-    <Compile Include="StartupTests\Loader\StartupLoaderTests.cs" />
+    <None Include="StartupTests\Loader\StartupLoaderTests.cs" />
     <Compile Include="SpoolTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Main\Gate.Builder\Gate.Builder.csproj">
-      <Project>{D26293A2-8533-4BF6-A9CC-A88455B0FF71}</Project>
-      <Name>Gate.Builder</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Main\Gate.Helpers\Gate.Helpers.csproj">
-      <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
-      <Name>Gate.Helpers</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Main\Gate\Gate.csproj">
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>

@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
-using Gate.Helpers;
 using Gate.Owin;
 using NUnit.Framework;
 
-namespace Gate.Helpers.Tests
+namespace Gate.Tests
 {
     [TestFixture]
     public class ResponseTests
@@ -36,13 +35,14 @@ namespace Gate.Helpers.Tests
             var memory = new MemoryStream();
             var wait = new ManualResetEvent(false);
             _body(
-                (data, _) =>
+                data =>
                 {
                     memory.Write(data.Array, data.Offset, data.Count);
                     return false;
                 },
+                _ => false,
                 ex => wait.Set(),
-                () => wait.Set());
+                CancellationToken.None);
             wait.WaitOne();
             return memory.ToArray();
         }
@@ -57,7 +57,7 @@ namespace Gate.Helpers.Tests
             };
 
             Assert.That(_status, Is.Null);
-            response.Finish();
+            response.End();
             Assert.That(_status, Is.EqualTo("200 Blah"));
             Assert.That(_headers.GetHeader("Content-Type"), Is.EqualTo("text/blah"));
         }
@@ -65,12 +65,12 @@ namespace Gate.Helpers.Tests
         [Test]
         public void Write_calls_will_spool_until_finish_is_called()
         {
-            new Response(Result) {Status = "200 Yep"}
+            new Response(Result) { Status = "200 Yep" }
                 .Write("this")
                 .Write("is")
                 .Write("a")
                 .Write("test")
-                .Finish();
+                .End();
 
             Assert.That(_status, Is.EqualTo("200 Yep"));
             var data = Encoding.UTF8.GetString(Consume());

@@ -30,11 +30,10 @@ namespace Gate
                 {
                     {"Content-Type", new[] {"text/html"}}
                 },
-                (next, error, complete) =>
+                (write, flush, end, cancellationToken) =>
                 {
-                    next(Body, null);
-                    complete();
-                    return () => { };
+                    write(Body);
+                    end(null);
                 });
         }
     }

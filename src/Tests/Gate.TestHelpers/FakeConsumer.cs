@@ -50,6 +50,8 @@ namespace Gate.TestHelpers
         /// </summary>
         public Exception RaisedException { get; private set; }
 
+        public CancellationToken CancellationToken { get; set; }
+
         /// <summary>
         /// Invoke the body delegate
         /// </summary>
@@ -64,7 +66,7 @@ namespace Gate.TestHelpers
             this.sync.Reset();
 
             this.dataStream = new MemoryStream();
-            this.cancelDelegate = bodyDelegate.Invoke(this.DataConsumer, this.OnError, this.OnComplete);
+            bodyDelegate.Invoke(this.OnWrite, this.OnFlush, this.OnEnd, this.CancellationToken);
             this.bodyDelegateInvoked = true;
 
             if (waitForComplete)
@@ -72,6 +74,9 @@ namespace Gate.TestHelpers
                 this.sync.Wait();
             }
         }
+
+        
+
 
         /// <summary>
         /// Invokes the cancel delegate returned from the body delegate
@@ -88,40 +93,35 @@ namespace Gate.TestHelpers
             this.sync.Set();
         }
 
-        void OnComplete()
+        void OnEnd(Exception exception)
         {
-            this.CompleteCalled = true;
-            this.dataStream.Close();
-            this.ConsumedData = this.dataStream.ToArray();
+            if (exception == null)
+            {
+                this.CompleteCalled = true;
+                this.dataStream.Close();
+                this.ConsumedData = this.dataStream.ToArray();
+            }
+            else
+            {
+                this.RaisedException = exception;
+                this.dataStream.Dispose();
+            }
             this.sync.Set();
         }
 
-        void OnError(Exception ex)
+        bool OnWrite(ArraySegment<byte> data)
         {
-            this.RaisedException = ex;
-            this.dataStream.Dispose();
-            this.sync.Set();
+            // No continuation - consume sync.
+            // and return false to indicate we won't be calling the continuation
+            this.ConsumeDataSync(data);
+            return false;
         }
 
-        bool DataConsumer(ArraySegment<byte> data, Action continuation)
+        bool OnFlush(Action continuation)
         {
             this.ContinuationSent = continuation != null;
 
-            if (continuation == null || !this.useContinuation)
-            {
-                // No continuation - consume sync.
-                // and return false to indicate we won't be calling the continuation
-                this.ConsumeDataSync(data);
-
-                return false;
-            }
-
-            // Continuation is to be used, execute the data read
-            // on a background thread and return true to indicate
-            // that we will be calling the continuation.
-            this.ConsumeDataAsync(data, continuation);
-
-            return true;
+            return false;
         }
 
         void ConsumeDataSync(ArraySegment<byte> data)
@@ -129,18 +129,5 @@ namespace Gate.TestHelpers
             this.dataStream.Write(data.Array, data.Offset, data.Count);
         }
 
-        void ConsumeDataAsync(ArraySegment<byte> data, Action continuation)
-        {
-            // We don't us the thread pool to try and stop it being clever
-            // and running us sync.
-            var worker = new Thread(
-                ts =>
-                {
-                    this.ConsumeDataSync(data);
-                    continuation.Invoke();
-                });
-
-            worker.Start();
-        }
     }
 }

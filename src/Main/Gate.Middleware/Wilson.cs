@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Gate.Owin;
 using Timer = System.Timers.Timer;
 
-namespace Gate.Helpers
+namespace Gate.Middleware
 {
-
     public class Wilson 
     {
         public static AppDelegate App(bool asyncReply)

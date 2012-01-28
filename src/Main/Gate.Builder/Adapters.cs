@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Gate.Owin;
 
@@ -89,12 +90,31 @@ namespace Gate.Builder
 
         public static BodyAction ToAction(BodyDelegate body)
         {
-            return (next, error, complete) => body(next, error, complete);
+            return (next, error, complete) =>
+            {
+                var cts = new CancellationTokenSource();
+                body(
+                    data => next(data, null),
+                    _ => false,
+                    ex =>
+                    {
+                        if (ex == null) complete();
+                        else error(ex);
+                    }, cts.Token);
+                return () => cts.Cancel();
+            };
         }
 
         public static BodyDelegate ToDelegate(BodyAction body)
         {
-            return (next, error, complete) => body(next, error, complete);
+            return (write, flush, end, cancellationToken) =>
+            {
+                var cancel = body(
+                    (data, continuation) => write(data),
+                    end,
+                    () => end(null));
+                cancellationToken.Register(cancel);
+            };
         }
 
 

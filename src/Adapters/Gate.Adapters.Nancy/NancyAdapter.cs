@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Gate.Owin;
 using Nancy;
 using Nancy.Bootstrapper;
@@ -44,7 +45,8 @@ namespace Gate.Adapters.Nancy
                 var owinRequestPathBase = Get<string>(env, OwinConstants.RequestPathBase);
                 var owinRequestPath = Get<string>(env, OwinConstants.RequestPath);
                 var owinRequestQueryString = Get<string>(env, OwinConstants.RequestQueryString);
-                var owinRequestBody = Get<BodyDelegate>(env, OwinConstants.RequestBody) ?? EmptyBody;
+                var owinRequestBody = Get<BodyDelegate>(env, OwinConstants.RequestBody, EmptyBody);
+                var cancellationToken = Get(env, typeof(CancellationToken).FullName, CancellationToken.None);
                 var serverClientIp = Get<string>(env, "server.CLIENT_IP");
 
                 var url = new Url
@@ -61,9 +63,15 @@ namespace Gate.Adapters.Nancy
 
                 owinRequestBody.Invoke(
                     OnRequestData(body, onError),
-                    onError,
-                    () =>
+                    _ => false,
+                    readError =>
                     {
+                        if (readError != null)
+                        {
+                            onError(readError);
+                            return;
+                        }
+
                         body.Position = 0;
                         var nancyRequest = new Request(owinRequestMethod, url, body, owinRequestHeaders, serverClientIp);
 
@@ -86,33 +94,38 @@ namespace Gate.Adapters.Nancy
                                 result(
                                     status,
                                     headers,
-                                    (next, error, complete) =>
+                                    (write, flush, end, cancel) =>
                                     {
-                                        try
+                                        using (var stream = new ResponseStream(write, flush, end))
                                         {
-                                            using (var stream = new ResponseStream(next, complete))
+                                            try
                                             {
                                                 nancyResponse.Contents(stream);
                                             }
+                                            catch (Exception ex)
+                                            {
+                                                stream.End(ex);
+                                            }
                                         }
-                                        catch (Exception ex)
-                                        {
-                                            error(ex);
-                                        }
-                                        return () => { };
                                     });
                             },
                             onError);
-                    });
-
-
+                    },
+                    cancellationToken);
             };
         }
+
 
         static T Get<T>(IDictionary<string, object> env, string key)
         {
             object value;
             return env.TryGetValue(key, out value) && value is T ? (T)value : default(T);
+        }
+
+        static T Get<T>(IDictionary<string, object> env, string key, T defaultValue)
+        {
+            object value;
+            return env.TryGetValue(key, out value) && value is T ? (T)value : defaultValue;
         }
 
         static string GetHeader(IDictionary<string, IEnumerable<string>> headers, string key)
@@ -131,49 +144,18 @@ namespace Gate.Adapters.Nancy
             return int.TryParse(header, NumberStyles.Any, CultureInfo.InvariantCulture, out contentLength) ? contentLength : 0;
         }
 
-        static Action EmptyBody(Func<ArraySegment<byte>, Action, bool> next, Action<Exception> error, Action complete)
+        static void EmptyBody(Func<ArraySegment<byte>, bool> write, Func<Action, bool> flush, Action<Exception> end, CancellationToken cancellationToken)
         {
-            complete();
-            return () => { };
+            end(null);
         }
 
-        static Func<ArraySegment<byte>, Action, bool> OnRequestData(Stream body, Action<Exception> fault)
+        static Func<ArraySegment<byte>, bool> OnRequestData(Stream body, Action<Exception> fault)
         {
-            return (data, continuation) =>
+            return data =>
             {
                 try
                 {
-                    if (continuation == null)
-                    {
-                        body.Write(data.Array, data.Offset, data.Count);
-                        return false;
-                    }
-
-                    var sr = body.BeginWrite(
-                        data.Array,
-                        data.Offset,
-                        data.Count,
-                        ar =>
-                        {
-                            try
-                            {
-                                if (ar.CompletedSynchronously)
-                                    return;
-
-                                body.EndWrite(ar);
-                                continuation();
-                            }
-                            catch (Exception ex)
-                            {
-                                fault(ex);
-                            }
-                        },
-                        null);
-
-                    if (!sr.CompletedSynchronously)
-                        return true;
-
-                    body.EndWrite(sr);
+                    body.Write(data.Array, data.Offset, data.Count);
                     return false;
                 }
                 catch (Exception ex)

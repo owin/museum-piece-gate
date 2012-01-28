@@ -71,20 +71,20 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BodyStreamTests.cs" />
+    <None Include="BodyStreamTests.cs" />
     <Compile Include="ContentLengthTests.cs" />
-    <Compile Include="FileServerTests.cs" />
-    <Compile Include="MethodOverrideTests.cs" />
-    <Compile Include="PredicateTests.cs" />
-    <Compile Include="BasicAuthTests.cs" />
-    <Compile Include="RangeHeaderTests.cs" />
-    <Compile Include="StaticTests.cs" />
-    <Compile Include="TransformTests.cs" />
+    <None Include="FileServerTests.cs" />
+    <None Include="MethodOverrideTests.cs" />
+    <None Include="PredicateTests.cs" />
+    <None Include="BasicAuthTests.cs" />
+    <None Include="RangeHeaderTests.cs" />
+    <None Include="StaticTests.cs" />
+    <None Include="TransformTests.cs" />
     <Compile Include="ChunkedTests.cs" />
-    <Compile Include="CascadeTests.cs" />
-    <Compile Include="ContentTypeTests.cs" />
-    <Compile Include="RewindableBodyTests.cs" />
-    <Compile Include="ShowExceptionsTests.cs" />
+    <None Include="CascadeTests.cs" />
+    <None Include="ContentTypeTests.cs" />
+    <None Include="RewindableBodyTests.cs" />
+    <None Include="ShowExceptionsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="public\kayak.png">

@@ -1,5 +1,4 @@
 ﻿using Gate;
-using Gate.Helpers;
 using Gate.Middleware;
 using Gate.Owin;
 using Gate.Adapters.Nancy;
@@ -11,13 +10,13 @@ namespace Sample.App
         public void Configuration(IAppBuilder builder)
         {
             builder
-                .UseRewindableBody()
+                //.UseRewindableBody()
                 .UseShowExceptions()
                 .UseContentType()
                 .Map("/wilson", map => map.Run(Wilson.App))
                 .Map("/wilsonasync", map => map.Run(Wilson.App, true))
-                .Cascade(
-                    x => x.Run(DefaultPage.App),
+                .RunCascade(
+                    x => x.RunDefaultPage(),
                     x => x.RunNancy());
         }
     }

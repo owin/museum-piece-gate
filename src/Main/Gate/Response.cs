@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading;
 using Gate.Owin;
 using Gate.Utils;
 
@@ -8,15 +10,37 @@ namespace Gate
 {
     public class Response
     {
-        readonly ResultDelegate _result;
-        readonly Spool _spool = new Spool(true);
+        ResultDelegate _result;
+
+        int _autostart;
+        readonly Object _onStartSync = new object();
+        Action _onStart = () => { };
+
+        Func<ArraySegment<byte>, bool> _responseWrite;
+        Func<Action, bool> _responseFlush;
+        Action<Exception> _responseEnd;
+        CancellationToken _responseCancellationToken = CancellationToken.None;
 
         public Response(ResultDelegate result)
+            : this(result, "200 OK")
+        {
+        }
+
+        public Response(ResultDelegate result, string status)
+            : this(result, status, new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase))
+        {
+        }
+
+        public Response(ResultDelegate result, string status, IDictionary<string, IEnumerable<string>> headers)
         {
             _result = result;
 
-            Status = "200 OK";
-            Headers = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
+            _responseWrite = EarlyResponseWrite;
+            _responseFlush = EarlyResponseFlush;
+            _responseEnd = EarlyResponseEnd;
+
+            Status = status;
+            Headers = headers;
             Encoding = Encoding.UTF8;
         }
 
@@ -78,7 +102,7 @@ namespace Gate
             if (string.IsNullOrWhiteSpace(value))
                 Headers.Remove(value);
             else
-                Headers[name] = new[] {value};
+                Headers[name] = new[] { value };
         }
 
         public string ContentType
@@ -87,12 +111,57 @@ namespace Gate
             set { SetHeader("Content-Type", value); }
         }
 
+
+        public Response Start()
+        {
+            _autostart = 1;
+            Interlocked.Exchange(ref _result, ResultCalledAlready).Invoke(Status, Headers, ResponseBody);
+            return this;
+        }
+
+        public Response Start(string status)
+        {
+            if (!string.IsNullOrWhiteSpace(status))
+                Status = status;
+
+            return Start();
+        }
+
+        public Response Start(string status, IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers)
+        {
+            if (headers != null)
+            {
+                foreach (var header in headers)
+                {
+                    Headers[header.Key] = header.Value;
+                }
+            }
+            return Start(status);
+        }
+
+        public void Start(string status, IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            var actualHeaders = headers.Select(kv => new KeyValuePair<string, IEnumerable<string>>(kv.Key, new[] { kv.Value }));
+            Start(status, actualHeaders);
+        }
+
+        public void Start(Action continuation)
+        {
+            OnStart(continuation);
+            Start();
+        }
+
+        public void Start(string status, Action continuation)
+        {
+            OnStart(continuation);
+            Start(status);
+        }
+
         public Response Write(string text)
         {
             // this could be more efficient if it spooled the immutable strings instead...
             var data = Encoding.GetBytes(text);
-            _spool.Push(new ArraySegment<byte>(data), null);
-            return this;
+            return Write(new ArraySegment<byte>(data));
         }
 
         public Response Write(string format, params object[] args)
@@ -100,53 +169,109 @@ namespace Gate
             return Write(string.Format(format, args));
         }
 
-        public Response BinaryWrite(ArraySegment<byte> data)
+        public Response Write(ArraySegment<byte> data)
         {
-            _spool.Push(data, null);
+            _responseWrite(data);
             return this;
         }
 
-        public bool BinaryWriteAsync(ArraySegment<byte> data, Action continuation)
+        public void End()
         {
-            return _spool.Push(data, continuation);
+            _responseEnd.Invoke(null);
+        }
+
+        public void End(string text)
+        {
+            Write(text).End();
+        }
+
+        public void End(ArraySegment<byte> data)
+        {
+            Write(data).End();
+        }
+
+        public void Error(Exception error)
+        {
+            _responseEnd.Invoke(error);
+        }
+
+        void ResponseBody(
+            Func<ArraySegment<byte>, bool> write,
+            Func<Action, bool> flush,
+            Action<Exception> end,
+            CancellationToken cancellationToken)
+        {
+            _responseWrite = write;
+            _responseFlush = flush;
+            _responseEnd = end;
+            _responseCancellationToken = cancellationToken;
+            lock (_onStartSync)
+            {
+                Interlocked.Exchange(ref _onStart, null).Invoke();
+            }
         }
 
 
-        public void Finish()
+        static readonly ResultDelegate ResultCalledAlready =
+            (_, __, ___) =>
+            {
+                throw new InvalidOperationException("Start must only be called once on a Response and it must be called before Write or End");
+            };
+
+        void Autostart()
         {
-            Finish((response, fault, complete) => complete());
+            if (Interlocked.Increment(ref _autostart) == 1)
+            {
+                Start();
+            }
         }
 
-        public void Finish(Action<Action<Exception>, Action> body)
-        {
-            Finish((response, fault, complete) => body(fault, complete));
-        }
 
-        public void Finish(Action<Response, Action<Exception>, Action> body)
+        void OnStart(Action notify)
         {
-            _result(
-                Status,
-                Headers,
-                (next, error, complete) =>
+            lock (_onStartSync)
+            {
+                if (_onStart != null)
                 {
-                    // TODO - this is sloppy and barely works
-                    var buffer = new byte[512];
-
-                    body(this, error, _spool.PushComplete);
-
-                    for (; ; )
+                    var prior = _onStart;
+                    _onStart = () =>
                     {
-                        var count = new[] { 0 };
-                        _spool.Pull(new ArraySegment<byte>(buffer), count, null);
-                        if (count[0] == 0)
-                            break;
-                        next(new ArraySegment<byte>(buffer, 0, count[0]), null);
-                    }
+                        prior.Invoke();
+                        notify.Invoke();
+                    };
+                    return;
+                }
+            }
+            notify.Invoke();
+        }
 
-                    complete();
+        bool EarlyResponseWrite(ArraySegment<byte> data)
+        {
+            Autostart();
+            var copy = new byte[data.Count];
+            Array.Copy(data.Array, data.Offset, copy, 0, data.Count);
+            OnStart(() => _responseWrite(new ArraySegment<byte>(copy)));
+            return true;
+        }
 
-                    return () => { };
-                });
+
+        bool EarlyResponseFlush(Action drained)
+        {
+            Autostart();
+            OnStart(() =>
+            {
+                if (!_responseFlush.Invoke(drained))
+                {
+                    drained.Invoke();
+                }
+            });
+            return true;
+        }
+
+        void EarlyResponseEnd(Exception ex)
+        {
+            Autostart();
+            OnStart(() => _responseEnd(ex));
         }
     }
 }

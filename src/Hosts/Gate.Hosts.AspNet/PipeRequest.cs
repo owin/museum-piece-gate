@@ -7,7 +7,10 @@ namespace Gate.Hosts.AspNet
     class PipeRequest
     {
         readonly Stream _stream;
-        readonly Func<ArraySegment<byte>, Action, bool> _next;
+        readonly Func<ArraySegment<byte>, bool> _write;
+        readonly Func<Action, bool> _flush;
+        readonly Action<Exception> _end;
+        readonly CancellationToken _cancellationToken;
 
         readonly byte[] _buffer;
         ArraySegment<byte> _segment;
@@ -19,11 +22,18 @@ namespace Gate.Hosts.AspNet
 
 
 
-        public PipeRequest(Stream stream, Func<ArraySegment<byte>, Action, bool> next, Action<Exception> error, Action complete)
+        public PipeRequest(
+            Stream stream,
+            Func<ArraySegment<byte>, bool> write,
+            Func<Action, bool> flush,
+            Action<Exception> end,
+            CancellationToken cancellationToken)
         {
             _stream = stream;
-            _next = next;
-            _finalAction = Tuple.Create(error, complete);
+            _write = write;
+            _flush = flush;
+            _end = end;
+            _cancellationToken = cancellationToken; 
             _buffer = new byte[1024];
         }
 
@@ -69,10 +79,13 @@ namespace Gate.Hosts.AspNet
                                 FireComplete();
                                 return;
                             }
-
-                            if (_next(_segment, NextCallback))
+                            
+                            if (_write(_segment))
                             {
-                                return;
+                                if (_flush(NextCallback))
+                                {
+                                    return;
+                                }
                             }
 
                             mode = 0;

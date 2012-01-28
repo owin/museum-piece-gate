@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using Gate.Owin;
 
 namespace Gate.Middleware.StaticFiles
@@ -19,17 +20,16 @@ namespace Gate.Middleware.StaticFiles
 
         public static BodyDelegate Create(string path, Tuple<long, long> range)
         {
-            return (data, error, complete) =>
+            return (write, flush, end, cancel) =>
             {
                 var fileBody = new FileBody(path, range);
-
-                return fileBody.Start(data, error, complete);
+                fileBody.Start(write, flush, end, cancel);
             };
         }
 
-        public Action Start(Func<ArraySegment<byte>, Action, bool> data, Action<Exception> error, Action complete)
+        void Start(Func<ArraySegment<byte>, bool> write, Func<Action, bool> flush, Action<Exception> end, CancellationToken cancellationToken)
         {
-            bodyStream = new BodyStream(data, error, complete);
+            bodyStream = new BodyStream(write, flush, end, cancellationToken);
 
             Action start = () =>
             {
@@ -40,7 +40,7 @@ namespace Gate.Middleware.StaticFiles
                 }
                 catch (Exception ex)
                 {
-                    bodyStream.Error(ex);
+                    bodyStream.End(ex);
                 }
             };
 
@@ -55,8 +55,6 @@ namespace Gate.Middleware.StaticFiles
             };
 
             bodyStream.Start(start, dispose);
-
-            return bodyStream.Cancel;
         }
 
         private void SendFile(long length)

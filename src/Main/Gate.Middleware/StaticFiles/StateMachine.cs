@@ -7,8 +7,7 @@ namespace Gate.Middleware.StaticFiles
         where TCommand : struct
         where TState : struct
     {
-        private readonly IDictionary<TCommand, Action> handlers =
-            new Dictionary<TCommand, Action>();
+        private readonly IDictionary<TCommand, Action> handlers = new Dictionary<TCommand, Action>();
         private readonly IDictionary<TCommand, TState> transitions = new Dictionary<TCommand, TState>();
 
         public TState State { get; private set; }

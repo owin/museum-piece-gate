@@ -8,14 +8,14 @@ namespace Gate.Middleware
 {
     public static class CascadeExtensions
     {
-        public static IAppBuilder Cascade(this IAppBuilder builder, params AppDelegate[] apps)
+        public static IAppBuilder RunCascade(this IAppBuilder builder, params AppDelegate[] apps)
         {
             return builder.Run(Middleware(apps));
         }
 
-        public static IAppBuilder Cascade(this IAppBuilder builder, params Action<IAppBuilder>[] apps)
+        public static IAppBuilder RunCascade(this IAppBuilder builder, params Action<IAppBuilder>[] apps)
         {
-            return builder.Cascade(apps.Select(builder.Build<AppDelegate>).ToArray());
+            return builder.RunCascade(apps.Select(builder.Build<AppDelegate>).ToArray());
         }
 
         static AppDelegate Middleware(IEnumerable<AppDelegate> apps)

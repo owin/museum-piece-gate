@@ -1,5 +1,4 @@
 ﻿
-using Gate.Builder;
 using Gate.Owin;
 
 namespace Gate.Tests

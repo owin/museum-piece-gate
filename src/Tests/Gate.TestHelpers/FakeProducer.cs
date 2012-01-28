@@ -1,13 +1,15 @@
-﻿namespace Gate.TestHelpers
+﻿using Gate.Owin;
+
+namespace Gate.TestHelpers
 {
     using System;
     using System.Threading;
-    using BodyDelegate = System.Func<System.Func<System.ArraySegment<byte>, // data
-        System.Action, // continuation
-        bool>, // continuation will be invoked
-        System.Action<System.Exception>, // onError
-        System.Action, // on Complete
-        System.Action>; // cancel
+    //using BodyDelegate = System.Func<System.Func<System.ArraySegment<byte>, // data
+    //    System.Action, // continuation
+    //    bool>, // continuation will be invoked
+    //    System.Action<System.Exception>, // onError
+    //    System.Action, // on Complete
+    //    System.Action>; // cancel
 
     public class FakeProducer
     {
@@ -21,6 +23,10 @@
         byte[] buffer;
         int chunkSize;
         bool autoSend;
+        Func<ArraySegment<byte>, bool> _write;
+        Func<Action, bool> _flush;
+        Action<Exception> _end;
+        CancellationToken _cancellationtoken;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FakeProducer"/> class. 
@@ -62,11 +68,12 @@
         /// <param name="onError">On error delegate</param>
         /// <param name="onComplete">On complete delegate</param>
         /// <returns>Cancellation delegate</returns>
-        public Action BodyDelegate(Func<ArraySegment<byte>, Action, bool> onNext, Action<Exception> onError, Action onComplete)
+        public void BodyDelegate(Func<ArraySegment<byte>, bool> write, Func<Action, bool> flush, Action<Exception> end, CancellationToken cancellationtoken)
         {
-            this.onNext = onNext;
-            this.onError = onError;
-            this.onComplete = onComplete;
+            _write = write;
+            _flush = flush;
+            _end = end;
+            _cancellationtoken = cancellationtoken;
 
             this.BodyDelegateInvoked = true;
 
@@ -74,8 +81,6 @@
             {
                 ThreadPool.QueueUserWorkItem((s) => this.SendAll());
             }
-
-            return this.OnCancel;
         }
 
         /// <summary>
@@ -179,5 +184,6 @@
         {
             return producer.BodyDelegate;
         }
+
     }
 }

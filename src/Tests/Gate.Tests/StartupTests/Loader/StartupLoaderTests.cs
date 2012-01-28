@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using DifferentNamespace;
 using Gate;
-using Gate.Builder;
-using Gate.Builder.Loader;
 using Gate.Owin;
 using NUnit.Framework;
 
