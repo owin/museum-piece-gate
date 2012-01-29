@@ -8,8 +8,9 @@ namespace Ghost.Engine.CommandLine
     public class Arguments
     {
         public string Server { get; set; }
-
         public string Startup { get; set; }
+        public string OutputFile { get; set; }
+        public int Verbosity { get; set; }
 
         public string Url { get; set; }
         public string Scheme { get; set; }

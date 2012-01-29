@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Gate.Owin;
@@ -18,10 +19,25 @@ namespace Ghost.Engine
 
         public IDisposable Start(StartInfo info)
         {
+            ResolveOutput(info);
             ResolveServerFactory(info);
             ResolveApp(info);
             ResolveUrl(info);
             return StartServer(info);
+        }
+
+        void ResolveOutput(StartInfo info)
+        {
+            if (info.Output != null) return;
+
+            if (!string.IsNullOrWhiteSpace(info.OutputFile))
+            {
+                info.Output = new StreamWriter(info.OutputFile, true);
+            }
+            else
+            {
+                info.Output = _settings.DefaultOutput;
+            }
         }
 
         private void ResolveServerFactory(StartInfo info)
@@ -29,7 +45,11 @@ namespace Ghost.Engine
             if (info.ServerFactory != null) return;
 
             var serverName = info.Server ?? _settings.DefaultServer;
+
+            // TODO: error message for server assembly not found
             var serverAssembly = Assembly.Load(_settings.ServerAssemblyPrefix + serverName);
+
+            // TODO: error message for assembly does not have ServerFactory attribute
             info.ServerFactory = serverAssembly.GetCustomAttributes(false)
                 .Cast<Attribute>()
                 .Single(x => x.GetType().Name == "ServerFactory");
@@ -89,6 +109,8 @@ namespace Ghost.Engine
                     return info.Host;
                 case "path":
                     return info.Path;
+                case "output":
+                    return info.Output;
             }
             return null;
         }

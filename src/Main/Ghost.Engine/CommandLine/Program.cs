@@ -17,10 +17,38 @@ namespace Ghost.Engine.CommandLine
             }
 
             var engine = BuildEngine();
-            using (StartServer(engine, arguments))
+
+            var info = new StartInfo
             {
-                Console.WriteLine("Press enter to exit");
-                Console.ReadLine();
+                Server = arguments.Server,
+                Startup = arguments.Startup,
+                OutputFile = arguments.OutputFile,
+                Url = arguments.Url,
+                Scheme = arguments.Scheme,
+                Host = arguments.Host,
+                Port = arguments.Port,
+                Path = arguments.Path,
+            };
+
+            var cancelPressed = false;
+            Console.TreatControlCAsInput = false;
+            Console.CancelKeyPress += (_, e) =>
+            {
+                if (cancelPressed) return;
+                if (e.SpecialKey == ConsoleSpecialKey.ControlBreak) return;
+
+                cancelPressed = true;
+                Console.WriteLine("Press ctrl+c again to terminate");
+                e.Cancel = true;
+            };
+
+            using (engine.Start(info))
+            {
+                info.Output.WriteLine("Started at {0}", info.Url);
+                while (true)
+                {
+                    Console.ReadKey(true);
+                }
             }
         }
 
@@ -31,51 +59,45 @@ namespace Ghost.Engine.CommandLine
             return new GhostEngine(settings);
         }
 
-        private static IDisposable StartServer(IGhostEngine engine, Arguments arguments)
-        {
-            return engine.Start(new StartInfo
-            {
-                Server = arguments.Server,
-                Startup = arguments.Startup,
-                Url = arguments.Url,
-                Scheme = arguments.Scheme,
-                Host = arguments.Host,
-                Port = arguments.Port,
-                Path = arguments.Path,
-            });
-        }
-
         private static Arguments ParseArguments(IEnumerable<string> args)
         {
             var arguments = new Arguments();
             var optionSet = new OptionSet()
                 .Add(
-                    "s=|server=", 
-                    @"Load assembly named ""Gate.Hosts.TYPE.dll"" to determine http server to use. TYPE defaults to HttpListener.", 
+                    "s=|server=",
+                    @"Load assembly named ""Gate.Hosts.TYPE.dll"" to determine http server to use. TYPE defaults to HttpListener.",
                     x => arguments.Server = x)
                 .Add(
-                    "u=|url=", 
-                    @"May be used to set --scheme, --host, --port, and --path options with a combined URIPREFIX value. Format is '<scheme>://<host>[:<port>]<path>/'.", 
+                    "u=|url=",
+                    @"May be used to set --scheme, --host, --port, and --path options with a combined URIPREFIX value. Format is '<scheme>://<host>[:<port>]<path>/'.",
                     x => arguments.Url = x)
                 .Add(
-                    "S=|scheme=", 
-                    @"Determine which socket protocol server should bind with. SCHEME may be 'http' or 'https'. Defaults to 'http'.", 
+                    "S=|scheme=",
+                    @"Determine which socket protocol server should bind with. SCHEME may be 'http' or 'https'. Defaults to 'http'.",
                     x => arguments.Scheme = x)
                 .Add(
-                    "h=|host=", 
-                    @"Which host name or IP address to listen on. NAME defaults to '+' for all IP addresses.", 
+                    "h=|host=",
+                    @"Which host name or IP address to listen on. NAME defaults to '+' for all IP addresses.",
                     x => arguments.Host = x)
                 .Add(
-                    "p=|port=", 
-                    @"Which TCP port to listen on. NUMBER defaults to 8080.", 
+                    "p=|port=",
+                    @"Which TCP port to listen on. NUMBER defaults to 8080.",
                     (int x) => arguments.Port = x)
                 .Add(
-                    "P=|path=", 
-                    @"Determines the virtual directory to run use as the base path for <application> requests. PATH must start with a '/'.", 
+                    "P=|path=",
+                    @"Determines the virtual directory to run use as the base path for <application> requests. PATH must start with a '/'.",
                     x => arguments.Path = x)
                 .Add(
-                    "?|help", 
-                    @"Show this message and exit.", 
+                    "o=|output=",
+                    @"Writes any errors and trace logging to FILE. Default is stderr.",
+                    x => arguments.OutputFile = x)
+                .Add(
+                    "v|verbose",
+                    @"Increase the output verbosity.",
+                    x => { if (x != null) ++arguments.Verbosity; })
+                .Add(
+                    "?|help",
+                    @"Show this message and exit.",
                     x => arguments.ShowHelp = x != null)
                 ;
 

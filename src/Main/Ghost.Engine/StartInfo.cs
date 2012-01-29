@@ -1,4 +1,6 @@
-﻿namespace Ghost.Engine
+﻿using System.IO;
+
+namespace Ghost.Engine
 {
     public class StartInfo
     {
@@ -7,6 +9,9 @@
 
         public string Startup { get; set; }
         public object App { get; set; }
+
+        public string OutputFile { get; set; }
+        public TextWriter Output { get; set; }
 
         public string Url { get; set; }
         public string Scheme { get; set; }

@@ -36,7 +36,6 @@
     <Compile Include="CommandLine\DomainManager.cs" />
     <Compile Include="CommandLine\Program.cs" />
     <Compile Include="CommandLine\Arguments.cs" />
-    <Compile Include="CommandLine\Parser.cs" />
     <Compile Include="IGhostEngine.cs" />
     <Compile Include="Utils\Disposable.cs" />
     <Compile Include="Settings\IGhostSettings.cs" />
