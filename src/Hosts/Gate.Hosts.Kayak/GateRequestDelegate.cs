@@ -30,9 +30,10 @@ namespace Gate.Hosts.Kayak
                     env[kv.Key] = kv.Value;
 
             if (head.Headers == null)
-                request.Headers = Headers.New();
+                request.Headers = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
             else
                 request.Headers = head.Headers.ToDictionary(kv => kv.Key, kv => (IEnumerable<string>)new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
+
             request.Method = head.Method ?? "";
             request.Path = head.Path ?? "";
             request.PathBase = "";
@@ -60,7 +61,7 @@ namespace Gate.Hosts.Kayak
             return (status, headers, body) =>
             {
                 if (headers == null)
-                    headers = Headers.New();
+                    headers = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
 
                 if (body != null &&
                     !headers.ContainsKey("Content-Length") &&
@@ -103,7 +104,7 @@ namespace Gate.Hosts.Kayak
 
                     if (contentLength > 0)
                     {
-                        headers.SetHeader("Content-Length", contentLength.ToString());
+                        headers["Content-Length"] = new[] {contentLength.ToString()};
 
                         responseBody = new DataProducer((write, flush, end, cancellationToken) =>
                         {
