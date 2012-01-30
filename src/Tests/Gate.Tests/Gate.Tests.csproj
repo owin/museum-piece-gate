@@ -58,7 +58,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestTests.cs" />
     <Compile Include="ResponseTests.cs" />
-    <Compile Include="Startup.cs" />
     <Compile Include="UrlMapperTests.cs" />
     <Compile Include="SpoolTests.cs" />
   </ItemGroup>
