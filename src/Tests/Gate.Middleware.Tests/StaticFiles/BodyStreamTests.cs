@@ -1,9 +1,10 @@
 using System;
 using System.Text;
+using System.Threading;
 using Gate.Middleware.StaticFiles;
 using NUnit.Framework;
 
-namespace Gate.Middleware.Tests
+namespace Gate.Middleware.Tests.StaticFiles
 {
     [TestFixture]
     public class BodyStreamTests
@@ -12,13 +13,13 @@ namespace Gate.Middleware.Tests
         public void BodyStream_calls_on_data_delegate()
         {
             var called = false;
-            Func<ArraySegment<byte>, Action, bool> next = (data, complete) =>
+            Func<ArraySegment<byte>, bool> next = (data) =>
             {
                 called = true;
                 return false;
             };
 
-            var bodyStream = new BodyStream(next, null, null);
+            var bodyStream = new BodyStream(next, null, null, CancellationToken.None);
             bodyStream.Start(() => { }, null);
 
             var bytes = new ArraySegment<byte>(Encoding.UTF8.GetBytes("dada"));
@@ -32,13 +33,13 @@ namespace Gate.Middleware.Tests
         {
             var called = false;
 
-            Func<ArraySegment<byte>, Action, bool> next = (data, complete) =>
+            Func<ArraySegment<byte>, bool> next = (data) =>
             {
                 called = true;
                 return false;
             };
 
-            var bodyStream = new BodyStream(next, null, null);
+            var bodyStream = new BodyStream(next, null, null, CancellationToken.None);
             bodyStream.Start(() => { }, null);
 
             bodyStream.Pause();
@@ -55,13 +56,13 @@ namespace Gate.Middleware.Tests
         {
             var called = false;
 
-            Func<ArraySegment<byte>, Action, bool> next = (data, complete) =>
+            Func<ArraySegment<byte>, bool> next = (data) =>
             {
                 called = true;
                 return false;
             };
 
-            var bodyStream = new BodyStream(next, null, null);
+            var bodyStream = new BodyStream(next, null, null, CancellationToken.None);
             bodyStream.Start(() => { }, null);
 
             bodyStream.Stop();
@@ -74,17 +75,11 @@ namespace Gate.Middleware.Tests
         }
 
         [Test]
-        public void BodyStream_requires_on_data_callback()
-        {
-            Assert.That(() => new BodyStream(null, null, null), Throws.ArgumentException);
-        }
-
-        [Test]
         public void BodyStream_calls_completion()
         {
             var called = false;
 
-            var bodyStream = new BodyStream((data, continuation) => false, null, null);
+            var bodyStream = new BodyStream((data) => false, null, null, CancellationToken.None);
             bodyStream.Start(() => { }, null);
 
             var bytes = new ArraySegment<byte>(Encoding.UTF8.GetBytes("dada"));
@@ -99,7 +94,7 @@ namespace Gate.Middleware.Tests
         {
             var called = false;
 
-            var bodyStream = new BodyStream((data, continuation) => false, null, null);
+            var bodyStream = new BodyStream((data) => false, null, null, CancellationToken.None);
             bodyStream.Start(() => { }, null);
 
             bodyStream.Stop();
@@ -115,7 +110,7 @@ namespace Gate.Middleware.Tests
         public void BodyStream_calls_dispose_action_when_it_finishes()
         {
             var called = false;
-            var bodyStream = new BodyStream((data, continuation) => false, null, null);
+            var bodyStream = new BodyStream((data) => false, null, _=> { }, CancellationToken.None);
             bodyStream.Start(() => { }, () => { called = true; });
 
             bodyStream.Finish();

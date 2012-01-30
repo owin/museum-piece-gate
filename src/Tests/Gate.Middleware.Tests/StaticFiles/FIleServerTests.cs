@@ -5,7 +5,7 @@ using Gate.Middleware.Utils;
 using Gate.TestHelpers;
 using NUnit.Framework;
 
-namespace Gate.Middleware.Tests
+namespace Gate.Middleware.Tests.StaticFiles
 {
     [TestFixture]
     public class FileServerTests

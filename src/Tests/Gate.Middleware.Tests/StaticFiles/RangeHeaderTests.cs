@@ -4,7 +4,7 @@ using Gate.Middleware.Utils;
 using Gate.Owin;
 using NUnit.Framework;
 
-namespace Gate.Middleware.Tests
+namespace Gate.Middleware.Tests.StaticFiles
 {
     [TestFixture]
     public class RangeHeaderTests
