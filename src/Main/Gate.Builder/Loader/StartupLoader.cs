@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Gate.Owin;
+using Owin;
 
 namespace Gate.Builder.Loader
 {

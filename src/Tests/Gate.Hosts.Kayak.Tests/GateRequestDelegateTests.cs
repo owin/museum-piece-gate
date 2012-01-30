@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using Gate;
 using Gate.Hosts.Kayak;
-using Gate.Owin;
+using Owin;
 using NUnit.Framework;
 using Kayak.Http;
 using Kayak;

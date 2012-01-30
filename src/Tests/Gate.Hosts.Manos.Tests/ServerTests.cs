@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using Gate.Helpers;
 using Gate.Middleware;
-using Gate.Owin;
+using Owin;
 using NUnit.Framework;
 
 namespace Gate.Hosts.Manos.Tests

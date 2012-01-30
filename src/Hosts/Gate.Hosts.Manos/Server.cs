@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Gate.Builder;
-using Gate.Owin;
+using Owin;
 using Manos.Collections;
 using Manos.Http;
 using Manos.IO;

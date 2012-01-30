@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Gate.Owin;
+using Owin;
 using Kayak;
 using Kayak.Http;
 using System.Net;

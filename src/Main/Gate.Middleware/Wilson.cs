@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
-using Gate.Owin;
+using Owin;
 using Timer = System.Timers.Timer;
 
 namespace Gate.Middleware

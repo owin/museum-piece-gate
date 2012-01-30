@@ -1,7 +1,7 @@
 using System;
 using Gate.Middleware;
 using Gate.TestHelpers;
-using Gate.Owin;
+using Owin;
 using Gate.Builder;
 using NUnit.Framework;
 using System.Text;

@@ -1,4 +1,4 @@
-﻿namespace Gate.Owin
+﻿namespace Owin
 {
     public static class OwinConstants
     {

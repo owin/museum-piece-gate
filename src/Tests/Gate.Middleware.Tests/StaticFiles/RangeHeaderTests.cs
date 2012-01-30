@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Gate.Middleware.Utils;
-using Gate.Owin;
+using Owin;
 using NUnit.Framework;
 
 namespace Gate.Middleware.Tests.StaticFiles

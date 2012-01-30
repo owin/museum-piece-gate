@@ -61,9 +61,9 @@
       <Project>{D26293A2-8533-4BF6-A9CC-A88455B0FF71}</Project>
       <Name>Gate.Builder</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Main\Gate.Owin\Gate.Owin.csproj">
+    <ProjectReference Include="..\..\Main\Gate.Owin\Owin.csproj">
       <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
-      <Name>Gate.Owin</Name>
+      <Name>Owin</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

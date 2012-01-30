@@ -8,8 +8,8 @@
     <ProjectGuid>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Gate.Owin</RootNamespace>
-    <AssemblyName>Gate.Owin</AssemblyName>
+    <RootNamespace>Owin</RootNamespace>
+    <AssemblyName>Owin</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\..\Gate\</SolutionDir>
     <RestorePackages>true</RestorePackages>

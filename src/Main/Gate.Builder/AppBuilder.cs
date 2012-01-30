@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Gate.Builder.Loader;
-using Gate.Owin;
+using Owin;
 using System.Linq;
 
 namespace Gate.Builder

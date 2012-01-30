@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
-using Gate.Owin;
+using Owin;
 
 namespace Gate.Middleware
 {

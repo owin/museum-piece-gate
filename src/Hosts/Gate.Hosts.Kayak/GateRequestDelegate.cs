@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.Threading;
-using Gate.Owin;
+using Owin;
 using Kayak;
 using Kayak.Http;
 

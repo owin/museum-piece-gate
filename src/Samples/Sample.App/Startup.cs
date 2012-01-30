@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Gate;
 using Gate.Middleware;
-using Gate.Owin;
+using Owin;
 using Gate.Adapters.Nancy;
 
 namespace Sample.App

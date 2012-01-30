@@ -44,9 +44,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Gate.Owin\Gate.Owin.csproj">
+    <ProjectReference Include="..\Gate.Owin\Owin.csproj">
       <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
-      <Name>Gate.Owin</Name>
+      <Name>Owin</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

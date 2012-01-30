@@ -7,7 +7,7 @@ using Gate.Builder;
 using Gate.Builder.Loader;
 using Gate.Builder.Tests;
 using Gate.Builder.Tests.Loader;
-using Gate.Owin;
+using Owin;
 using NUnit.Framework;
 
 namespace Gate.Builder.Tests.Loader

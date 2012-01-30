@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using Gate.Builder.Loader;
-using Gate.Owin;
+using Owin;
 
 namespace Ghost.Engine.Settings
 {
