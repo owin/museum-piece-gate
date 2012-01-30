@@ -2,11 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DifferentNamespace;
-using Gate;
+using Gate.Builder;
+using Gate.Builder.Loader;
+using Gate.Builder.Tests;
+using Gate.Builder.Tests.Loader;
 using Gate.Owin;
 using NUnit.Framework;
 
-namespace Gate.Tests.StartupTests.Loader
+namespace Gate.Builder.Tests.Loader
 {
     using AppAction = Action< // app
         IDictionary<string, object>, // env
@@ -75,7 +78,7 @@ namespace Gate.Tests.StartupTests.Loader
         public void Load_will_find_assembly_and_type_and_static_method()
         {
             var loader = new StartupLoader();
-            var configuration = loader.Load("Gate.Tests.StartupTests.Loader.DefaultConfigurationLoaderTests.Hello");
+            var configuration = loader.Load("Gate.Builder.Tests.Loader.DefaultConfigurationLoaderTests.Hello");
 
             _helloCalls = 0;
             configuration(null);
@@ -95,8 +98,8 @@ namespace Gate.Tests.StartupTests.Loader
         public void Calling_a_class_with_multiple_configs_is_okay()
         {
             var loader = new StartupLoader();
-            var foo = loader.Load("Gate.Tests.StartupTests.Loader.MultiConfigs.Foo");
-            var bar = loader.Load("Gate.Tests.StartupTests.Loader.MultiConfigs.Bar");
+            var foo = loader.Load("Gate.Builder.Tests.Loader.MultiConfigs.Foo");
+            var bar = loader.Load("Gate.Builder.Tests.Loader.MultiConfigs.Bar");
 
             MultiConfigs.FooCalls = 0;
             MultiConfigs.BarCalls = 0;
@@ -116,7 +119,7 @@ namespace Gate.Tests.StartupTests.Loader
         public void Configuration_method_defaults_to_Configuration_if_only_type_name_is_provided()
         {
             var loader = new StartupLoader();
-            var configuration = loader.Load("Gate.Tests.StartupTests.Loader.MultiConfigs");
+            var configuration = loader.Load("Gate.Builder.Tests.Loader.MultiConfigs");
 
             MultiConfigs.FooCalls = 0;
             MultiConfigs.BarCalls = 0;
@@ -138,7 +141,7 @@ namespace Gate.Tests.StartupTests.Loader
         public void Comma_may_be_used_if_assembly_name_doesnt_match_namespace()
         {
             var loader = new StartupLoader();
-            var configuration = loader.Load("DifferentNamespace.DoesNotFollowConvention, Gate.Tests");
+            var configuration = loader.Load("DifferentNamespace.DoesNotFollowConvention, Gate.Builder.Tests");
 
             DoesNotFollowConvention.ConfigurationCalls = 0;
 
@@ -158,7 +161,7 @@ namespace Gate.Tests.StartupTests.Loader
         public void Method_that_returns_app_action_may_also_be_called()
         {
             var loader = new StartupLoader();
-            var configuration = loader.Load("Gate.Tests.StartupTests.Loader.DefaultConfigurationLoaderTests.Alpha");
+            var configuration = loader.Load("Gate.Builder.Tests.Loader.DefaultConfigurationLoaderTests.Alpha");
 
             var builder = new AppBuilder();
             configuration(builder);
@@ -182,43 +185,6 @@ namespace Gate.Tests.StartupTests.Loader
             Startup.ConfigurationCalls = 0;
             configuration(null);
             Assert.That(Startup.ConfigurationCalls, Is.EqualTo(1));
-        }
-    }
-
-    public class MultiConfigs
-    {
-        public static int FooCalls;
-
-        public static void Foo(IAppBuilder builder)
-        {
-            FooCalls += 1;
-        }
-
-        public static int BarCalls;
-
-        public static void Bar(IAppBuilder builder)
-        {
-            BarCalls += 1;
-        }
-
-        public static int ConfigurationCalls;
-
-        public static void Configuration(IAppBuilder builder)
-        {
-            ConfigurationCalls += 1;
-        }
-    }
-}
-
-namespace DifferentNamespace
-{
-    public class DoesNotFollowConvention
-    {
-        public static int ConfigurationCalls;
-
-        public static void Configuration(IAppBuilder builder)
-        {
-            ConfigurationCalls += 1;
         }
     }
 }
