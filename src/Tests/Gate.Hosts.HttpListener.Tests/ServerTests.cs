@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using Gate.Helpers;
+using Gate.Middleware;
 using Gate.Owin;
 using NUnit.Framework;
 
@@ -17,21 +18,21 @@ namespace Gate.Hosts.HttpListener.Tests
         [Test]
         public void ServerCanBeCreatedAndDisposed()
         {
-            var server = Server.Create((env, result, fault) => { throw new NotImplementedException(); }, 8090, "");
+            var server = ServerFactory.Create((env, result, fault) => { throw new NotImplementedException(); }, 8090, "");
             server.Dispose();
         }
 
         [Test]
         public void PathMayBeNullOrEmpty()
         {
-            Server.Create(Wilson.App(), 8090, null).Dispose();
-            Server.Create(Wilson.App(), 8090, "/").Dispose();
+            ServerFactory.Create(Wilson.App(), 8090, null).Dispose();
+            ServerFactory.Create(Wilson.App(), 8090, "/").Dispose();
         }
 
         [Test]
         public void ServerWillRespondToRequests()
         {
-            using (Server.Create(Wilson.App(), 8090))
+            using (ServerFactory.Create(Wilson.App(), 8090, null))
             {
                 var request = (HttpWebRequest)WebRequest.Create("http://localhost:8090");
                 using (var response = (HttpWebResponse)request.GetResponse())
@@ -48,7 +49,7 @@ namespace Gate.Hosts.HttpListener.Tests
         [Test]
         public void ExceptionsWillReturnStatus500()
         {
-            using (Server.Create(Wilson.App(), 8090))
+            using (ServerFactory.Create(Wilson.App(), 8090, null))
             {
                 var request = (HttpWebRequest)WebRequest.Create("http://localhost:8090/?flip=crash");
 
@@ -64,17 +65,19 @@ namespace Gate.Hosts.HttpListener.Tests
             var requestData = new MemoryStream();
             AppDelegate app = (env, result, fault) =>
             {
-                BodyDelegate body = (BodyDelegate)env[OwinConstants.RequestBody];
-                body((data, continuation) =>
+                var body = (BodyDelegate)env[OwinConstants.RequestBody];
+
+                body(data =>
                 {
                     requestData.Write(data.Array, data.Offset, data.Count);
                     return false;
                 },
-                fault,
-                () => Wilson.App().Invoke(env, result, fault));
+                _ => false,
+                _ => Wilson.App().Invoke(env, result, fault),
+                CancellationToken.None);
             };
 
-            using (Server.Create(app, 8090))
+            using (ServerFactory.Create(app, 8090, null))
             {
                 var request = (HttpWebRequest)WebRequest.Create("http://localhost:8090/");
                 request.Method = "POST";
@@ -91,21 +94,5 @@ namespace Gate.Hosts.HttpListener.Tests
             }
         }
 
-        [Test]
-        public void StartupNameMayBeUsedAsParameterToCreate()
-        {
-            using (Server.Create("Gate.Hosts.HttpListener.Tests.Startup.Custom", 8090))
-            {
-                var request = (HttpWebRequest)WebRequest.Create("http://localhost:8090");
-                using (var response = (HttpWebResponse)request.GetResponse())
-                {
-                    using (var reader = new StreamReader(response.GetResponseStream()))
-                    {
-                        var text = reader.ReadToEnd();
-                        Assert.That(text, Is.StringContaining("This is a custom page"));
-                    }
-                }
-            }
-        }
     }
 }

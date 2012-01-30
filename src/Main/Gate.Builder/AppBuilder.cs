@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Gate.Builder.Loader;
 using Gate.Owin;
 using System.Linq;
@@ -11,14 +12,16 @@ namespace Gate.Builder
        Action< // result
            string, // status
            IDictionary<string, IEnumerable<string>>, // headers
-           Func< // body
-               Func< // next
-                   ArraySegment<byte>, // data
+           Action< // body
+               Func< // write
+                   ArraySegment<byte>, // data                     
+                   bool>, // buffering
+               Func< // flush
                    Action, // continuation
                    bool>, // async
-               Action<Exception>, // error
-               Action, // complete
-               Action>>, // cancel
+               Action< // end
+                   Exception>, // error
+               CancellationToken>>, // cancel
        Action<Exception>>; // error
 
     public class AppBuilder : IAppBuilder

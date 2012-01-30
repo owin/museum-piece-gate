@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using Gate.Owin;
 
 namespace Gate
@@ -113,13 +114,28 @@ namespace Gate
                     return null;
 
                 if (body is BodyDelegate)
-                    return (next, error, complete) => ((BodyDelegate)body)(next, error, complete);
+                    return ToAction((BodyDelegate)body);
 
                 return (BodyAction)body;
             }
             set { this[RequestBodyKey] = value; }
         }
-
+        static BodyAction ToAction(BodyDelegate body)
+        {
+            return (next, error, complete) =>
+            {
+                var cts = new CancellationTokenSource();
+                body(
+                    data => next(data, null),
+                    _ => false,
+                    ex =>
+                    {
+                        if (ex == null) complete();
+                        else error(ex);
+                    }, cts.Token);
+                return () => cts.Cancel();
+            };
+        }
         /// <summary>
         /// "owin.RequestBody" An instance of the body delegate representing the body of the request. May be null.
         /// </summary>
@@ -132,13 +148,23 @@ namespace Gate
                     return null;
 
                 if (body is BodyAction)
-                    return (next, error, complete) => ((BodyAction)body)(next, error, complete);
+                    return ToDelegate((BodyAction)body);
 
                 return (BodyDelegate)body;
             }
             set { this[RequestBodyKey] = value; }
         }
-
+        static BodyDelegate ToDelegate(BodyAction body)
+        {
+            return (write, flush, end, cancellationToken) =>
+            {
+                var cancel = body(
+                    (data, continuation) => write(data),
+                    end,
+                    () => end(null));
+                cancellationToken.Register(cancel);
+            };
+        }
         /// <summary>
         /// "owin.QueryString" A string containing the query string component of the HTTP request URI (e.g., "foo=bar&baz=quux"). The value may be an empty string.
         /// </summary>

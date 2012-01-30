@@ -1,19 +1,18 @@
-﻿namespace Gate.TestHelpers
+﻿using Gate.Owin;
+
+namespace Gate.TestHelpers
 {
     using System;
     using System.Threading;
-    using BodyDelegate = System.Func<System.Func<System.ArraySegment<byte>, // data
-        System.Action, // continuation
-        bool>, // continuation will be invoked
-        System.Action<System.Exception>, // onError
-        System.Action, // on Complete
-        System.Action>; // cancel
+    //using BodyDelegate = System.Func<System.Func<System.ArraySegment<byte>, // data
+    //    System.Action, // continuation
+    //    bool>, // continuation will be invoked
+    //    System.Action<System.Exception>, // onError
+    //    System.Action, // on Complete
+    //    System.Action>; // cancel
 
     public class FakeProducer
     {
-        Func<ArraySegment<byte>, Action, bool> onNext;
-        Action<Exception> onError;
-        Action onComplete;
         bool active;
 
         bool sendContinuation;
@@ -21,6 +20,11 @@
         byte[] buffer;
         int chunkSize;
         bool autoSend;
+
+        Func<ArraySegment<byte>, bool> _write;
+        Func<Action, bool> _flush;
+        Action<Exception> _end;
+        CancellationToken _cancellationtoken;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FakeProducer"/> class. 
@@ -62,11 +66,12 @@
         /// <param name="onError">On error delegate</param>
         /// <param name="onComplete">On complete delegate</param>
         /// <returns>Cancellation delegate</returns>
-        public Action BodyDelegate(Func<ArraySegment<byte>, Action, bool> onNext, Action<Exception> onError, Action onComplete)
+        public void BodyDelegate(Func<ArraySegment<byte>, bool> write, Func<Action, bool> flush, Action<Exception> end, CancellationToken cancellationtoken)
         {
-            this.onNext = onNext;
-            this.onError = onError;
-            this.onComplete = onComplete;
+            _write = write;
+            _flush = flush;
+            _end = end;
+            _cancellationtoken = cancellationtoken;
 
             this.BodyDelegateInvoked = true;
 
@@ -74,8 +79,6 @@
             {
                 ThreadPool.QueueUserWorkItem((s) => this.SendAll());
             }
-
-            return this.OnCancel;
         }
 
         /// <summary>
@@ -89,7 +92,7 @@
                 throw new InvalidOperationException("Body delegate not yet invoked");
             }
 
-            this.onError.Invoke(e);
+            this._end.Invoke(e);
         }
 
         /// <summary>
@@ -107,7 +110,7 @@
                 this.SendChunk();
             }
 
-            this.onComplete.Invoke();
+            this._end.Invoke(null);
         }
 
         /// <summary>
@@ -138,8 +141,14 @@
                 // returns false, signifying it won't call the continuation,
                 // we set it straight away.
                 var sync = new ManualResetEventSlim();
-                if (!this.onNext(currentChunk, sync.Set))
+                if (!this._write(currentChunk))
                 {
+                    // write false means transmit completed
+                    sync.Set();
+                }
+                else if (!this._flush(sync.Set))
+                {
+                    // flush false means transmit completed, callback will not occur
                     sync.Set();
                 }
 
@@ -148,7 +157,7 @@
             }
             else
             {
-                if (this.onNext(currentChunk, null))
+                if (this._write(currentChunk) && this._flush(null))
                 {
                     throw new InvalidOperationException("Consumer returned true for 'will invoke continuation' when continuation was null");
                 }
@@ -165,7 +174,7 @@
                 throw new InvalidOperationException("Body delegate not yet invoked");
             }
 
-            this.onComplete.Invoke();
+            this._end.Invoke(null);
         }
 
         void OnCancel()
@@ -179,5 +188,6 @@
         {
             return producer.BodyDelegate;
         }
+
     }
 }

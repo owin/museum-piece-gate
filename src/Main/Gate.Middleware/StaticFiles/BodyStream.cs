@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 
 namespace Gate.Middleware.StaticFiles
 {
@@ -26,17 +27,13 @@ namespace Gate.Middleware.StaticFiles
     {
         private readonly StateMachine<BodyStreamCommand, BodyStreamState> stateMachine;
 
-        public Func<ArraySegment<byte>, Action, bool> Data { get; private set; }
-        public Action<Exception> Error { get; private set; }
-        public Action Complete { get; private set; }
+        public Func<ArraySegment<byte>, bool> Write { get; private set; }
+        public Func<Action, bool> Flush { get; private set; }
+        public Action<Exception> End { get; private set; }
+        public CancellationToken CancellationToken { get; private set; }
 
-        public BodyStream(Func<ArraySegment<byte>, Action, bool> data, Action<Exception> error, Action complete)
+        public BodyStream(Func<ArraySegment<byte>, bool> write, Func<Action, bool> flush, Action<Exception> end, CancellationToken cancellationToken)
         {
-            if (data == null)
-            {
-                throw new ArgumentException("An on-next callback must be supplied to the body stream.", "data");
-            }
-
             stateMachine = new StateMachine<BodyStreamCommand, BodyStreamState>();
             stateMachine.Initialize(BodyStreamState.Ready);
 
@@ -46,10 +43,13 @@ namespace Gate.Middleware.StaticFiles
             stateMachine.MapTransition(BodyStreamCommand.Resume, BodyStreamState.Resumed);
             stateMachine.MapTransition(BodyStreamCommand.Stop, BodyStreamState.Stopped);
 
-            Data = data;
-            Error = error;
-            Complete = complete;
+            Write = write;
+            Flush = flush;
+            End = end;
+            CancellationToken = cancellationToken;
         }
+
+
 
         public void Start(Action start, Action dispose)
         {
@@ -60,6 +60,7 @@ namespace Gate.Middleware.StaticFiles
 
             stateMachine.On(BodyStreamCommand.Start, start);
             stateMachine.Invoke(BodyStreamCommand.Start);
+            CancellationToken.Register(Cancel);
 
             if (dispose != null)
             {
@@ -73,11 +74,7 @@ namespace Gate.Middleware.StaticFiles
         public void Finish()
         {
             Stop();
-
-            if (Complete != null)
-            {
-                Complete();
-            }
+            End(null);
         }
 
         public void SendBytes(ArraySegment<byte> part, Action continuation, Action complete)
@@ -103,9 +100,12 @@ namespace Gate.Middleware.StaticFiles
             }
 
             // call on-next with back-pressure support
-            if (Data(part, resume))
+            if (Write(part))
             {
-                pause.Invoke();
+                if (Flush(resume))
+                {
+                    pause.Invoke();
+                }
             }
 
             if (complete != null)

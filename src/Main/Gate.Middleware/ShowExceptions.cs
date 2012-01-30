@@ -19,17 +19,23 @@ namespace Gate.Middleware
         {
             return (env, result, fault) =>
             {
-                Action<Exception, Func<ArraySegment<byte>, Action, bool>, Action> showErrorMessage = (ex, next, complete) =>
-                {
-                    var ts = ex.TargetSite;
-                    ErrorPage(env, ex, text => next(new ArraySegment<byte>(Encoding.UTF8.GetBytes(text)), null));
-                    complete();
-                };
+                Action<Exception, Action<ArraySegment<byte>>> showErrorMessage =
+                    (ex, write) =>
+                        ErrorPage(env, ex, text =>
+                        {
+                            var data = Encoding.ASCII.GetBytes(text);
+                            write(new ArraySegment<byte>(data));
+                        });
 
                 Action<Exception> showErrorPage = ex =>
-                    new Response(result) {Status = "500 Internal Server Error", ContentType = "text/html"}
-                        .Finish((response, error, complete) =>
-                            showErrorMessage(ex, response.BinaryWriteAsync, complete));
+                {
+                    var response = new Response(result) { Status = "500 Internal Server Error", ContentType = "text/html" };
+                    response.Start(() =>
+                    {
+                        showErrorMessage(ex, data => response.Write(data));
+                        response.End();
+                    });
+                };
 
                 try
                 {
@@ -39,12 +45,23 @@ namespace Gate.Middleware
                             result(
                                 status,
                                 headers,
-                                (next, error, complete) =>
+                                (write, flush, end, token) =>
+                                {
+                                    showErrorPage = ex =>
+                                    {
+                                        if (ex != null)
+                                        {
+                                            showErrorMessage(ex, data => write(data));
+                                        }
+                                        end(null);
+                                    };
                                     body(
-                                        next,
-                                        ex => showErrorMessage(ex, next, complete),
-                                        complete)),
-                        showErrorPage);
+                                        write,
+                                        flush,
+                                        showErrorPage,
+                                        token);
+                                }),
+                        ex => showErrorPage(ex));
                 }
                 catch (Exception exception)
                 {
@@ -76,7 +93,7 @@ namespace Gate.Middleware
         {
             foreach (var stackTrace in stackTraces.Where(value => !string.IsNullOrWhiteSpace(value)))
             {
-                var heap = new Chunk {Text = stackTrace, End = stackTrace.Length};
+                var heap = new Chunk { Text = stackTrace, End = stackTrace.Length };
                 for (var line = heap.Advance("\r\n"); line.HasValue; line = heap.Advance("\r\n"))
                 {
                     yield return StackFrame(line);
@@ -99,7 +116,7 @@ namespace Gate.Middleware
 
         static Frame LoadFrame(string function, string file, int lineNumber)
         {
-            var frame = new Frame {Function = function, File = file, Line = lineNumber};
+            var frame = new Frame { Function = function, File = file, Line = lineNumber };
             if (File.Exists(file))
             {
                 var code = File.ReadAllLines(file);
@@ -128,7 +145,7 @@ namespace Gate.Middleware
                 if (indexOf < 0)
                     return new Chunk();
 
-                var chunk = new Chunk {Text = Text, Start = Start, End = indexOf};
+                var chunk = new Chunk { Text = Text, Start = Start, End = indexOf };
                 Start = indexOf + delimiter.Length;
                 return chunk;
             }

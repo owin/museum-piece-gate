@@ -2,7 +2,9 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using Gate.Helpers;
+using Gate.Middleware;
 using Gate.Owin;
 using NUnit.Framework;
 
@@ -55,13 +57,14 @@ namespace Gate.Hosts.Manos.Tests
             AppDelegate app = (env, result, fault) =>
             {
                 var body = (BodyDelegate)env[OwinConstants.RequestBody];
-                body((data, continuation) =>
+                body((data) =>
                 {
                     requestData.Write(data.Array, data.Offset, data.Count);
                     return false;
                 },
-                fault,
-                () => Wilson.App().Invoke(env, result, fault));
+                    _ => false,
+                ex => Wilson.App().Invoke(env, result, fault),
+                CancellationToken.None);
             };
 
             using (Server.Create(app, 9092))

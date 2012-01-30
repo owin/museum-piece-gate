@@ -9,15 +9,6 @@ using Gate.Owin;
 
 namespace Gate.Hosts.AspNet
 {
-    using BodyAction = Func<
-        Func< //next
-            ArraySegment<byte>, // data
-            Action, // continuation
-            bool>, // continuation was or will be invoked
-        Action<Exception>, //error
-        Action, //complete
-        Action>; //cancel
-
     public class AppHandler
     {
         readonly AppDelegate _app;
@@ -76,7 +67,7 @@ namespace Gate.Hosts.AspNet
                         httpContext.Response.Status = status;
                         foreach (var header in headers)
                         {
-                            foreach(var value in header.Value)
+                            foreach (var value in header.Value)
                             {
                                 httpContext.Response.AddHeader(header.Key, value);
                             }
@@ -85,15 +76,15 @@ namespace Gate.Hosts.AspNet
                         ResponseBody(
                             body,
                             httpContext.Response.OutputStream,
-                            taskCompletionSource.SetException,
-                            () => taskCompletionSource.SetResult(() => httpContext.Response.End()));
+                            ex => taskCompletionSource.TrySetException(ex),
+                            () => taskCompletionSource.TrySetResult(() => httpContext.Response.End()));
                     }
                     catch (Exception ex)
                     {
-                        taskCompletionSource.SetException(ex);
+                        taskCompletionSource.TrySetException(ex);
                     }
                 },
-                taskCompletionSource.SetException);
+                ex => taskCompletionSource.TrySetException(ex));
             return taskCompletionSource.Task;
         }
 
@@ -147,7 +138,7 @@ namespace Gate.Hosts.AspNet
 
         static BodyDelegate RequestBody(Stream stream)
         {
-            return (next, error, complete) => new PipeRequest(stream, next, error, complete).Go();
+            return (write, flush, end, cancellationToken) => new PipeRequest(stream, write, flush, end, cancellationToken).Go();
         }
 
         static void ResponseBody(BodyDelegate body, Stream stream, Action<Exception> error, Action complete)

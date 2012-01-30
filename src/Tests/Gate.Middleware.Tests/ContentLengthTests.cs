@@ -10,24 +10,16 @@ namespace Gate.Middleware.Tests
 {
     [TestFixture]
     public class ContentLengthTests
-    {
-        [Test]
-        public void Content_length_is_not_added_if_body_is_null()
-        {
-            var result = AppUtils.CallPipe(b => b
-                .ContentLength()
-                .Simple("200 OK"));
-
-            Assert.That(result.Headers.ContainsKey("content-length"), Is.False);
-        }
-
+    {        
         [Test]
         public void Content_length_is_added_if_body_is_zero_length()
         {
-            BodyDelegate body = (onNext, onError, onComplete) => { onComplete(); return null; };
             var result = AppUtils.CallPipe(b => b
-                .ContentLength()
-                .Simple("200 OK", body));
+                .UseContentLength()
+                .Simple(
+                    "200 OK",
+                    headers => { },
+                    write => { }));
 
             Assert.That(result.Headers.GetHeader("content-length"), Is.EqualTo("0"));
         }
@@ -35,14 +27,16 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Content_length_is_added()
         {
-            BodyDelegate body = (onNext, onError, onComplete) => {
-                onNext(new ArraySegment<byte>(Encoding.ASCII.GetBytes("hello ")), null);
-                onNext(new ArraySegment<byte>(Encoding.ASCII.GetBytes("world.")), null);
-                onComplete(); return null; };
-            
             var result = AppUtils.CallPipe(b => b
-                .ContentLength()
-                .Simple("200 OK", body));
+                .UseContentLength()
+                .Simple(
+                    "200 OK",
+                    headers => { },
+                    write =>
+                    {
+                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("hello ")));
+                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("world.")));
+                    }));
 
             Assert.That(result.Headers.GetHeader("content-length"), Is.EqualTo("12"));
         }
@@ -50,12 +44,12 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Content_length_is_not_changed()
         {
-            var headers = AppUtils.CreateHeaderDictionary();
-            headers.SetHeader("content-length", "69");
-
             var result = AppUtils.CallPipe(b => b
-                .ContentLength()
-                .Simple("200 OK", headers, (onNext, onError, onComplete) => { onComplete(); return null; }));
+                .UseContentLength()
+                .Simple(
+                    "200 OK",
+                    headers => headers.SetHeader("content-length", "69"),
+                    write => { }));
 
             Assert.That(result.Headers.GetHeader("content-length"), Is.EqualTo("69"));
         }
@@ -63,12 +57,12 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Content_length_is_not_added_if_transfer_encoding_is_present()
         {
-            var headers = AppUtils.CreateHeaderDictionary();
-            headers.SetHeader("transfer-encoding", "chunked");
-
             var result = AppUtils.CallPipe(b => b
-                .ContentLength()
-                .Simple("200 OK", headers, (onNext, onError, onComplete) => { onComplete(); return null; }));
+                .UseContentLength()
+                .Simple(
+                    "200 OK",
+                    headers => headers.SetHeader("transfer-encoding", "chunked"),
+                    write => { }));
 
             Assert.That(result.Headers.ContainsKey("content-length"), Is.False);
         }
@@ -87,8 +81,8 @@ namespace Gate.Middleware.Tests
             )] string status)
         {
             var result = AppUtils.CallPipe(b => b
-                .ContentLength()
-                .Simple(status, AppUtils.CreateHeaderDictionary(), (onNext, onError, onComplete) => { onComplete(); return null; }));
+                .UseContentLength()
+                .Simple(status, headers => { }, write => { }));
 
             Assert.That(result.Headers.ContainsKey("content-length"), Is.False);
         }
