@@ -43,6 +43,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\NUnit.2.5.10.11092\lib\nunit.mocks.dll</HintPath>
     </Reference>
+    <Reference Include="Owin, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Owin.0.3.0\lib\net40\Owin.dll</HintPath>
+    </Reference>
     <Reference Include="pnunit.framework, Version=1.0.4109.34242, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\NUnit.2.5.10.11092\lib\pnunit.framework.dll</HintPath>
@@ -68,10 +71,6 @@
     <ProjectReference Include="..\..\Hosts\Gate.Hosts.Kayak\Gate.Hosts.Kayak.csproj">
       <Project>{D96E8CF9-C2A5-4A35-814C-0B4FE9828B26}</Project>
       <Name>Gate.Hosts.Kayak</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Main\Gate.Owin\Owin.csproj">
-      <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
-      <Name>Owin</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

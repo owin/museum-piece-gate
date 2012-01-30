@@ -15,9 +15,6 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <!--<iconUrl>https://github.com/ferventcoder/nugetpackages/raw/master/Ghost/Ghost.gif</iconUrl>-->
     <!--<dependencies>
-      <dependency id="Gate.Hosts.HttpListener" version="$version$" />
-      <dependency id="Gate.Hosts.Kayak" version="$version$" />
-      <dependency id="Gate.Hosts.Manos" version="$version$" />
     </dependencies>-->
     <!--<releaseNotes></releaseNotes>-->
   </metadata>

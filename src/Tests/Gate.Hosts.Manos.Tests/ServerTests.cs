@@ -3,7 +3,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
-using Gate.Helpers;
 using Gate.Middleware;
 using Owin;
 using NUnit.Framework;
@@ -81,23 +80,6 @@ namespace Gate.Hosts.Manos.Tests
 
                 var requestText = Encoding.Default.GetString(requestData.ToArray());
                 Assert.That(requestText, Is.EqualTo("This is a test"));
-            }
-        }
-
-        [Test]
-        public void StartupNameMayBeUsedAsParameterToCreate()
-        {
-            using (Server.Create("Gate.Hosts.Manos.Tests.Startup.Custom", 9093))
-            {
-                var request = (HttpWebRequest)WebRequest.Create("http://localhost:9093");
-                using (var response = (HttpWebResponse)request.GetResponse())
-                {
-                    using (var reader = new StreamReader(response.GetResponseStream()))
-                    {
-                        var text = reader.ReadToEnd();
-                        Assert.That(text, Is.StringContaining("This is a custom page"));
-                    }
-                }
             }
         }
     }

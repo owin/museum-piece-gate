@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace Gate.Builder
 {
+#pragma warning disable 811
     using AppAction = Action< // app
        IDictionary<string, object>, // env
        Action< // result

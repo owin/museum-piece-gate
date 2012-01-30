@@ -40,13 +40,13 @@
     <Compile Include="Workaround.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Main\Gate.Owin\Owin.csproj">
-      <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
-      <Name>Owin</Name>
-    </ProjectReference>
+    <Reference Include="Owin">
+      <HintPath>..\..\..\packages\Owin.0.3.0\lib\net40\Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="System" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

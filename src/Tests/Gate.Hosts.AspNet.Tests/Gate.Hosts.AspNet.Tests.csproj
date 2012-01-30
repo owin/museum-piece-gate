@@ -46,6 +46,9 @@
     <Reference Include="nunit.mocks">
       <HintPath>..\..\..\packages\NUnit.2.5.10.11092\lib\nunit.mocks.dll</HintPath>
     </Reference>
+    <Reference Include="Owin, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Owin.0.3.0\lib\net40\Owin.dll</HintPath>
+    </Reference>
     <Reference Include="pnunit.framework">
       <HintPath>..\..\..\packages\NUnit.2.5.10.11092\lib\pnunit.framework.dll</HintPath>
     </Reference>
@@ -76,10 +79,6 @@
     <ProjectReference Include="..\Gate.TestHelpers\Gate.TestHelpers.csproj">
       <Project>{E4256EDF-0B54-4715-8E66-8D4D4887E15F}</Project>
       <Name>Gate.TestHelpers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Main\Gate.Owin\Owin.csproj">
-      <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
-      <Name>Owin</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

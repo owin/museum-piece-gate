@@ -35,6 +35,9 @@
     <Reference Include="Kayak, Version=0.7.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Kayak.0.7.2\lib\Kayak.dll</HintPath>
     </Reference>
+    <Reference Include="Owin, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Owin.0.3.0\lib\net40\Owin.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
@@ -48,12 +51,6 @@
     <Compile Include="RequestEnvironment.cs" />
     <Compile Include="SchedulerMiddleware.cs" />
     <Compile Include="ServerFactory.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Main\Gate.Owin\Owin.csproj">
-      <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
-      <Name>Owin</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">

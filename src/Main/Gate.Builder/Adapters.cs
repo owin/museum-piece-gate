@@ -8,6 +8,7 @@ namespace Gate.Builder
 {
     using ResultTuple = Tuple<string, IDictionary<String, IEnumerable<string>>, BodyDelegate>;
 
+#pragma warning disable 811
     using AppAction = Action< // app
         IDictionary<string, object>, // env
         Action< // result
