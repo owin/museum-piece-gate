@@ -14,8 +14,6 @@ namespace Gate.TestHelpers
     public class FakeProducer
     {
         Func<ArraySegment<byte>, Action, bool> onNext;
-        Action<Exception> onError;
-        Action onComplete;
         bool active;
 
         bool sendContinuation;
@@ -94,7 +92,7 @@ namespace Gate.TestHelpers
                 throw new InvalidOperationException("Body delegate not yet invoked");
             }
 
-            this.onError.Invoke(e);
+            this._end.Invoke(e);
         }
 
         /// <summary>
@@ -112,7 +110,7 @@ namespace Gate.TestHelpers
                 this.SendChunk();
             }
 
-            this.onComplete.Invoke();
+            this._end.Invoke(null);
         }
 
         /// <summary>
@@ -143,8 +141,14 @@ namespace Gate.TestHelpers
                 // returns false, signifying it won't call the continuation,
                 // we set it straight away.
                 var sync = new ManualResetEventSlim();
-                if (!this.onNext(currentChunk, sync.Set))
+                if (!this._write(currentChunk))
                 {
+                    // write false means transmit completed
+                    sync.Set();
+                }
+                else if (!this._flush(sync.Set))
+                {
+                    // flush false means transmit completed, callback will not occur
                     sync.Set();
                 }
 
@@ -153,7 +157,7 @@ namespace Gate.TestHelpers
             }
             else
             {
-                if (this.onNext(currentChunk, null))
+                if (this._write(currentChunk) && this._flush(null))
                 {
                     throw new InvalidOperationException("Consumer returned true for 'will invoke continuation' when continuation was null");
                 }
@@ -170,7 +174,7 @@ namespace Gate.TestHelpers
                 throw new InvalidOperationException("Body delegate not yet invoked");
             }
 
-            this.onComplete.Invoke();
+            this._end.Invoke(null);
         }
 
         void OnCancel()

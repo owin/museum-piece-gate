@@ -5,11 +5,12 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{1BB1CEC7-EAAB-4B25-900B-4981DA873320}</ProjectGuid>
+    <ProjectGuid>{A7D7E899-051C-4F6E-AFBD-DA0096B257F9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Gate.Tests</RootNamespace>
-    <AssemblyName>Gate.Tests</AssemblyName>
+    <RootNamespace>Gate.Builder.Tests</RootNamespace>
+    <AssemblyName>Gate.Builder.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\..\Gate\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -32,37 +33,25 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.5.10.11092, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Compile Include="AppBuilderTests.cs" />
+    <None Include="Loader\StartupLoaderTests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="nunit.framework">
       <HintPath>..\..\..\packages\NUnit.2.5.10.11092\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.mocks, Version=2.5.10.11092, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\NUnit.2.5.10.11092\lib\nunit.mocks.dll</HintPath>
-    </Reference>
-    <Reference Include="pnunit.framework, Version=1.0.4109.34242, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\NUnit.2.5.10.11092\lib\pnunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EnvironmentTests.cs" />
-    <Compile Include="NotFoundTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RequestTests.cs" />
-    <Compile Include="ResponseTests.cs" />
-    <Compile Include="Startup.cs" />
-    <Compile Include="UrlMapperTests.cs" />
-    <Compile Include="SpoolTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\..\Main\Gate.Builder\Gate.Builder.csproj">
+      <Project>{D26293A2-8533-4BF6-A9CC-A88455B0FF71}</Project>
+      <Name>Gate.Builder</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Main\Gate.Owin\Gate.Owin.csproj">
+      <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
+      <Name>Gate.Owin</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Main\Gate\Gate.csproj">
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>
@@ -71,13 +60,6 @@
       <Project>{E4256EDF-0B54-4715-8E66-8D4D4887E15F}</Project>
       <Name>Gate.TestHelpers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Main\Gate.Owin\Gate.Owin.csproj">
-      <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
-      <Name>Gate.Owin</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

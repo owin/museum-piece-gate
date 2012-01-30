@@ -30,11 +30,10 @@ namespace Gate.Tests.StartupTests
         static readonly AppDelegate TwoHundredFoo = (env, result, fault) => result(
             "200 Foo",
             Headers.New().SetHeader("Content-Type", "text/plain"),
-            (next, error, complete) =>
+            (write, flush, end, cancel) =>
             {
-                next(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")), null);
-                complete();
-                return () => { };
+                write(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")));
+                end(null);
             });
 
         static readonly AppAction TwoHundredFooAction = (env, result, fault) => result(
@@ -283,7 +282,7 @@ namespace Gate.Tests.StartupTests
                     .Run(TwoHundredFoo))
                 .Use(AddStatus, " Inner")
                 .Run(TwoHundredFoo);
-            
+
             var app = builder.Materialize();
 
             var resultThere = AppUtils.Call(app, "/there");
