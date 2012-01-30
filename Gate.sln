@@ -59,6 +59,20 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ghost.Engine", "src\Main\Gh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Builder.Tests", "src\Tests\Gate.Builder.Tests\Gate.Builder.Tests.csproj", "{A7D7E899-051C-4F6E-AFBD-DA0096B257F9}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Welcome", ".Welcome", "{FF0F8984-BBC9-4A7D-88FF-BDC997AC3245}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE.txt = LICENSE.txt
+		NOTICE.txt = NOTICE.txt
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{4E00A931-5068-4DFC-9320-3C5F8AD8E2BE}"
+	ProjectSection(SolutionItems) = preProject
+		build.bat = build.bat
+		build.fsx = build.fsx
+		packages.config = packages.config
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -338,5 +352,6 @@ Global
 		{0D16BD06-1972-4714-9D79-7E84F82748F4} = {C84C3CDC-FC22-4AF2-8759-4B407BF5AD56}
 		{0E89EFE3-63CE-4222-9C0B-DD1F5559DAAF} = {C84C3CDC-FC22-4AF2-8759-4B407BF5AD56}
 		{4C561FAE-24FD-470A-8E38-C725980DEE01} = {8637EACC-A4F7-4A21-9D4F-91E3D604B4D3}
+		{4E00A931-5068-4DFC-9320-3C5F8AD8E2BE} = {FF0F8984-BBC9-4A7D-88FF-BDC997AC3245}
 	EndGlobalSection
 EndGlobal
