@@ -13,7 +13,6 @@ namespace Gate.TestHelpers
 
     public class FakeProducer
     {
-        Func<ArraySegment<byte>, Action, bool> onNext;
         bool active;
 
         bool sendContinuation;
@@ -21,6 +20,7 @@ namespace Gate.TestHelpers
         byte[] buffer;
         int chunkSize;
         bool autoSend;
+
         Func<ArraySegment<byte>, bool> _write;
         Func<Action, bool> _flush;
         Action<Exception> _end;

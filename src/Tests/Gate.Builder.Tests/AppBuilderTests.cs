@@ -1,27 +1,31 @@
 ﻿using System;
 using System.Text;
 using System.Collections.Generic;
+using System.Threading;
 using Gate.Builder;
 using Gate.Owin;
 using Gate.TestHelpers;
 using NUnit.Framework;
 
-namespace Gate.Tests.StartupTests
+namespace Gate.Builder.Tests
 {
+#pragma warning disable 811
     using AppAction = Action< // app
-        IDictionary<string, object>, // env
-        Action< // result
-            string, // status
-            IDictionary<string, IEnumerable<string>>, // headers
-            Func< // body
-                Func< // next
-                    ArraySegment<byte>, // data
-                    Action, // continuation
-                    bool>, // async                    
-                Action<Exception>, // error
-                Action, // complete
-                Action>>, // cancel
-        Action<Exception>>; // error
+       IDictionary<string, object>, // env
+       Action< // result
+           string, // status
+           IDictionary<string, IEnumerable<string>>, // headers
+           Action< // body
+               Func< // write
+                   ArraySegment<byte>, // data                     
+                   bool>, // buffering
+               Func< // flush
+                   Action, // continuation
+                   bool>, // async
+               Action< // end
+                   Exception>, // error
+               CancellationToken>>, // cancel
+       Action<Exception>>; // error
 
     [TestFixture]
     public class AppBuilderTests
@@ -39,11 +43,10 @@ namespace Gate.Tests.StartupTests
         static readonly AppAction TwoHundredFooAction = (env, result, fault) => result(
             "200 Foo",
             Headers.New().SetHeader("Content-Type", "text/plain"),
-            (next, error, complete) =>
+            (write, flush, end, cancel) =>
             {
-                next(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")), null);
-                complete();
-                return () => { };
+                write(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")));
+                end(null);
             });
 
         AppDelegate Build(Action<IAppBuilder> b)

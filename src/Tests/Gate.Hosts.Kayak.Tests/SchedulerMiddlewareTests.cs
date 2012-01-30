@@ -38,7 +38,9 @@ namespace Gate.Hosts.Kayak.Tests
     [TestFixture]
     public class SchedulerMiddlewareTests
     {
+#pragma warning disable 169
         static Func<int, int, int> _workaround;
+#pragma warning restore 169
 
         [Test]
         public void Response_stream_is_rebuffered()
