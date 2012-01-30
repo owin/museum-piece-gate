@@ -46,7 +46,6 @@
     <Compile Include="InputStream.cs" />
     <Compile Include="OutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Wilson.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gate\Gate.csproj">
