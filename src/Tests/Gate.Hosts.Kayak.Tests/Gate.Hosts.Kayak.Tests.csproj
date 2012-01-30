@@ -51,9 +51,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="GateRequestDelegateTests.cs" />
+    <Compile Include="GateRequestDelegateTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <None Include="SchedulerMiddlewareTests.cs" />
+    <Compile Include="SchedulerMiddlewareTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">

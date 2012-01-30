@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Gate;
 using Gate.Hosts.Kayak;
 using Gate.Owin;
@@ -44,7 +45,15 @@ namespace Gate.Hosts.Kayak.Tests
         public static BufferingConsumer Consume(this BodyDelegate del)
         {
             var c = new BufferingConsumer();
-            del((data, ct) => c.OnData(data, ct), e => c.OnError(e), () => c.OnEnd());
+            del(
+                data => c.OnData(data, null),
+                _ => false,
+                ex =>
+                {
+                    if (ex == null) c.OnEnd();
+                    else c.OnError(ex);
+                },
+                CancellationToken.None);
             return c;
         }
     }
@@ -147,15 +156,14 @@ namespace Gate.Hosts.Kayak.Tests
         public void Adds_content_length_response_header_if_none()
         {
             var app = new StaticApp(
-                    "200 OK", 
-                    new Dictionary<string, IEnumerable<string>>(), 
-                    (next, error, complete) => ((Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>) ((write, fault, end) =>
+                    "200 OK",
+                    new Dictionary<string, IEnumerable<string>>(),
+                    (write, flush, end, cancel) =>
                     {
-                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("12345")), null);
-                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")), null);
-                        end();
-                        return () => { };
-                    }))(next, error, complete));
+                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("12345")));
+                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")));
+                        end(null);
+                    });
 
             var requestDelegate = new GateRequestDelegate(app.Invoke, new Dictionary<string, object>());
 
@@ -179,13 +187,13 @@ namespace Gate.Hosts.Kayak.Tests
                     {
                         { "Transfer-Encoding", new[]{"chunked"} }
                     },
-                    (next, error, complete) => ((Func<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, Action>) ((write, fault, end) =>
+                    (write, flush, end, cancel) =>
                     {
-                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("12345")), null);
-                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")), null);
-                        end();
-                        return () => { };
-                    }))(next, error, complete));
+                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("12345")));
+                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")));
+                        end(null);
+
+                    });
 
             var requestDelegate = new GateRequestDelegate(app.Invoke, new Dictionary<string, object>());
 
@@ -213,10 +221,10 @@ namespace Gate.Hosts.Kayak.Tests
                 c.OnEnd();
                 return () => { };
             }), mockResponseDelegate);
-            
-            var bodyAction = new Environment(app.Env).BodyAction; 
-            Assert.That(bodyAction, Is.Not.Null);
-            var body = ((BodyDelegate) ((next, error, complete) => bodyAction(next, error, complete))).Consume();
+
+            var bodyDelegate = new Environment(app.Env).BodyDelegate;
+            Assert.That(bodyDelegate, Is.Not.Null);
+            var body = bodyDelegate.Consume();
             Assert.That(body.Buffer.GetString(), Is.EqualTo("1234567890"));
             Assert.That(body.GotEnd, Is.True);
         }
