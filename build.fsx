@@ -6,7 +6,7 @@ open Fake
 
 // properties
 let projectName = "Gate"
-let version = "0.3.0"  
+let version = "0.3.1"  
 let projectSummary = "An OWIN utility library."
 let projectDescription = "An OWIN utility library."
 let authors = ["bvanderveen";"grumpydev";"jasonsirota";"loudej";"markrendle";"thecodejunkie";"panesofglass"]

@@ -3,8 +3,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Gate.Hosts.AspNet")]
 [assembly: AssemblyProduct("Gate.Hosts.AspNet")]
-[assembly: AssemblyVersion("0.3.0")]
-[assembly: AssemblyFileVersion("0.3.0")]
+[assembly: AssemblyVersion("0.3.1")]
+[assembly: AssemblyFileVersion("0.3.1")]
 
 [assembly: InternalsVisibleTo("Gate.AspNet.Tests")]
 
