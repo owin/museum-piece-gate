@@ -40,6 +40,9 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="Gate.Hosts.Firefly.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Gate.Owin.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -75,6 +78,10 @@
     <ProjectReference Include="..\Adapters\Gate.Adapters.Nancy\Gate.Adapters.Nancy.csproj">
       <Project>{4C561FAE-24FD-470A-8E38-C725980DEE01}</Project>
       <Name>Gate.Adapters.Nancy</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Hosts\Gate.Hosts.Firefly\Gate.Hosts.Firefly.csproj">
+      <Project>{53619873-BED3-41F6-8B33-552E0B53FC1C}</Project>
+      <Name>Gate.Hosts.Firefly</Name>
     </ProjectReference>
     <ProjectReference Include="..\Hosts\Gate.Hosts.Manos\Gate.Hosts.Manos.csproj">
       <Project>{A3C2FFB6-663E-4C94-884A-41ADB22DB724}</Project>
