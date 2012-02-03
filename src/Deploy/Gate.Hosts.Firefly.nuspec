@@ -12,7 +12,7 @@
     <tags></tags>
     <dependencies>
       <dependency id="Owin" version="0.7.0"/>
-      <dependency id="Kayak" version="0.7.2"/>
+      <dependency id="Firefly" version="0.3"/>
     </dependencies>
   </metadata>
   <files>
