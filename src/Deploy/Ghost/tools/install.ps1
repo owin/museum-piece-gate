@@ -1,8 +1,7 @@
 param($installPath, $toolsPath, $package, $project)
 
-Write-Host 'This is not a package with dlls to reference in it.'
-Write-Host 'Please install using chocolatey' 
-Write-Host "To get chocolatey just run 'Install-Package chocolatey' followed by 'Initialize-Chocolatey'"
-Write-Host 'chocolatey install Ghost'
-write-host 'Removing this package...'
-uninstall-package Ghost -ProjectName $project.Name
+Write-Host "----------"
+Write-Host "This is not a package with dlls to reference in it."
+Write-Host "Please install using 'cinst Ghost'"
+Write-Host "----------"
+Write-Host "If you need chocolatey, first run 'Install-Package chocolatey' followed by 'Initialize-Chocolatey'"

@@ -51,10 +51,9 @@
     </None>
     <None Include="Ghost.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
-    <None Include="Ghost\tools\chocolateyInstall.ps1">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="Ghost\tools\chocolateyInstall.ps1" />
     <None Include="Ghost\tools\install.ps1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
