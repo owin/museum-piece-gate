@@ -68,6 +68,10 @@
       <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
       <Name>Gate.Helpers</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Main\Gate.Middleware\Gate.Middleware.csproj">
+      <Project>{60C36D8F-BE53-4733-BD92-CFA103D46020}</Project>
+      <Name>Gate.Middleware</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Main\Gate.Owin\Gate.Owin.csproj">
       <Project>{B60C657C-80DA-4AA3-8796-AD920D5EB5A0}</Project>
       <Name>Gate.Owin</Name>

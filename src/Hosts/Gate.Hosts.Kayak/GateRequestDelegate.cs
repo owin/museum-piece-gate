@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Threading;
 using Gate.Owin;
 using Kayak;
 using Kayak.Http;
@@ -29,9 +30,10 @@ namespace Gate.Hosts.Kayak
                     env[kv.Key] = kv.Value;
 
             if (head.Headers == null)
-                request.Headers = Headers.New();
+                request.Headers = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
             else
                 request.Headers = head.Headers.ToDictionary(kv => kv.Key, kv => (IEnumerable<string>)new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
+
             request.Method = head.Method ?? "";
             request.Path = head.Path ?? "";
             request.PathBase = "";
@@ -42,10 +44,13 @@ namespace Gate.Hosts.Kayak
             if (body == null)
                 request.BodyDelegate = null;
             else
-                request.BodyDelegate = (onData, onError, onEnd) =>
+                request.BodyDelegate = (write, flush, end, cancellationToken) =>
                 {
-                    var d = body.Connect(new DataConsumer(onData, onError, onEnd));
-                    return () => { if (d != null) d.Dispose(); };
+                    var d = body.Connect(new DataConsumer(
+                        (data, continuation) => write(data) && continuation != null && flush(continuation),
+                        ex => end(ex),
+                        () => end(null)));
+                    cancellationToken.Register(d.Dispose);
                 };
 
             appDelegate(env, HandleResponse(response), HandleError(response));
@@ -56,7 +61,7 @@ namespace Gate.Hosts.Kayak
             return (status, headers, body) =>
             {
                 if (headers == null)
-                    headers = Headers.New();
+                    headers = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
 
                 if (body != null &&
                     !headers.ContainsKey("Content-Length") &&
@@ -82,15 +87,16 @@ namespace Gate.Hosts.Kayak
             {
                 var buffer = new LinkedList<ArraySegment<byte>>();
 
-                body((data, continuation) =>
+                body(
+                    data =>
                 {
                     var copy = new byte[data.Count];
                     Buffer.BlockCopy(data.Array, data.Offset, copy, 0, data.Count);
                     buffer.AddLast(new ArraySegment<byte>(copy));
                     return false;
                 },
-                HandleError(response),
-                () =>
+                _=>false,
+                error =>
                 {
                     var contentLength = buffer.Aggregate(0, (r, i) => r + i.Count);
 
@@ -98,24 +104,20 @@ namespace Gate.Hosts.Kayak
 
                     if (contentLength > 0)
                     {
-                        headers.SetHeader("Content-Length", contentLength.ToString());
+                        headers["Content-Length"] = new[] {contentLength.ToString()};
 
-                        responseBody = new DataProducer((onData, onError, onComplete) =>
+                        responseBody = new DataProducer((write, flush, end, cancellationToken) =>
                         {
-                            bool cancelled = false;
-
-                            while (!cancelled && buffer.Count > 0)
+                            while (!cancellationToken.IsCancellationRequested && buffer.Count > 0)
                             {
                                 var next = buffer.First;
                                 buffer.RemoveFirst();
-                                onData(next.Value, null);
+                                write(next.Value);
                             }
 
-                            onComplete();
+                            end(null);
 
                             buffer = null;
-
-                            return () => cancelled = true;
                         });
                     }
 
@@ -124,7 +126,8 @@ namespace Gate.Hosts.Kayak
                         Status = status,
                         Headers = headers.ToDictionary(kv => kv.Key, kv => string.Join("\r\n", kv.Value.ToArray()), StringComparer.OrdinalIgnoreCase),
                     }, responseBody);
-                });
+                },
+                CancellationToken.None);
             };
         }
 

@@ -16,12 +16,11 @@ namespace Gate.Hosts.Manos.Tests
         {
             return (env, result, fault) => result("200 OK",
                 new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase) { { "Content-Type", new[] { "text/plain" } } },
-                (next, error, complete) =>
+                (write, flush, end, cancel) =>
                 {
                     var bytes = Encoding.Default.GetBytes("This is a custom page");
-                    next(new ArraySegment<byte>(bytes), null);
-                    complete();
-                    return () => { };
+                    write(new ArraySegment<byte>(bytes));
+                    end(null);
                 });
         }
     }

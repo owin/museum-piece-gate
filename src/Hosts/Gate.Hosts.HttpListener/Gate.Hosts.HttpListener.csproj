@@ -43,11 +43,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ErrorPage.cs" />
-    <Compile Include="PipeRequest.cs" />
-    <Compile Include="PipeResponse.cs" />
+    <Compile Include="..\Gate.Hosts\ErrorPage.cs">
+      <Link>ErrorPage.cs</Link>
+    </Compile>
+    <Compile Include="..\Gate.Hosts\PipeRequest.cs">
+      <Link>PipeRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Gate.Hosts\PipeResponse.cs">
+      <Link>PipeResponse.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Server.cs" />
+    <Compile Include="ServerFactory.cs" />
     <Compile Include="Workaround.cs" />
   </ItemGroup>
   <ItemGroup>

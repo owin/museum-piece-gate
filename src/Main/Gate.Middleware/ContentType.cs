@@ -35,7 +35,9 @@ namespace Gate.Middleware
                 (status, headers, body) =>
                 {
                     if (!headers.HasHeader("Content-Type"))
+                    {
                         headers.SetHeader("Content-Type", contentType);
+                    }
 
                     result(status, headers, body);
                 },

@@ -5,59 +5,90 @@ using System.Text;
 
 namespace Gate.Middleware
 {
-    public static class ChunkedExtensions
+    public static class Chunked
     {
-        public static IAppBuilder Chunked(this IAppBuilder builder)
+        public static IAppBuilder UseChunked(this IAppBuilder builder)
         {
-            return builder.Transform((r, cb, ex) =>
-            {
-                var headers = r.Item2;
-                var body = r.Item3;
-
-                if (!headers.HasHeader("Content-Length") &&
-                    (!headers.HasHeader("Transfer-Encoding") || headers.GetHeader("Transfer-Encoding") == "chunked"))
-                {
-                    headers.SetHeader("Transfer-Encoding", "chunked");
-                    body = (onNext, onError, onComplete) =>
-                    {
-                        var chunked = new ChunkedBody();
-                        return r.Item3(
-                            (data, ack) => onNext(chunked.EncodeChunk(data), ack),
-                            onError,
-                            () =>
-                            {
-                                onNext(ChunkedBody.TerminalChunk, null);
-                                onComplete();
-                            });
-                    };
-                }
-
-                cb(Tuple.Create(r.Item1, headers, body));
-            });
+            return builder.Use<AppDelegate>(Middleware);
         }
 
-        class ChunkedBody
+        static readonly ArraySegment<byte> EndOfChunk = new ArraySegment<byte>(Encoding.ASCII.GetBytes("\r\n"));
+        static readonly ArraySegment<byte> FinalChunk = new ArraySegment<byte>(Encoding.ASCII.GetBytes("0\r\n\r\n"));
+        static readonly byte[] Hex = Encoding.ASCII.GetBytes("0123456789abcdef\r\n");
+
+        public static AppDelegate Middleware(AppDelegate app)
         {
-            public static ArraySegment<byte> TerminalChunk = new ArraySegment<byte>(Encoding.ASCII.GetBytes("0\r\n\r\n"));
-            public static byte[] CRLF = Encoding.ASCII.GetBytes("\r\n");
+            return
+                (env, result, fault) =>
+                    app(
+                        env,
+                        (status, headers, body) =>
+                        {
+                            if (IsStatusWithNoNoEntityBody(status) ||
+                                headers.ContainsKey("Content-Length") ||
+                                headers.ContainsKey("Transfer-Encoding"))
+                            {
+                                result(status, headers, body);
+                            }
+                            else
+                            {
+                                headers["Transfer-Encoding"] = new[] { "chunked" };
 
-            public ArraySegment<byte> EncodeChunk(ArraySegment<byte> data)
+                                result(
+                                    status,
+                                    headers,
+                                    (write, flush, end, cancel) =>
+                                        body(
+                                            data =>
+                                            {
+                                                if (data.Count == 0)
+                                                {
+                                                    return write(data);
+                                                }
+
+                                                write(ChunkPrefix((uint) data.Count));
+                                                write(data);
+                                                return write(EndOfChunk);
+                                            },
+                                            flush,
+                                            ex =>
+                                            {
+                                                write(FinalChunk);
+                                                end(ex);
+                                            },
+                                            cancel));
+                            }
+                        },
+                        fault);
+        }
+
+        public static ArraySegment<byte> ChunkPrefix(uint dataCount)
+        {
+            var prefixBytes = new[]
             {
-                var lengthString = data.Count.ToString("x");
-                var chunk = new byte[data.Count + lengthString.Length + 4];
+                Hex[(dataCount >> 28) & 0xf],
+                Hex[(dataCount >> 24) & 0xf],
+                Hex[(dataCount >> 20) & 0xf],
+                Hex[(dataCount >> 16) & 0xf],
+                Hex[(dataCount >> 12) & 0xf],
+                Hex[(dataCount >> 8) & 0xf],
+                Hex[(dataCount >> 4) & 0xf],
+                Hex[(dataCount >> 0) & 0xf],
+                Hex[16],
+                Hex[17],
+            };
+            var shift = (dataCount & 0xffff0000) == 0 ? 16 : 0;
+            shift += ((dataCount << shift) & 0xff000000) == 0 ? 8 : 0;
+            shift += ((dataCount << shift) & 0xf0000000) == 0 ? 4 : 0;
+            return new ArraySegment<byte>(prefixBytes, shift / 4, 10 - shift / 4);
+        }
 
-                var length = Encoding.ASCII.GetBytes(lengthString + "\r\n");
-                var position = 0;
-                Buffer.BlockCopy(length, 0, chunk, position, length.Length);
-                position += length.Length;
-
-                Buffer.BlockCopy(data.Array, 0, chunk, position, data.Count);
-                position += data.Count;
-
-                Buffer.BlockCopy(CRLF, 0, chunk, position, CRLF.Length);
-
-                return new ArraySegment<byte>(chunk);
-            }
+        private static bool IsStatusWithNoNoEntityBody(string status)
+        {
+            return status.StartsWith("1") ||
+                status.StartsWith("204") ||
+                status.StartsWith("205") ||
+                status.StartsWith("304");
         }
     }
 }

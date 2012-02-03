@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Threading;
 using Gate.Owin;
 
 namespace Gate.Middleware.StaticFiles
@@ -18,17 +19,17 @@ namespace Gate.Middleware.StaticFiles
 
         public static BodyDelegate Create(string text, Encoding encoding)
         {
-            return (data, error, complete) =>
+            return (write, flush, end, cancellationToken) =>
             {
                 var textBody = new TextBody(text, encoding);
-
-                return textBody.Start(data, error, complete);
+                textBody.Start(write, flush, end, cancellationToken);
             };
         }
 
-        public Action Start(Func<ArraySegment<byte>, Action, bool> data, Action<Exception> error, Action complete)
+
+        public void Start(Func<ArraySegment<byte>, bool> write, Func<Action, bool> flush, Action<Exception> end, CancellationToken cancellationToken)
         {
-            bodyStream = new BodyStream(data, error, complete);
+            bodyStream = new BodyStream(write, flush, end, cancellationToken);
 
             Action start = () =>
             {
@@ -47,13 +48,11 @@ namespace Gate.Middleware.StaticFiles
                 }
                 catch (Exception ex)
                 {
-                    bodyStream.Error(ex);
+                    bodyStream.End(ex);
                 }
             };
 
             bodyStream.Start(start, null);
-
-            return bodyStream.Cancel;
         }
     }
 }

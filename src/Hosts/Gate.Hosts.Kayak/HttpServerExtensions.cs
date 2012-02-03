@@ -1,33 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Gate.Builder;
+﻿using System.Collections.Generic;
 using Gate.Owin;
 using Kayak;
 using Kayak.Http;
-using System.Diagnostics;
 using System.Net;
 
 namespace Gate.Hosts.Kayak
 {
     public static class KayakGate
     {
-        public static void Start(ISchedulerDelegate schedulerDelegate, IPEndPoint listenEP)
-        {
-            Start(schedulerDelegate, listenEP, AppBuilder.BuildConfiguration());
-        }
-		
-        public static void Start(ISchedulerDelegate schedulerDelegate, IPEndPoint listenEP, string configurationString)
-		{
-			Start(schedulerDelegate, listenEP, AppBuilder.BuildConfiguration(configurationString));
-		}
-		
-        public static void Start(ISchedulerDelegate schedulerDelegate, IPEndPoint listenEP, Action<IAppBuilder> configuration)
-		{
-			Start(schedulerDelegate, listenEP, AppBuilder.BuildConfiguration(configuration));
-		}
-
         public static void Start(ISchedulerDelegate schedulerDelegate, IPEndPoint listenEP, AppDelegate app)
         {
             Start(schedulerDelegate, listenEP, app, null);

@@ -33,13 +33,16 @@ namespace Gate.TestHelpers
         {
             return (env, result, fault) =>
             {
-                var response = new Response(result) {Status = "200 OK", ContentType = "text/xml"};
-                response.Finish((error, complete) =>
+                var response = new Response(result)
+                {
+                    Status = "200 OK",
+                    ContentType = "text/xml"
+                };
+                response.Start(() =>
                 {
                     var detail = env.Select(kv => new XElement(kv.Key, kv.Value));
                     var xml = new XElement("xml", detail.OfType<object>().ToArray());
-                    response.Write(xml.ToString());
-                    complete();
+                    response.End(xml.ToString());
                 });
             };
         }
@@ -73,12 +76,23 @@ namespace Gate.TestHelpers
 
         public static AppDelegate Simple(string status, IDictionary<string, IEnumerable<string>> headers, string body)
         {
-            return new FakeApp(status, body) {Headers = headers}.AppDelegate;
+            return new FakeApp(status, body) { Headers = headers }.AppDelegate;
         }
 
         public static AppDelegate Simple(string status, IDictionary<string, IEnumerable<string>> headers, BodyDelegate body)
         {
-            return new FakeApp(status, body) {Headers = headers}.AppDelegate;
+            return new FakeApp(status, body) { Headers = headers }.AppDelegate;
+        }
+
+        public static AppDelegate Simple(string status, Action<IDictionary<string, IEnumerable<string>>> headers, Action<Func<ArraySegment<byte>,bool>> body)
+        {
+            var app = new FakeApp(status, (write, flush, end, cancel) =>
+            {
+                body(write);
+                end(null);
+            });
+            headers(app.Headers);
+            return app.AppDelegate;
         }
 
         public static AppDelegate Simple(string status, BodyDelegate body)
@@ -112,6 +126,11 @@ namespace Gate.TestHelpers
         }
 
         public static IAppBuilder Simple(this IAppBuilder builder, string status, IDictionary<string, IEnumerable<string>> headers, string body)
+        {
+            return builder.Run(Simple(status, headers, body));
+        }
+
+        public static IAppBuilder Simple(this IAppBuilder builder, string status, Action<IDictionary<string, IEnumerable<string>>> headers, Action<Func<ArraySegment<byte>, bool>> body)
         {
             return builder.Run(Simple(status, headers, body));
         }

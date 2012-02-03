@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gate.Owin
@@ -14,15 +15,12 @@ namespace Gate.Owin
         IDictionary<string, IEnumerable<string>> headers,
         BodyDelegate body);
 
-    public delegate Action /* cancel */ BodyDelegate(
-        Func<
-            ArraySegment<byte>, // data
-            Action, // continuation
-            bool> // continuation was or will be invoked
-            next,
-        Action<Exception> error,
-        Action complete);
+    public delegate void BodyDelegate(
+        Func<ArraySegment<byte>, bool> write,
+        Func<Action, bool> flush,
+        Action<Exception> end,
+        CancellationToken cancellationToken);
 
-    public delegate Task<Tuple<string /* status */, IDictionary<String, IEnumerable<string>> /* headers */, BodyDelegate /* body */>> 
+    public delegate Task<Tuple<string /* status */, IDictionary<String, IEnumerable<string>> /* headers */, BodyDelegate /* body */>>
         AppTaskDelegate(IDictionary<string, object> env);
 }

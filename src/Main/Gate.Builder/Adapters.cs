@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Gate.Owin;
 
@@ -12,24 +13,28 @@ namespace Gate.Builder
         Action< // result
             string, // status
             IDictionary<string, IEnumerable<string>>, // headers
-            Func< // body
-                Func< // next
-                    ArraySegment<byte>, // data
+            Action< // body
+                Func< // write
+                    ArraySegment<byte>, // data                     
+                    bool>, // buffering
+                Func< // flush
                     Action, // continuation
                     bool>, // async
-                Action<Exception>, // error
-                Action, // complete
-                Action>>, // cancel
+                Action< // end
+                    Exception>, // error
+                CancellationToken>>, // cancel
         Action<Exception>>; // error
 
-    using BodyAction = Func< //body
-        Func< //next
-            ArraySegment<byte>, // data
+    using BodyAction = Action< // body
+        Func< // write
+            ArraySegment<byte>, // data                     
+            bool>, // buffering
+        Func< // flush
             Action, // continuation
-            bool>, // continuation was or will be invoked
-        Action<Exception>, //error
-        Action, //complete
-        Action>; //cancel
+            bool>, // async
+        Action< // end
+            Exception>, // error
+        CancellationToken>; //cancel
 
 
     public static class Adapters
@@ -89,12 +94,12 @@ namespace Gate.Builder
 
         public static BodyAction ToAction(BodyDelegate body)
         {
-            return (next, error, complete) => body(next, error, complete);
+            return (write, flush, end, cancel) => body(write, flush, end, cancel);
         }
 
         public static BodyDelegate ToDelegate(BodyAction body)
         {
-            return (next, error, complete) => body(next, error, complete);
+            return (write, flush, end, cancel) => body(write, flush, end, cancel);
         }
 
 

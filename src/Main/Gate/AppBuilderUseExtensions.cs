@@ -1,23 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Gate.Owin;
 
 namespace Gate
 {
+#pragma warning disable 811
     using AppAction = Action< // app
-         IDictionary<string, object>, // env
-         Action< // result
-             string, // status
-             IDictionary<string, IEnumerable<string>>, // headers
-             Func< // body
-                 Func< // next
-                     ArraySegment<byte>, // data
-                     Action, // continuation
-                     bool>, // async                    
-                 Action<Exception>, // error
-                 Action, // complete
-                 Action>>, // cancel
-         Action<Exception>>; // error
+        IDictionary<string, object>, // env
+        Action< // result
+            string, // status
+            IDictionary<string, IEnumerable<string>>, // headers
+            Action< // body
+                Func< // write
+                    ArraySegment<byte>, // data                     
+                    bool>, // buffering
+                Func< // flush
+                    Action, // continuation
+                    bool>, // async
+                Action< // end
+                    Exception>, // error
+                CancellationToken>>, // cancel
+        Action<Exception>>; // error
 
     public static class AppBuilderUseExtensions
     {

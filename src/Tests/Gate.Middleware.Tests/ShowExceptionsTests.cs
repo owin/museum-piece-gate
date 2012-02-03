@@ -57,13 +57,12 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Exception_in_response_body_stream_should_be_formatted_as_it_passes_through()
         {
-            var app = new FakeApp {Status = "200 OK"};
+            var app = new FakeApp { Status = "200 OK" };
             app.Headers.SetHeader("Content-Type", "text/html");
-            app.Body = (next, error, complete) =>
+            app.Body = (write, flush, end, cancel) =>
             {
-                next(new ArraySegment<byte>(Encoding.UTF8.GetBytes("<p>so far so good</p>")), null);
-                error(new ApplicationException("failed sending body"));
-                return () => { };
+                write(new ArraySegment<byte>(Encoding.UTF8.GetBytes("<p>so far so good</p>")));
+                end(new ApplicationException("failed sending body"));
             };
 
             var stack = Build(b => b
