@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
-using System.Threading;
 using Owin;
 using Kayak;
 using Kayak.Http;
@@ -67,67 +66,15 @@ namespace Gate.Hosts.Kayak
                     !headers.ContainsKey("Content-Length") &&
                     !headers.ContainsKey("Transfer-Encoding"))
                 {
-                    // consume body and calculate Content-Length
-                    BufferBody(response)(status, headers, body);
+                    // disable keep-alive in this case
+                    headers["Connection"] = new[] {"close"};
                 }
-                else
-                {
-                    response.OnResponse(new HttpResponseHead()
+
+                response.OnResponse(new HttpResponseHead()
                     {
                         Status = status,
                         Headers = headers.ToDictionary(kv => kv.Key, kv => string.Join("\r\n", kv.Value.ToArray()), StringComparer.OrdinalIgnoreCase),
-                    }, body == null ? null : new DataProducer(body));
-                }
-            };
-        }
-
-        ResultDelegate BufferBody(IHttpResponseDelegate response)
-        {
-            return (status, headers, body) =>
-            {
-                var buffer = new LinkedList<ArraySegment<byte>>();
-
-                body(
-                    data =>
-                {
-                    var copy = new byte[data.Count];
-                    Buffer.BlockCopy(data.Array, data.Offset, copy, 0, data.Count);
-                    buffer.AddLast(new ArraySegment<byte>(copy));
-                    return false;
-                },
-                _=>false,
-                error =>
-                {
-                    var contentLength = buffer.Aggregate(0, (r, i) => r + i.Count);
-
-                    IDataProducer responseBody = null;
-
-                    if (contentLength > 0)
-                    {
-                        headers["Content-Length"] = new[] {contentLength.ToString()};
-
-                        responseBody = new DataProducer((write, flush, end, cancellationToken) =>
-                        {
-                            while (!cancellationToken.IsCancellationRequested && buffer.Count > 0)
-                            {
-                                var next = buffer.First;
-                                buffer.RemoveFirst();
-                                write(next.Value);
-                            }
-
-                            end(null);
-
-                            buffer = null;
-                        });
-                    }
-
-                    response.OnResponse(new HttpResponseHead()
-                    {
-                        Status = status,
-                        Headers = headers.ToDictionary(kv => kv.Key, kv => string.Join("\r\n", kv.Value.ToArray()), StringComparer.OrdinalIgnoreCase),
-                    }, responseBody);
-                },
-                CancellationToken.None);
+                    }, body == null ? null : new DataProducer(body));                
             };
         }
 
