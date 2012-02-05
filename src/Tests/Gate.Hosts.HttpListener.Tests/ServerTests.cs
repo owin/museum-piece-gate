@@ -94,5 +94,33 @@ namespace Gate.Hosts.HttpListener.Tests
             }
         }
 
+        [Test]
+        public void ResponseMayHaveContentLength()
+        {
+            AppDelegate app = (env, result, fault) =>
+            {
+                var response = new Response(result);
+                response.Headers.SetHeader("Content-Length", "12");
+                response.Write("Hello world.");
+                response.End();
+            };
+            using (ServerFactory.Create(app, 8090, null))
+            {
+                var request = (HttpWebRequest)WebRequest.Create("http://localhost:8090/");
+
+                string text;
+                using (var response = request.GetResponse())
+                {
+                    using (var stream = response.GetResponseStream())
+                    {
+                        using (var reader = new StreamReader(stream))
+                        {
+                            text = reader.ReadToEnd();
+                        }
+                    }
+                }
+                Assert.That(text, Is.EqualTo("Hello world."));
+            }
+        }
     }
 }

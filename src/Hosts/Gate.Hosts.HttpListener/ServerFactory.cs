@@ -77,9 +77,30 @@ namespace Gate.Hosts.HttpListener
                             context.Response.StatusDescription = status.Substring(4);
                             foreach (var kv in headers)
                             {
-                                foreach (var v in kv.Value)
+                                // these may not be assigned via header collection
+                                if (string.Equals(kv.Key, "Content-Length", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    context.Response.Headers.Add(kv.Key, v);
+                                    context.Response.ContentLength64 = long.Parse(kv.Value.Single());
+                                }
+                                else if (string.Equals(kv.Key, "Keep-Alive", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    context.Response.KeepAlive = true;
+                                }
+                                //else if (string.Equals(kv.Key, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase))
+                                //{
+                                //    // not sure what can be done about this
+                                //}
+                                //else if (string.Equals(kv.Key, "WWW-Authenticate", StringComparison.OrdinalIgnoreCase))
+                                //{
+                                //    // not sure what httplistener properties to assign                                    
+                                //}
+                                else
+                                {
+                                    // all others are
+                                    foreach (var v in kv.Value)
+                                    {
+                                        context.Response.Headers.Add(kv.Key, v);
+                                    }
                                 }
                             }
                             var pipeResponse = new PipeResponse(
