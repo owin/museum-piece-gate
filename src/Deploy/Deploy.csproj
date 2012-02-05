@@ -42,6 +42,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Gate.Hosts.Firefly.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
     <None Include="Gate.Owin.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -53,7 +54,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </None>
-    <None Include="Ghost\tools\chocolateyInstall.ps1" />
     <None Include="Ghost\tools\install.ps1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
