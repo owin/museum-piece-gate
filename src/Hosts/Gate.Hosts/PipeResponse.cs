@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
-using Gate.Owin;
+using Owin;
 
 namespace Gate.Hosts
 {

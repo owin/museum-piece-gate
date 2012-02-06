@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
-using Gate.Owin;
+using Owin;
 using NUnit.Framework;
 
 namespace Gate.Tests

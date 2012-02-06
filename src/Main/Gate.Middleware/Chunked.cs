@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Gate.Owin;
+using Owin;
 using System.Text;
 
 namespace Gate.Middleware

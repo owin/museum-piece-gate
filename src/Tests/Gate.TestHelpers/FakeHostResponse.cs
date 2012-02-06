@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
-using Gate.Owin;
+using Owin;
 
 namespace Gate.TestHelpers
 {

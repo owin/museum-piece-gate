@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Gate.Owin;
+using Owin;
 using Gate.TestHelpers;
 using NUnit.Framework;
 using Gate.Middleware;

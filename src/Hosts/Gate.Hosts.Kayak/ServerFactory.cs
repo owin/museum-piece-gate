@@ -4,7 +4,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using Gate.Hosts.Kayak;
-using Gate.Owin;
+using Owin;
 using Kayak;
 using Kayak.Http;
 

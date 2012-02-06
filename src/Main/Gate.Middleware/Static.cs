@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Gate.Middleware.StaticFiles;
-using Gate.Owin;
+using Owin;
 
 namespace Gate.Middleware
 {

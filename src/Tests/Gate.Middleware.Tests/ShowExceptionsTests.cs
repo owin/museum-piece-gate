@@ -4,7 +4,7 @@ using System.Text;
 using Gate.Builder;
 using Gate.TestHelpers;
 using NUnit.Framework;
-using Gate.Owin;
+using Owin;
 using Gate.Middleware;
 
 namespace Gate.Middleware.Tests

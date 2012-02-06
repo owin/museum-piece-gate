@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Gate.Owin;
+using Owin;
 
 namespace Gate.Hosts.Manos
 {
@@ -10,6 +10,7 @@ namespace Gate.Hosts.Manos
     {
 #pragma warning disable 169
         ResultDelegate _resultDelegate;
+        Func<int, int> _func2;
         Func<int, int, int> _func3;
 #pragma warning restore 169
     }

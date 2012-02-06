@@ -4,7 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Gate.Owin;
+using Owin;
 using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.IO;

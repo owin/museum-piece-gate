@@ -40,6 +40,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Hosts\Gate.Hosts.Firefly\Gate.Hosts.Firefly.csproj">
+      <Project>{53619873-BED3-41F6-8B33-552E0B53FC1C}</Project>
+      <Name>Gate.Hosts.Firefly</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Hosts\Gate.Hosts.HttpListener\Gate.Hosts.HttpListener.csproj">
       <Project>{A1A94BF6-7E05-430E-947D-B046A2A00CAF}</Project>
       <Name>Gate.Hosts.HttpListener</Name>

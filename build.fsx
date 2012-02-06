@@ -6,11 +6,11 @@ open Fake
 
 // properties
 let projectName = "Gate"
-let version = "0.2.1"  
+let version = "0.3.2"  
 let projectSummary = "An OWIN utility library."
 let projectDescription = "An OWIN utility library."
 let authors = ["bvanderveen";"grumpydev";"jasonsirota";"loudej";"markrendle";"thecodejunkie";"panesofglass"]
-let mail = "b@bvanderveen.com"
+let mail = "net-http-abstractions@googlegroups.com"
 let homepage = "http://github.com/owin/gate"
 
 // directories
