@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Xml.Linq;
 using Gate.Builder;
-using Gate.Owin;
+using Owin;
 
 namespace Gate.TestHelpers
 {

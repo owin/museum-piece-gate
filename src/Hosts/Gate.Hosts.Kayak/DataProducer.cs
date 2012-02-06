@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using Gate.Owin;
+using Owin;
 using Kayak;
 
 namespace Gate.Hosts.Kayak

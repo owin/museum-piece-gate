@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$authors$</authors>
+    <owners></owners>
+    <description>Gate.Hosts.Firefly provides Ghost.exe support for Firefly.</description>
+    <language>en-US</language>
+    <projectUrl>https://github.com/owin/gate</projectUrl>
+    <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
+    <tags></tags>
+    <dependencies>
+      <dependency id="Owin" version="0.7.0"/>
+      <dependency id="Firefly" version="0.3"/>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Gate.Hosts.Firefly.dll" target="lib\net40" />
+  </files>
+</package>

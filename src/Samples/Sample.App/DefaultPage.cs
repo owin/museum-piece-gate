@@ -1,5 +1,5 @@
 ﻿using Gate;
-using Gate.Owin;
+using Owin;
 
 namespace Sample.App
 {

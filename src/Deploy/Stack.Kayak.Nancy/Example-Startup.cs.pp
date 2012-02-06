@@ -1,6 +1,6 @@
 ﻿using Gate.Adapters.Nancy;
 using Gate.Middleware;
-using Gate.Owin;
+using Owin;
 
 namespace $rootnamespace$
 {

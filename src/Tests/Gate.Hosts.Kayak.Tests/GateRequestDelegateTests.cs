@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using Gate;
 using Gate.Hosts.Kayak;
-using Gate.Owin;
+using Owin;
 using NUnit.Framework;
 using Kayak.Http;
 using Kayak;
@@ -153,7 +153,7 @@ namespace Gate.Hosts.Kayak.Tests
         }
 
         [Test]
-        public void Adds_content_length_response_header_if_none()
+        public void Adds_connection_close_response_header_if_no_length_or_encoding()
         {
             var app = new StaticApp(
                     "200 OK",
@@ -170,8 +170,8 @@ namespace Gate.Hosts.Kayak.Tests
             requestDelegate.OnRequest(new HttpRequestHead() { }, null, mockResponseDelegate);
 
             Assert.That(new Environment(app.Env).BodyAction, Is.Null);
-            Assert.That(mockResponseDelegate.Head.Headers.Keys, Contains.Item("Content-Length"));
-            Assert.That(mockResponseDelegate.Head.Headers["Content-Length"], Is.EqualTo("10"));
+            Assert.That(mockResponseDelegate.Head.Headers.Keys, Contains.Item("Connection"));
+            Assert.That(mockResponseDelegate.Head.Headers["Connection"], Is.EqualTo("close"));
 
             var body = mockResponseDelegate.Body.Consume();
             Assert.That(body.Buffer.GetString(), Is.EqualTo("1234567890"));

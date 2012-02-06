@@ -4,10 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Gate.Owin;
+using Owin;
 
 namespace Gate.Builder.Loader
 {
+#pragma warning disable 811
     using AppAction = Action< // app
        IDictionary<string, object>, // env
        Action< // result

@@ -1,6 +1,6 @@
 ﻿using System;
 using Gate.Mapping;
-using Gate.Owin;
+using Owin;
 
 namespace Gate
 {

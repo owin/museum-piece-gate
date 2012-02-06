@@ -1,5 +1,5 @@
 ﻿
-using Gate.Owin;
+using Owin;
 
 namespace Gate.Builder.Tests
 {

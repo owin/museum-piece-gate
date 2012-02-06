@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
-using Gate.Owin;
+using Owin;
 using Gate.Builder;
 
 namespace Gate.TestHelpers

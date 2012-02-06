@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using Gate.Owin;
+using Owin;
 using NUnit.Framework;
 
 namespace Gate.Tests

@@ -30,26 +30,41 @@ namespace Ghost.Engine.CommandLine
                 Path = arguments.Path,
             };
 
+            var server = engine.Start(info);
+            HandleBreak(server.Dispose);
+
+            info.Output.WriteLine("Started at {0}", info.Url);
+            while (true)
+            {
+                var key = Console.ReadKey(true);
+                if (key.Key == ConsoleKey.Escape)
+                {
+                    break;
+                }
+            }
+            server.Dispose();
+        }
+
+        static void HandleBreak(Action dispose)
+        {
             var cancelPressed = false;
             Console.TreatControlCAsInput = false;
             Console.CancelKeyPress += (_, e) =>
             {
-                if (cancelPressed) return;
                 if (e.SpecialKey == ConsoleSpecialKey.ControlBreak) return;
-
-                cancelPressed = true;
-                Console.WriteLine("Press ctrl+c again to terminate");
-                e.Cancel = true;
-            };
-
-            using (engine.Start(info))
-            {
-                info.Output.WriteLine("Started at {0}", info.Url);
-                while (true)
+                if (cancelPressed)
                 {
-                    Console.ReadKey(true);
+                    dispose();
+                    Environment.Exit(-1);
+                    e.Cancel = true;
                 }
-            }
+                else
+                {
+                    cancelPressed = true;
+                    Console.WriteLine("Press ctrl+c again to terminate");
+                    e.Cancel = true;
+                }
+            };
         }
 
         private static IGhostEngine BuildEngine()

@@ -1,5 +1,5 @@
 ﻿using System;
-using Gate.Owin;
+using Owin;
 
 namespace Gate.Hosts.HttpListener.Tests
 {

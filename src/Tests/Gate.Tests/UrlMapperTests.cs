@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Gate.Mapping;
-using Gate.Owin;
+using Owin;
 using Gate.TestHelpers;
 using NUnit.Framework;
 

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Gate.Middleware.Utils;
-using Gate.Owin;
+using Owin;
 
 namespace Gate.Middleware.StaticFiles
 {
