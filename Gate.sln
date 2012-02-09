@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.AspNet", "src\Ho
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{C84C3CDC-FC22-4AF2-8759-4B407BF5AD56}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Nancy", "src\Samples\Sample.AspNet\Sample.Nancy.csproj", "{0D16BD06-1972-4714-9D79-7E84F82748F4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Nancy", "src\Samples\Sample.Nancy\Sample.Nancy.csproj", "{0D16BD06-1972-4714-9D79-7E84F82748F4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.TestHelpers", "src\Tests\Gate.TestHelpers\Gate.TestHelpers.csproj", "{E4256EDF-0B54-4715-8E66-8D4D4887E15F}"
 EndProject
