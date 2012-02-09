@@ -1,7 +1,7 @@
 ﻿using Gate;
 using Owin;
 
-namespace Sample.App
+namespace Sample.Nancy
 {
     public static class DefaultPage
     {

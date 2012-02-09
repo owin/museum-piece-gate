@@ -4,21 +4,14 @@ namespace Gate.Hosts.AspNet
 {
     public class Module : IHttpModule
     {
-        public void Dispose()
+        public void Init(HttpApplication app)
         {
+            var handler = new Handler();
+            app.PostResolveRequestCache += (sender, e) => app.Context.RemapHandler(handler);
         }
 
-        public void Init(HttpApplication init)
+        public void Dispose()
         {
-            var appHandler = AppHandlerSingleton.Instance;
-            
-            init.AddOnBeginRequestAsync(
-                (sender, args, callback, state) =>
-                {
-                    var httpContext = ((HttpApplication) sender).Context;
-                    return appHandler.BeginProcessRequest(new HttpContextWrapper(httpContext), callback, state);
-                },
-                appHandler.EndProcessRequest);
         }
     }
 }

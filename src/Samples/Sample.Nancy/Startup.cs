@@ -1,16 +1,16 @@
 ﻿using System.Reflection;
 using Gate;
+using Gate.Adapters.Nancy;
 using Gate.Middleware;
 using Owin;
-using Gate.Adapters.Nancy;
 
-namespace Sample.App
+namespace Sample.Nancy
 {
     public class Startup
     {
         public void Configuration(IAppBuilder builder)
         {
-            Assembly.Load("Nancy.Viewengines.Spark");
+            Assembly.Load("Nancy.ViewEngines.Spark");
 
             builder
                 //.UseRewindableBody()
