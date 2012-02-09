@@ -39,6 +39,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppBuilderInlineExtensions.cs" />
     <Compile Include="Headers.cs" />
     <Compile Include="Mapping\MapBuilder.cs" />
     <Compile Include="Mapping\UrlMapper.cs" />
