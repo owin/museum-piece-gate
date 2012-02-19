@@ -1,4 +1,4 @@
-﻿namespace Sample.App.Models
+﻿namespace Sample.Nancy.Models
 {
     public class Index
     {

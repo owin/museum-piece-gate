@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Owin;
 using Ghost.Engine.Settings;
 
@@ -55,13 +56,94 @@ namespace Ghost.Engine
                 .Single(x => x.GetType().Name == "ServerFactory");
         }
 
-
         private void ResolveApp(StartInfo info)
         {
-            if (info.App != null) return;
+            if (info.App == null)
+            {
+                var startup = _settings.Loader.Load(info.Startup);
+                info.App = _settings.Builder.Build<AppDelegate>(startup);
+            }
+            info.App = Encapsulate((AppDelegate)info.App, info.Output);
+        }
 
-            var startup = _settings.Loader.Load(info.Startup);
-            info.App = _settings.Builder.Build<AppDelegate>(startup);
+        public static AppDelegate Encapsulate(AppDelegate app, TextWriter output)
+        {
+            return (env, result, fault) =>
+            {
+                object hostTraceOutput;
+                if (!env.TryGetValue("host.TraceOutput", out hostTraceOutput) || hostTraceOutput == null)
+                {
+                    env["host.TraceOutput"] = output;
+                }
+
+                object hostCallDisposed;
+                if (!env.TryGetValue("host.CallDisposed", out hostCallDisposed) || hostCallDisposed == null)
+                {
+                    var callDisposedSource = new CancellationTokenSource();
+                    env["host.CallDisposed"] = callDisposedSource.Token;
+                    try
+                    {
+                        app(
+                            env,
+                            (status, headers, body) => result(status, headers, (write, flush, end, cancel) =>
+                            {
+                                body(
+                                    write,
+                                    flush,
+                                    ex =>
+                                    {
+                                        try
+                                        {
+                                            end(ex);
+                                        }
+                                        finally
+                                        {
+                                            try
+                                            {
+                                                callDisposedSource.Cancel(false);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    },
+                                    cancel);
+                            }),
+                            ex =>
+                            {
+                                try
+                                {
+                                    fault(ex);
+                                }
+                                finally
+                                {
+                                    try
+                                    {
+                                        callDisposedSource.Cancel(false);
+                                    }
+                                    catch
+                                    {
+                                    }
+                                }
+                            });
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            callDisposedSource.Cancel(false);
+                        }
+                        catch
+                        {
+                        }
+                        throw;
+                    }
+                }
+                else
+                {
+                    app(env, result, fault);
+                }
+            };
         }
 
         private void ResolveUrl(StartInfo info)
