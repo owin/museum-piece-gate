@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$authors$</authors>
+    <owners></owners>
+    <description>Gate.Adapters.AspNetWebApi provides OWIN adapter support for AspNetWebApi.</description>
+    <language>en-US</language>
+    <projectUrl>https://github.com/owin/gate</projectUrl>
+    <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
+    <tags></tags>
+    <dependencies>
+      <dependency id="AspNetWebApi.Core" version="4.0.20126.16343" />
+      <dependency id="Owin" version="0.7" />
+      <dependency id="System.Json" version="4.0.20126.16343" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Gate.Adapters.AspNetWebApi.dll" target="lib\net40" />
+  </files>
+</package>

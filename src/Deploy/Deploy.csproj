@@ -40,6 +40,9 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="Gate.Adapters.AspNetWebApi.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Gate.Hosts.Firefly.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
@@ -74,6 +77,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Adapters\Gate.Adapters.AspNetWebApi\Gate.Adapters.AspNetWebApi.csproj">
+      <Project>{4E5EE713-0BC1-4641-989B-7DEF9E16979C}</Project>
+      <Name>Gate.Adapters.AspNetWebApi</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Adapters\Gate.Adapters.Nancy\Gate.Adapters.Nancy.csproj">
       <Project>{4C561FAE-24FD-470A-8E38-C725980DEE01}</Project>
       <Name>Gate.Adapters.Nancy</Name>
