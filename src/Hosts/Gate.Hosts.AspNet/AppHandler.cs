@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Owin;
@@ -20,6 +21,7 @@ namespace Gate.Hosts.AspNet
 
         public IAsyncResult BeginProcessRequest(HttpContextBase httpContext, AsyncCallback callback, object state)
         {
+            var cancellationTokenSource = new CancellationTokenSource();
             var taskCompletionSource = new TaskCompletionSource<Action>(state);
             if (callback != null)
                 taskCompletionSource.Task.ContinueWith(task => callback(task), TaskContinuationOptions.ExecuteSynchronously);
@@ -48,6 +50,7 @@ namespace Gate.Hosts.AspNet
                 {OwinConstants.RequestQueryString, serverVariables.QueryString},
                 {OwinConstants.RequestHeaders, requestHeaders},
                 {OwinConstants.RequestBody, RequestBody(httpRequest.InputStream)},
+                {"host.CallDisposed", cancellationTokenSource.Token},
                 {"aspnet.HttpContextBase", httpContext},
             };
             foreach (var kv in serverVariables.AddToEnvironment())
@@ -55,36 +58,52 @@ namespace Gate.Hosts.AspNet
                 env["server." + kv.Key] = kv.Value;
             }
 
-
-            _app.Invoke(
-                env,
-                (status, headers, body) =>
-                {
-                    try
+            try
+            {
+                _app.Invoke(
+                    env,
+                    (status, headers, body) =>
                     {
-                        httpContext.Response.BufferOutput = false;
-
-                        httpContext.Response.Status = status;
-                        foreach (var header in headers)
+                        try
                         {
-                            foreach (var value in header.Value)
-                            {
-                                httpContext.Response.AddHeader(header.Key, value);
-                            }
-                        }
+                            httpContext.Response.BufferOutput = false;
 
-                        ResponseBody(
-                            body,
-                            httpContext.Response.OutputStream,
-                            ex => taskCompletionSource.TrySetException(ex),
-                            () => taskCompletionSource.TrySetResult(() => httpContext.Response.End()));
-                    }
-                    catch (Exception ex)
-                    {
-                        taskCompletionSource.TrySetException(ex);
-                    }
-                },
-                ex => taskCompletionSource.TrySetException(ex));
+                            httpContext.Response.Status = status;
+                            foreach (var header in headers)
+                            {
+                                foreach (var value in header.Value)
+                                {
+                                    httpContext.Response.AddHeader(header.Key, value);
+                                }
+                            }
+
+                            ResponseBody(
+                                body,
+                                httpContext.Response.OutputStream,
+                                ex => taskCompletionSource.TrySetException(ex),
+                                () => taskCompletionSource.TrySetResult(() => httpContext.Response.End()));
+                        }
+                        catch (Exception ex)
+                        {
+                            taskCompletionSource.TrySetException(ex);
+                        }
+                    },
+                    ex => taskCompletionSource.TrySetException(ex));
+            }
+            catch(Exception ex)
+            {
+                taskCompletionSource.TrySetException(ex);
+            }
+
+            if (taskCompletionSource.Task.IsCompleted)
+            {
+                cancellationTokenSource.Cancel(false);
+            }
+            else
+            {
+                taskCompletionSource.Task.ContinueWith(t => cancellationTokenSource.Cancel(false));
+            }
+
             return taskCompletionSource.Task;
         }
 
@@ -130,7 +149,7 @@ namespace Gate.Hosts.AspNet
             {
                 return _serverVariables
                     .AllKeys
-                    .Where(key => !key.StartsWith("HTTP_"))
+                    .Where(key => !key.StartsWith("HTTP_") && !string.Equals(key, "ALL_HTTP") && !string.Equals(key, "ALL_RAW"))
                     .Select(key => new KeyValuePair<string, object>(key, _serverVariables.Get(key)));
             }
         }

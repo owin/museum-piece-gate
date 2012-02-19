@@ -48,6 +48,7 @@ namespace Gate.Adapters.Nancy
                 var owinRequestBody = Get<BodyDelegate>(env, OwinConstants.RequestBody, EmptyBody);
                 var cancellationToken = Get(env, typeof(CancellationToken).FullName, CancellationToken.None);
                 var serverClientIp = Get<string>(env, "server.CLIENT_IP");
+                var callDisposing = Get<CancellationToken>(env, "host.CallDisposing");
 
                 var url = new Url
                 {
@@ -79,6 +80,11 @@ namespace Gate.Adapters.Nancy
                             nancyRequest,
                             context =>
                             {
+                                callDisposing.Register(() =>
+                                {
+                                    context.Dispose();
+                                });
+
                                 var nancyResponse = context.Response;
                                 var status = String.Format("{0} {1}", (int)nancyResponse.StatusCode, nancyResponse.StatusCode);
                                 var headers = nancyResponse.Headers.ToDictionary(kv => kv.Key, kv => (IEnumerable<string>)new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
