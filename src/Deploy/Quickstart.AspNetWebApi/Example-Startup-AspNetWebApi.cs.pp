@@ -15,7 +15,7 @@ namespace $rootnamespace$
             config.Routes.MapHttpRoute(
                 "Default",
                 "{controller}",
-				new {controller = "Main"});
+                new {controller = "Main"});
 
             builder
                 .RunHttpServer(config);
