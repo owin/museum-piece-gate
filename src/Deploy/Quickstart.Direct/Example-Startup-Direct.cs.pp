@@ -11,8 +11,8 @@ namespace $rootnamespace$
             {
                 res.ContentType = "text/plain";
                 res.Write("Hello, ").Write(req.PathBase).Write(req.Path).Write("!");
-				res.End();
-			});
+                res.End();
+            });
         }
     }
 }
