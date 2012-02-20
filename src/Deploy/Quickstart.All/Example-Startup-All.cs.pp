@@ -47,8 +47,9 @@ namespace $rootnamespace$
     <li><a href=""/main"">AspNetWebApi</a></li>
     <li><a href=""/direct"">Direct</a></li>
     <li><a href=""/nancy"">Nancy</a></li>
+	<li><span title=""this is not a working demo, just a hub w/out static files at the moment""><a href=""/signalr/hubs"">SignalR</a> (todo - need a demo)</span></li>
     <li><a href=""/wilson"">Wilson</a></li>
-    <li><a href=""/wilsonasync"">WilsonAsync</a></li>
+    <li><a href=""/wilsonasync"">WilsonAsync</a></li>	
   </ul>
 </body>
 </html>
