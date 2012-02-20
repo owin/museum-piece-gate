@@ -1,5 +1,6 @@
-﻿using Gate;
-using Gate.Middleware;
+﻿using System;
+using System.Text;
+using Gate;
 using Owin;
 
 namespace $rootnamespace$
