@@ -5,16 +5,16 @@
     <version>$version$</version>
     <authors>$authors$</authors>
     <owners></owners>
-    <description>Obsolete package. Forwarding dependency to Owin.</description>
+    <description>Adds an OWIN web stack to a project to use Wilson test page.</description>
     <language>en-US</language>
-    <projectUrl>http://owin.org/</projectUrl>
+    <projectUrl>https://github.com/owin/gate</projectUrl>
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
     <tags></tags>
     <dependencies>
-      <dependency id="Owin" version="0.7.0"/>
+      <dependency id="Gate.Quickstart.Core" version="$version$"/>
     </dependencies>
   </metadata>
   <files>
-    <file src="nothing.*" />
+    <file src="Quickstart.Wilson\**" target="content" />
   </files>
 </package>

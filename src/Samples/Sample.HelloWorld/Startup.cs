@@ -7,7 +7,7 @@ namespace Sample.HelloWorld
     {
         public void Configuration(IAppBuilder builder)
         {
-            builder.RunInline((req, resp) =>
+            builder.RunDirect((req, resp) =>
             {
                 resp.Status = "200 OK";
                 resp.ContentType = "text/html";
