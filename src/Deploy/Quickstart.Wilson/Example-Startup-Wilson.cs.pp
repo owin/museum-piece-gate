@@ -9,8 +9,12 @@ namespace $rootnamespace$
         public void Pipeline_040_Wilson(IAppBuilder builder)
         {
             builder
-                .Map("/wilson", map => map.Run(Wilson.App))
-                .Map("/wilsonasync", map => map.Run(Wilson.App, true));
+                .Map("/wilson", map => map
+                    .UseShowExceptions()
+                    .Run(Wilson.App))
+                .Map("/wilsonasync", map => map
+                    .UseShowExceptions()
+                    .Run(Wilson.App, true));
         }
     }
 }

@@ -8,8 +8,9 @@ namespace $rootnamespace$
         public void Cascade_070_Direct(IAppBuilder builder)
         {
             builder.MapDirect("/direct", (req,res) =>
-			{
-				res.Write("Hello");
+            {
+                res.ContentType = "text/plain";
+                res.Write("Hello, ").Write(req.PathBase).Write(req.Path).Write("!");
 				res.End();
 			});
         }

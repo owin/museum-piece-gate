@@ -16,6 +16,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Quickstart.Core\**" target="content" />
+    <file src="Quickstart.SignalR\**" target="content" />
   </files>
 </package>

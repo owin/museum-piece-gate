@@ -40,6 +40,12 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="Quickstart.All\Example-Startup-All.cs.pp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Gate.Quickstart.All.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Quickstart.Direct\Example-Startup-Direct.cs.pp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
