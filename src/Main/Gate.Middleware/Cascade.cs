@@ -63,7 +63,7 @@ namespace Gate.Middleware
         {
             // sequence to attempt is {apps[0], apps[n], app}
             // or {apps[0], apps[n]} if app is null
-            apps = (apps ?? new AppDelegate[0]).Concat(app == null ? new AppDelegate[0] : new[] { app }).ToArray();
+            apps = (apps ?? new AppDelegate[0]).Concat(new[] { app ?? NotFound.Call }).ToArray();
 
             // the first non-404 result will the the one to take effect
             // any subsequent apps are not called
