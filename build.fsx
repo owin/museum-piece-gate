@@ -111,12 +111,9 @@ Target "PackageZip" (fun _ ->
 )
 
 Target "InstallPackages" (fun _ ->
-  let target = (environVar "HOME") @@ ".nuget";
-  let apply files =
-    for file in files do
-      CopyFile target file
+  let userLocalRepository = (environVar "HOME") @@ ".nuget";
 
-  !! (deployDir @@ "*.nupkg") |> apply
+  !! (buildDir @@ "**/*.nupkg") |> Copy userLocalRepository
 )
 
 

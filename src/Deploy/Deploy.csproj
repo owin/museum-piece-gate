@@ -40,6 +40,27 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="Quickstart.Direct\Example-Startup-Direct.cs.pp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Gate.Quickstart.Direct.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Quickstart.Wilson\Example-Startup-Wilson.cs.pp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Gate.Quickstart.Wilson.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Gate.Quickstart.Core.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Quickstart.SignalR\Example-Startup-SignalR.cs.pp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Gate.Quickstart.SignalR.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Gate.Adapters.AspNetWebApi.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -60,19 +81,16 @@
     <None Include="Ghost\tools\install.ps1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Stack.HttpListener.Nancy\Example-HttpListenerStarter.cs.pp">
+    <None Include="Quickstart.AspNetWebApi\Example-Startup-AspNetWebApi.cs.pp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Stack.HttpListener.Nancy\Example-Startup.cs.pp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Gate.Stack.HttpListener.Nancy.nuspec">
+    <None Include="Gate.Quickstart.Nancy.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Stack.Kayak.Nancy\Example-KayakStarter.cs.pp">
+    <None Include="Quickstart.Core\Example-Startup-Core.cs.pp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Stack.Kayak.Nancy\Example-Startup.cs.pp">
+    <None Include="Quickstart.Nancy\Example-Startup-Nancy.cs.pp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -131,7 +149,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Gate.Stack.Kayak.Nancy.nuspec">
+    <None Include="Gate.Quickstart.AspNetWebApi.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Gate.Adapters.Nancy.nuspec">

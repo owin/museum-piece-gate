@@ -5,18 +5,16 @@
     <version>$version$</version>
     <authors>$authors$</authors>
     <owners></owners>
-    <description>Adds OWIN web stack to a project for Kayak and Nancy.</description>
+    <description>Adds an OWIN web stack to a project for direct output.</description>
     <language>en-US</language>
     <projectUrl>https://github.com/owin/gate</projectUrl>
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
     <tags></tags>
     <dependencies>
-      <dependency id="Gate.Hosts.Kayak" version="$version$"/>
-      <dependency id="Gate.Adapters.Nancy" version="$version$"/>
-      <dependency id="Gate.Middleware" version="$version$"/>
+      <dependency id="Gate.Quickstart.Core" version="$version$"/>
     </dependencies>
   </metadata>
   <files>
-    <file src="Stack.Kayak.Nancy\**" target="content" />
+    <file src="Quickstart.Direct\**" target="content" />
   </files>
 </package>
