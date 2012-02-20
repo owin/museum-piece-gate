@@ -13,7 +13,6 @@ namespace Sample.Nancy
             Assembly.Load("Nancy.ViewEngines.Spark");
 
             builder
-                //.UseRewindableBody()
                 .UseShowExceptions()
                 .UseContentType()
                 .Map("/wilson", map => map.Run(Wilson.App))
@@ -21,6 +20,32 @@ namespace Sample.Nancy
                 .RunCascade(
                     x => x.RunDefaultPage(),
                     x => x.RunNancy());
+        }
+
+
+        public void Alternative(IAppBuilder builder)
+        {
+            Assembly.Load("Nancy.ViewEngines.Spark");
+            
+            builder
+                .UseShowExceptions()
+                .UseContentType()
+                .Map("/wilson", Wilson.App())
+                .Map("/wilsonasync", Wilson.App(true))
+                .UseCascade(DefaultPage.App())
+                .RunNancy();
+        }
+
+        public void AnotherAlternative(IAppBuilder builder)
+        {
+            Assembly.Load("Nancy.ViewEngines.Spark");
+
+            builder
+                .Use(ShowExceptions.Middleware)
+                .Use(ContentType.Middleware)
+                .Map("/wilson", Wilson.App())
+                .Map("/wilsonasync", Wilson.App(true))
+                .Run(Cascade.App, DefaultPage.App(), NancyAdapter.App());
         }
     }
 }

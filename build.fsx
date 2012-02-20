@@ -6,7 +6,7 @@ open Fake
 
 // properties
 let projectName = "Gate"
-let version = "0.3.2"  
+let version = "0.3.4"  
 let projectSummary = "An OWIN utility library."
 let projectDescription = "An OWIN utility library."
 let authors = ["bvanderveen";"grumpydev";"jasonsirota";"loudej";"markrendle";"thecodejunkie";"panesofglass"]
@@ -23,6 +23,7 @@ let docsDir = targetDir + "docs/"
 // tools
 let fakePath = "./packages/FAKE.1.52.6.0/tools"
 let nunitPath = "./packages/NUnit.2.5.10.11092/Tools"
+let nugetPath = "./.nuget/nuget.exe"
 
 // files
 let appReferences =
@@ -41,7 +42,7 @@ let filesToZip =
       |> Scan
 
 // targets
-Target "Clean" (fun _ ->
+Target "CleanTargetDir" (fun _ ->
     CleanDirs [targetDir]
 )
 
@@ -70,7 +71,7 @@ Target "BuildTest" (fun _ ->
         |> Log "TestBuild-Output: "
 )
 
-Target "Test" (fun _ ->
+Target "NUnitTest" (fun _ ->
     !+ (testDir + "/*.Tests.dll")
         |> Scan
         |> NUnit (fun p ->
@@ -96,7 +97,7 @@ Target "ZipDocumentation" (fun _ ->
         |> Zip docsDir (deployDir + sprintf "Documentation-%s.zip" version)
 )
 
-Target "Deploy" (fun _ ->
+Target "PackageZip" (fun _ ->
     CreateDir deployDir
     !+ (buildDir + "/**/*.nupkg")
         |> Scan
@@ -109,15 +110,52 @@ Target "Deploy" (fun _ ->
         |> Zip buildDir (deployDir + sprintf "%s-%s.zip" projectName version)
 )
 
-// Build order
-"Clean"
-  ==> "Version"
-  ==> "BuildApp" <=> "BuildTest"
-  ==> "Test" //<=> "GenerateDocumentation"
-  //==> "ZipDocumentation"
-  ==> "Deploy"
+Target "InstallPackages" (fun _ ->
+  let userLocalRepository = (environVar "HOME") @@ ".nuget";
 
-// Start build
-Run "Deploy"
+  !! (buildDir @@ "**/*.nupkg") |> Copy userLocalRepository
+)
+
+
+Target "UploadPackages" (fun _ ->
+  let apply files =
+    for file in files do
+      ExecProcess (fun info ->
+                info.FileName <- nugetPath
+                info.WorkingDirectory <- deployDir |> FullName
+                info.Arguments <-  sprintf "push \"%s\"" (file |> FullName)) (System.TimeSpan.FromMinutes 5.)
+
+  !! (deployDir @@ "*.nupkg") |> apply
+)
+
+
+let Phase name = (
+  Target name (fun _ -> trace "----------")
+  name
+)
+
+// build phases
+Phase "Clean"
+  ==> Phase "Initialize" 
+  ==> Phase "Process" 
+  ==> Phase "Compile" 
+  ==> Phase "Test" 
+  ==> Phase "Package"
+  ==> Phase "Install"
+  ==> Phase "Deploy" 
+
+Phase "Default" <== ["Package"]
+
+// build phase goals
+"Clean" <== ["CleanTargetDir"]
+"Process" <== ["Version"]
+"Compile" <== ["BuildApp"; "BuildTest"]
+"Test" <== ["NUnitTest"]
+"Package" <== ["PackageZip"]
+"Install" <== ["InstallPackages"]
+"Deploy" <== ["UploadPackages"]
+
+// start build
+Run <| getBuildParamOrDefault "target" "Default"
 
 

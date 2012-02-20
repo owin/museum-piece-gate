@@ -13,7 +13,7 @@
     <dependencies>
       <dependency id="Gate.Builder" version="$version$"/>
       <dependency id="Owin" version="0.7.0"/>
-      <package id="Microsoft.Web.Infrastructure" version="1.0.0.0"/>
+      <dependency id="Microsoft.Web.Infrastructure" version="1.0.0.0"/>
     </dependencies>
   </metadata>
   <files>

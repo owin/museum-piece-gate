@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$authors$</authors>
+    <owners></owners>
+    <description>Adds an OWIN web stack to a project.</description>
+    <language>en-US</language>
+    <projectUrl>https://github.com/owin/gate</projectUrl>
+    <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
+    <tags></tags>
+    <dependencies>
+      <dependency id="Gate.Hosts.AspNet" version="$version$"/>
+      <dependency id="Gate.Middleware" version="$version$"/>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Quickstart.Core\**" target="content" />
+  </files>
+</package>
