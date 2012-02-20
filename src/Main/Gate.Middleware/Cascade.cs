@@ -6,23 +6,67 @@ using Owin;
 
 namespace Gate.Middleware
 {
-    public static class CascadeExtensions
+    public static class Cascade
     {
         public static IAppBuilder RunCascade(this IAppBuilder builder, params AppDelegate[] apps)
         {
-            return builder.Run(Middleware(apps));
+            return builder.Run(App, apps);
         }
 
         public static IAppBuilder RunCascade(this IAppBuilder builder, params Action<IAppBuilder>[] apps)
         {
-            return builder.RunCascade(apps.Select(builder.Build<AppDelegate>).ToArray());
+            return builder.Run(App, apps.Select(builder.Build<AppDelegate>));
         }
 
-        static AppDelegate Middleware(IEnumerable<AppDelegate> apps)
+        public static IAppBuilder UseCascade(this IAppBuilder builder, params AppDelegate[] apps)
         {
-            if (apps == null || !apps.Any())
-                apps = new[] {NotFound.App()};
+            return builder.Use(Middleware, apps);
+        }
 
+        public static IAppBuilder UseCascade(this IAppBuilder builder, params Action<IAppBuilder>[] apps)
+        {
+            return builder.Use(Middleware, apps.Select(builder.Build<AppDelegate>));
+        }
+
+
+        public static AppDelegate App(IEnumerable<AppDelegate> apps)
+        {
+            return Middleware(null, apps);
+        }
+        public static AppDelegate App(AppDelegate app0)
+        {
+            return Middleware(null, new[] { app0 });
+        }
+        public static AppDelegate App(AppDelegate app0, AppDelegate app1)
+        {
+            return Middleware(null, new[] { app0, app1 });
+        }
+        public static AppDelegate App(AppDelegate app0, AppDelegate app1, AppDelegate app2)
+        {
+            return Middleware(null, new[] { app0, app1, app2 });
+        }
+
+        public static AppDelegate Middleware(AppDelegate app, AppDelegate app0)
+        {
+            return Middleware(app, new[] { app0 });
+        }
+        public static AppDelegate Middleware(AppDelegate app, AppDelegate app0, AppDelegate app1)
+        {
+            return Middleware(app, new[] { app0, app1 });
+        }
+        public static AppDelegate Middleware(AppDelegate app, AppDelegate app0, AppDelegate app1, AppDelegate app2)
+        {
+            return Middleware(app, new[] { app0, app1, app2 });
+        }
+
+        public static AppDelegate Middleware(AppDelegate app, IEnumerable<AppDelegate> apps)
+        {
+            // sequence to attempt is {apps[0], apps[n], app}
+            // or {apps[0], apps[n]} if app is null
+            apps = (apps ?? new AppDelegate[0]).Concat(app == null ? new AppDelegate[0] : new[] { app }).ToArray();
+
+            // the first non-404 result will the the one to take effect
+            // any subsequent apps are not called
             return (env, result, fault) =>
             {
                 var iter = apps.GetEnumerator();
@@ -32,7 +76,7 @@ namespace Gate.Middleware
                 loop = () =>
                 {
                     var threadId = Thread.CurrentThread.ManagedThreadId;
-                    for (var hot = true; hot;)
+                    for (var hot = true; hot; )
                     {
                         hot = false;
                         iter.Current.Invoke(
@@ -43,10 +87,16 @@ namespace Gate.Middleware
                                 {
                                     if (status.StartsWith("404") && iter.MoveNext())
                                     {
+                                        // ReSharper disable AccessToModifiedClosure
                                         if (threadId == Thread.CurrentThread.ManagedThreadId)
+                                        {
                                             hot = true;
+                                        }
                                         else
+                                        {
                                             loop();
+                                        }
+                                        // ReSharper restore AccessToModifiedClosure
                                     }
                                     else
                                     {
@@ -66,19 +116,5 @@ namespace Gate.Middleware
                 loop();
             };
         }
-//
-//        public static AppDelegate Try(AppDelegate fallback, AppDelegate app1)
-//        {
-//            return Middleware(new[] { app1, fallback});
-//        }
-//        public static AppDelegate Try(AppDelegate fallback, AppDelegate app1, AppDelegate app2)
-//        {
-//            return Middleware(new[] { app1, app2, fallback });
-//        }
-//
-//        public static AppDelegate Middleware(params AppDelegate[] apps)
-//        {
-//            return Middleware((IEnumerable<AppDelegate>) apps);
-//        }
     }
 }
