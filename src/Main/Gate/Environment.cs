@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using Owin;
 
@@ -174,6 +175,24 @@ namespace Gate
             set { this[RequestQueryStringKey] = value; }
         }
 
+        /// <summary>
+        /// "host.CallDisposed" A CancellationToken that is triggered after the request/response has finished executing or has failed.
+        /// </summary>
+        public CancellationToken CallDisposed
+        {
+            get { return Get<CancellationToken>("host.CallDisposed"); }
+            set { this["host.CallDisposed"] = value; }
+        }
+
+
+        /// <summary>
+        /// "host.TraceOutput" A TextWriter that directs trace or logger output to an appropriate place for the host
+        /// </summary>
+        public TextWriter TraceOutput
+        {
+            get { return Get<TextWriter>("host.TraceOutput"); }
+            set { this["host.TraceOutput"] = value; }
+        }
 
 
         #region Implementation of IEnumerable

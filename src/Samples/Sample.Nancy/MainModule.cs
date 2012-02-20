@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Nancy;
-using Sample.App.Models;
+using Sample.Nancy.Models;
 
 namespace Sample.Nancy
 {
