@@ -43,6 +43,27 @@ namespace Gate
             return headers;
         }
 
+        public static IDictionary<string, IEnumerable<string>> AddHeader(this IDictionary<string, IEnumerable<string>> headers,
+            string name, string value)
+        {
+            return AddHeader(headers, name, new[] {value});
+        }
+
+        public static IDictionary<string, IEnumerable<string>> AddHeader(this IDictionary<string, IEnumerable<string>> headers,
+            string name, IEnumerable<string> value)
+        {
+            IEnumerable<string> values;
+            if (headers.TryGetValue(name, out values))
+            {
+                headers[name] = values.Concat(value).ToArray();
+            }
+            else
+            {
+                headers[name] = value;
+            }
+            return headers;
+        }
+
         public static IEnumerable<string> GetHeaders(this IDictionary<string, IEnumerable<string>> headers,
             string name)
         {
