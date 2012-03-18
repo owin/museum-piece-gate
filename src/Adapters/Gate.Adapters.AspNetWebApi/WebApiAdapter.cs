@@ -85,7 +85,14 @@ namespace Gate.Adapters.AspNetWebApi
                     {
                         foreach (var value in kv.Value)
                         {
-                            request.Headers.Add(kv.Key, value);
+                            if (kv.Key.StartsWith("content", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                request.Content.Headers.Add(kv.Key, value);
+                            }
+                            else
+                            {
+                                request.Headers.Add(kv.Key, value);
+                            }
                         }
                     }
                 }
