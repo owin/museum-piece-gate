@@ -20,7 +20,7 @@ namespace Gate.Hosts.HttpListener.Tests
                 {
                     var bytes = Encoding.Default.GetBytes("This is a custom page");
                     write(new ArraySegment<byte>(bytes));
-                    end(null);
+                    end.Invoke(null);
                 });
         }
     }
