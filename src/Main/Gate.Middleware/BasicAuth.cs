@@ -52,7 +52,8 @@ namespace Gate.Middleware
 
             if (!scheme.Equals("Basic", StringComparison.InvariantCultureIgnoreCase))
             {
-                result("400 Bad Request", null, null);
+                var response = new Response(result, "400 Bad Request");
+                response.End();
                 return;
             }
 
@@ -77,7 +78,8 @@ namespace Gate.Middleware
             var challenge = string.Format("Basic realm=\"{0}\"", realm);
             headers.Add("WWW-Authenticate", new[] { challenge });
 
-            result(status, headers, null);
+            var response = new Response(result) {Status = status, Headers = headers};
+            response.End();
         }
     }
 }

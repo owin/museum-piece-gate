@@ -56,7 +56,6 @@ namespace Gate.Middleware.Tests
             Assert.That(response.Status, Is.EqualTo("401 Unauthorized"));
             Assert.That(response.Headers.Keys, Contains.Item("WWW-Authenticate"));
             Assert.That(response.Headers["WWW-Authenticate"], Contains.Item("Basic realm=\"Howdy\""));
-            Assert.That(response.Body, Is.Null);
         }
 
         private void RequestWithBasicAuth(string username, string password, Action<FakeHostResponse> responseAction = null)
