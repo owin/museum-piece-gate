@@ -41,6 +41,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BasicAuth.cs" />
     <Compile Include="StaticFiles\BodyStream.cs" />
     <Compile Include="StaticFiles\FileBody.cs" />
     <Compile Include="StaticFiles\FileServer.cs" />
