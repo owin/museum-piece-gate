@@ -66,8 +66,8 @@ namespace Gate.Hosts.Kayak
                         {
                             theScheduler.Post(() =>
                             {
-    							if (!flush(() => { if (drained != null) theScheduler.Post(drained); }))
-                                	if (drained != null) drained.Invoke();
+                                if (!flush(() => { if (drained != null) theScheduler.Post(drained); }))
+                                    if (drained != null) drained.Invoke();
                             });
                             return true;
                         },
