@@ -67,8 +67,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{4E00A931
 		src\build\_nunit.shade = src\build\_nunit.shade
 		src\build\_update-assemblyinfo.shade = src\build\_update-assemblyinfo.shade
 		src\build\_update-file.shade = src\build\_update-file.shade
+		build = build
 		build.cmd = build.cmd
-		src\build\makefile.shade = src\build\makefile.shade
+		makefile.shade = makefile.shade
 		packages.config = packages.config
 	EndProjectSection
 EndProject
