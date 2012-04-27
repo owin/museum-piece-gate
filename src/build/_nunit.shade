@@ -4,7 +4,7 @@ default nunitProgram='packages/NUnit.${nunitVersion}/tools/nunit-console.exe'
 default extra=''
 
 test if='!System.IO.File.Exists(nunitProgram)'
-  exec-clr program='.nuget/nuget.exe' commandline='install NUnit -version ${nunitVersion} -o packages'
+  exec-clr program='.nuget/NuGet.exe' commandline='install NUnit -version ${nunitVersion} -o packages'
 
 exec-clr program='${nunitProgram}' commandline='${testAssembly} ${extra}'
 

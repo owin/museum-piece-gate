@@ -32,6 +32,10 @@ var testAssemblies = '${Files.Include("target/test/*.Tests.dll").Exclude("target
 #ApplyVersion target='initialize'
   update-assemblyinfo assemblyVersion='${version}'
 
+#InstallPackages target='initialize'
+  for each='var file in Files.Include("**/packages.config")'
+    exec-clr program='.nuget/NuGet.exe' commandline='install ${file} -o packages'
+
 #BuildApp target='compile'
   build each='var projectFile in appProjects' configuration='Release' outputDir='${buildDir}'
 
