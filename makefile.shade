@@ -1,0 +1,56 @@
+use-standard-lifecycle
+
+use namespace="System"
+use namespace="System.IO"
+use import="Files"
+
+var version='0.3.5'
+var authors='Gate contributors'
+
+var baseDir='${Directory.GetCurrentDirectory()}'
+var targetDir='${Path.Combine(baseDir, "target")}'
+var buildDir='${Path.Combine(targetDir, "build")}'
+var testDir='${Path.Combine(targetDir, "test")}'
+var packageDir='${Path.Combine(targetDir, "package")}'
+
+var homeDir='${Environment.GetEnvironmentVariable("HOME")}'
+set homeDir='${Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH")}' if='string.IsNullOrEmpty(homeDir)'
+
+var appProjects = '${Files.Include("src/Main/**/*.*sproj", "src/Hosts/**/*.*sproj", "src/Adapters/**/*.*sproj")}'
+var testProjects = '${Files.Include("src/Tests/**/*.*sproj")}'
+var testAssemblies = '${Files.Include("target/test/*.Tests.dll").Exclude("target/test/*.HttpListener.Tests.dll")}'
+
+#CleanTargetDir target='clean'
+  @{
+    if (Directory.Exists(targetDir))
+    {
+        Log.Info("Deleting " + targetDir);
+        Directory.Delete(targetDir, true);
+    }
+  }
+
+#ApplyVersion target='initialize'
+  update-assemblyinfo assemblyVersion='${version}'
+
+#InstallPackages target='initialize'
+  for each='var file in Files.Include("**/packages.config")'
+    exec-clr program='.nuget/NuGet.exe' commandline='install ${file} -o packages'
+
+#BuildApp target='compile'
+  build each='var projectFile in appProjects' configuration='Release' outputDir='${buildDir}'
+
+#BuildTest target='test-compile'
+  build each='var projectFile in testProjects' configuration='Debug' outputDir='${testDir}'
+
+#NUnitTest target='test'
+  nunit each='var testAssembly in testAssemblies'
+
+#NugetPack target='package'
+  copy sourceDir='src/Deploy' outputDir='target/build' overwrite='${true}'
+  for each='var file in Files.BasePath(buildDir).Include("*.nuspec")'
+    var baseName='${Path.GetFileNameWithoutExtension(file)}'
+    nuget-pack nuspecFile='${file}' workingdir='${buildDir}' extra='-Properties "id=${baseName};authors=${authors}"'
+
+#NupkgInstall target='install'
+  copy sourceDir='${buildDir}' include='*.nupkg' outputDir='${Path.Combine(homeDir, ".nuget")}' overwrite='${true}'
+
