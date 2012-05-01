@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace Gate.Tests
@@ -117,5 +118,91 @@ namespace Gate.Tests
             Assert.That(request.ContentType, Is.Null);
             Assert.That(request.MediaType, Is.Null);
         }
+
+        [Test]
+        public void ItShouldParseCookies()
+        {
+            var headers = Headers.New().SetHeader("Cookie", "foo=bar;quux=h&m");
+            var request = new Request(new Dictionary<string, object>
+            {
+                {"owin.RequestHeaders", headers}
+            });
+            Assert.That(request.Cookies["foo"], Is.EqualTo("bar"));
+            Assert.That(request.Cookies["quux"], Is.EqualTo("h&m"));
+            headers.Remove("Cookie");
+            Assert.That(request.Cookies.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ItShouldAlwaysReturnTheSameDictionaryObject()
+        {
+            var headers = Headers.New().SetHeader("Cookie", "foo=bar;quux=h&m");
+            var request = new Request(new Dictionary<string, object>
+            {
+                {"owin.RequestHeaders", headers}
+            });
+            var cookies = request.Cookies;
+            headers.Remove("Cookie");
+            Assert.That(request.Cookies, Is.SameAs(cookies));
+            headers.SetHeader("Cookie", "zoo=m");
+            Assert.That(request.Cookies, Is.SameAs(cookies));
+        }
+
+        [Test]
+        public void ItShouldModifyTheCookiesDictionaryInPlace()
+        {
+            var headers = Headers.New();
+            var request = new Request(new Dictionary<string, object>
+            {
+                {"owin.RequestHeaders", headers}
+            });
+            var cookies = request.Cookies;
+            headers.Remove("Cookie");
+            Assert.That(cookies.Count, Is.EqualTo(0));
+            cookies["foo"] = "bar";
+            Assert.That(cookies.Count, Is.EqualTo(1));
+            Assert.That(request.Cookies["foo"], Is.EqualTo("bar"));
+        }
+
+        [Test]
+        public void ItShouldRaiseAnyErrorsOnEveryRequest()
+        {
+            var headers = Headers.New().SetHeader("Cookie", "foo=%");
+            var request = new Request(new Dictionary<string, object>
+            {
+                {"owin.RequestHeaders", headers}
+            });
+
+            Assert.Throws<UriFormatException>(() => { var x = request.Cookies; });
+            Assert.Throws<UriFormatException>(() => { var x = request.Cookies; });
+        }
+
+        [Test]
+        public void ItShouldParseCookiesAccordingToRFC2109()
+        {
+            var headers = Headers.New().SetHeader("Cookie", "foo=bar;foo=car");
+            var request = new Request(new Dictionary<string, object>
+            {
+                {"owin.RequestHeaders", headers}
+            });
+
+            Assert.That(request.Cookies["foo"], Is.EqualTo("bar"));
+        }
+
+        [Test]
+        public void ItShouldParseCookiesWithQuotes()
+        {
+            var headers = Headers.New().SetHeader("Cookie", @"$Version=""1""; Customer=""WILE_E_COYOTE""; $Path=""/acme""; Part_Number=""Rocket_Launcher_0001""; $Path=""/acme""");
+            var request = new Request(new Dictionary<string, object>
+            {
+                {"owin.RequestHeaders", headers}
+            });
+
+            Assert.That(request.Cookies["$Version"], Is.EqualTo(@"""1"""));
+            Assert.That(request.Cookies["Customer"], Is.EqualTo(@"""WILE_E_COYOTE"""));
+            Assert.That(request.Cookies["$Path"], Is.EqualTo(@"""/acme"""));
+            Assert.That(request.Cookies["Part_Number"], Is.EqualTo(@"""Rocket_Launcher_0001"""));
+        }
+
     }
 }

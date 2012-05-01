@@ -7,24 +7,32 @@ namespace Gate.Utils
 {
     public class ParamDictionary : IDictionary<string, string>
     {
-        public static IDictionary<string, string> Parse(string queryString)
+        static readonly char[] DefaultParamSeparators = new[] { '&', ';' };
+        static readonly char[] ParamKeyValueSeparator = new[] { '=' };
+        static readonly char[] LeadingWhitespaceChars = new[] { ' ' };
+
+        public static IEnumerable<KeyValuePair<string, string>> ParseToEnumerable(string queryString, char[] delimiters)
         {
-            // TODO: this is wrong in many, many ways
-            var d = (queryString ?? "").Split("&".ToCharArray())
-                .Select(item => item.Split("=".ToCharArray(), 2))
-                .Where(item => item.Length == 2)
-                .GroupBy(item => item[0], item => Decode(item[1]), StringComparer.OrdinalIgnoreCase)
+            var items = (queryString ?? "").Split(delimiters ?? DefaultParamSeparators, StringSplitOptions.RemoveEmptyEntries);
+            var rawPairs = items.Select(item => item.Split(ParamKeyValueSeparator, 2, StringSplitOptions.None));
+            var pairs = rawPairs.Select(pair => new KeyValuePair<string, string>(
+                Uri.UnescapeDataString(pair[0]).TrimStart(LeadingWhitespaceChars),
+                pair.Length < 2 ? "" : Uri.UnescapeDataString(pair[1])));
+            return pairs;
+        }
+
+        public static IDictionary<string, string> Parse(string queryString, char[] delimiters = null)
+        {
+            var d = ParseToEnumerable(queryString, delimiters)
+                .GroupBy(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => string.Join(",", g.ToArray()), StringComparer.OrdinalIgnoreCase);
 
             return new ParamDictionary(d);
         }
 
-        static string Decode(string value)
-        {
-            return value.Replace("%3A", ":").Replace("%2F", "/");
-        }
-
         readonly IDictionary<string, string> _impl;
+
+
 
         ParamDictionary(IDictionary<string, string> impl)
         {
