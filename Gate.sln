@@ -64,8 +64,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Welcome", ".Welcome", "{FF
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{4E00A931-5068-4DFC-9320-3C5F8AD8E2BE}"
 	ProjectSection(SolutionItems) = preProject
-		build.bat = build.bat
-		build.fsx = build.fsx
+		src\build\_nunit.shade = src\build\_nunit.shade
+		src\build\_update-assemblyinfo.shade = src\build\_update-assemblyinfo.shade
+		src\build\_update-file.shade = src\build\_update-file.shade
+		build = build
+		build.cmd = build.cmd
+		makefile.shade = makefile.shade
 		packages.config = packages.config
 	EndProjectSection
 EndProject
