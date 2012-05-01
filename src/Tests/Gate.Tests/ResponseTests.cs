@@ -76,5 +76,110 @@ namespace Gate.Tests
             var data = Encoding.UTF8.GetString(Consume());
             Assert.That(data, Is.EqualTo("thisisatest"));
         }
+
+        [Test]
+        public void ItCanSetCookies()
+        {
+            var response = new Response(Result);
+            response.SetCookie("foo", "bar");
+            Assert.That(response.GetHeaders("Set-Cookie"), Is.EquivalentTo(new[] { "foo=bar; path=/" }));
+            response.SetCookie("foo2", "bar2");
+            Assert.That(response.GetHeaders("Set-Cookie"), Is.EquivalentTo(new[] { "foo=bar; path=/", "foo2=bar2; path=/" }));
+            response.SetCookie("foo3", "bar3");
+            Assert.That(response.GetHeaders("Set-Cookie"), Is.EquivalentTo(new[] { "foo=bar; path=/", "foo2=bar2; path=/", "foo3=bar3; path=/" }));
+        }
+
+        [Test]
+        public void ItCanSetCookiesWithTheSameNameForMultipleDomains()
+        {
+            var response = new Response(Result);
+            response.SetCookie("foo", new Response.Cookie { Value = "bar", Domain = "sample.example.com" });
+            response.SetCookie("foo", new Response.Cookie { Value = "bar", Domain = ".example.com" });
+            Assert.That(response.GetHeaders("Set-Cookie"), Is.EquivalentTo(new[]
+            {
+                "foo=bar; domain=sample.example.com; path=/", 
+                "foo=bar; domain=.example.com; path=/"
+            }));
+        }
+
+        [Test]
+        public void ItFormatsTheCookieExpirationDataAccordinglyToRfc2109()
+        {
+            var response = new Response(Result);
+            response.SetCookie("foo", new Response.Cookie { Value = "bar", Expires = new DateTime(1971, 10, 14, 12, 34, 56) });
+            Assert.That(response.GetHeader("Set-Cookie"), Is.StringMatching(@"expires=..., \d\d-...-\d\d\d\d \d\d:\d\d:\d\d ..."));
+        }
+
+        [Test]
+        public void ItCanSetSecureCookies()
+        {
+            var response = new Response(Result);
+            response.SetCookie("foo", new Response.Cookie { Value = "bar", Secure = true });
+            Assert.That(response.GetHeaders("Set-Cookie"), Is.EquivalentTo(new[] { @"foo=bar; path=/; secure" }));
+        }
+
+
+        [Test]
+        public void ItCanSetHttpOnlyCookies()
+        {
+            var response = new Response(Result);
+            response.SetCookie("foo", new Response.Cookie { Value = "bar", HttpOnly = true });
+            Assert.That(response.GetHeaders("Set-Cookie"), Is.EquivalentTo(new[] { @"foo=bar; path=/; HttpOnly" }));
+        }
+
+        [Test]
+        public void ItCanDeleteCookies()
+        {
+            var response = new Response(Result);
+            response.SetCookie("foo", "bar");
+            response.SetCookie("foo2", "bar2");
+            response.DeleteCookie("foo");
+            Assert.That(response.GetHeaders("Set-Cookie"), Is.EquivalentTo(new[] { "foo2=bar2; path=/", "foo=; expires=Thu, 01-Jan-1970 00:00:00 GMT" }));
+        }
+
+        [Test]
+        public void ItCanDeleteCookiesWithTheSameNameFromMultipleDomains()
+        {
+            var response = new Response(Result);
+            response.SetCookie("foo", new Response.Cookie { Value = "bar", Domain = "sample.example.com" });
+            response.SetCookie("foo", new Response.Cookie { Value = "bar", Domain = ".example.com" });
+            Assert.That(response.GetHeaders("Set-Cookie"), Is.EquivalentTo(new[]
+            {
+                "foo=bar; domain=sample.example.com; path=/", 
+                "foo=bar; domain=.example.com; path=/"
+            }));
+            response.DeleteCookie("foo", new Response.Cookie { Domain = ".example.com" });
+            Assert.That(response.GetHeaders("Set-Cookie"), Is.EquivalentTo(new[]
+            {
+                "foo=bar; domain=sample.example.com; path=/", 
+                "foo=; domain=.example.com; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT"
+            }));
+            response.DeleteCookie("foo", new Response.Cookie { Domain = "sample.example.com" });
+            Assert.That(response.GetHeaders("Set-Cookie"), Is.EquivalentTo(new[] 
+            { 
+                "foo=; domain=.example.com; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT",
+                "foo=; domain=sample.example.com; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT" 
+            }));
+        }
+
+
+        [Test]
+        public void ItCanDeleteCookiesWithTheSameNameWithDifferentPaths()
+        {
+            var response = new Response(Result);
+            response.SetCookie("foo", "bar");
+            response.SetCookie("foo", new Response.Cookie { Value = "bar", Path = "/path" });
+            Assert.That(response.GetHeaders("Set-Cookie"), Is.EquivalentTo(new[]
+            {
+                "foo=bar; path=/",
+                "foo=bar; path=/path"
+            }));
+            response.DeleteCookie("foo", new Response.Cookie { Path = "/path" });
+            Assert.That(response.GetHeaders("Set-Cookie"), Is.EquivalentTo(new[]
+            {
+                "foo=bar; path=/",
+                "foo=; path=/path; expires=Thu, 01-Jan-1970 00:00:00 GMT"
+            }));
+        }
     }
 }

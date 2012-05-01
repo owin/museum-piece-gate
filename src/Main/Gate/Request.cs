@@ -31,6 +31,33 @@ namespace Gate
             }
         }
 
+        static readonly char[] CookieParamSeparators = new[] { ';', ',' };
+        public IDictionary<string, string> Cookies
+        {
+            get
+            {
+                var cookies = Get<IDictionary<string, string>>("Gate.Request.Cookies#dictionary");
+                if (cookies == null)
+                {
+                    cookies = new Dictionary<string, string>(StringComparer.Ordinal);
+                    Env["Gate.Request.Cookies#dictionary"] = cookies;
+                }
+
+                var text = Headers.GetHeader("Cookie");
+                if (Get<string>("Gate.Request.Cookies#text") != text)
+                {
+                    cookies.Clear();
+                    foreach (var kv in ParamDictionary.ParseToEnumerable(text, CookieParamSeparators))
+                    {
+                        if (!cookies.ContainsKey(kv.Key))
+                            cookies.Add(kv);
+                    }
+                    Env["Gate.Request.Cookies#text"] = text;
+                }
+                return cookies;
+            }
+        }
+
         public bool HasFormData
         {
             get

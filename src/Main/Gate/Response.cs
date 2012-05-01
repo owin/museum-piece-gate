@@ -49,7 +49,7 @@ namespace Gate
         public Encoding Encoding { get; set; }
         public bool Buffer { get; set; }
 
-        string GetHeader(string name)
+        public string GetHeader(string name)
         {
             var values = GetHeaders(name);
             if (values == null)
@@ -92,18 +92,120 @@ namespace Gate
             return sb.ToString();
         }
 
-        IEnumerable<string> GetHeaders(string name)
+        public IEnumerable<string> GetHeaders(string name)
         {
-            IEnumerable<string> value;
-            return Headers.TryGetValue(name, out value) ? value : null;
+            IEnumerable<string> existingValues;
+            return Headers.TryGetValue(name, out existingValues) ? existingValues : null;
         }
 
-        void SetHeader(string name, string value)
+        public Response SetHeader(string name, string value)
         {
             if (string.IsNullOrWhiteSpace(value))
                 Headers.Remove(value);
             else
                 Headers[name] = new[] { value };
+            return this;
+        }
+
+        public Response SetCookie(string key, string value)
+        {
+            Headers.AddHeader("Set-Cookie", Uri.EscapeDataString(key) + "=" + Uri.EscapeDataString(value) + "; path=/");
+            return this;
+        }
+
+        public Response SetCookie(string key, Cookie cookie)
+        {
+            var domainHasValue = !string.IsNullOrEmpty(cookie.Domain);
+            var pathHasValue = !string.IsNullOrEmpty(cookie.Path);
+            var expiresHasValue = cookie.Expires.HasValue;
+
+            var setCookieValue = string.Concat(
+                Uri.EscapeDataString(key),
+                "=",
+                Uri.EscapeDataString(cookie.Value ?? ""), //TODO: concat complex value type with '&'?
+                !domainHasValue ? null : "; domain=",
+                !domainHasValue ? null : cookie.Domain,
+                !pathHasValue ? null : "; path=",
+                !pathHasValue ? null : cookie.Path,
+                !expiresHasValue ? null : "; expires=",
+                !expiresHasValue ? null : cookie.Expires.Value.ToString("ddd, dd-MMM-yyyy HH:mm:ss ") + "GMT",
+                !cookie.Secure ? null : "; secure",
+                !cookie.HttpOnly ? null : "; HttpOnly"
+                );
+            Headers.AddHeader("Set-Cookie", setCookieValue);
+            return this;
+        }
+
+        public Response DeleteCookie(string key)
+        {
+            Func<string, bool> predicate = value => value.StartsWith(key + "=", StringComparison.InvariantCultureIgnoreCase);
+
+            var deleteCookies = new[] { Uri.EscapeDataString(key) + "=; expires=Thu, 01-Jan-1970 00:00:00 GMT" };
+            var existingValues = Headers.GetHeaders("Set-Cookie");
+            if (existingValues == null)
+            {
+                Headers["Set-Cookie"] = deleteCookies;
+                return this;
+            }
+
+            Headers["Set-Cookie"] = existingValues.Where(value => !predicate(value)).Concat(deleteCookies).ToArray();
+            return this;
+        }
+
+        public Response DeleteCookie(string key, Cookie cookie)
+        {
+            var domainHasValue = !string.IsNullOrEmpty(cookie.Domain);
+            var pathHasValue = !string.IsNullOrEmpty(cookie.Path);
+
+            Func<string, bool> rejectPredicate;
+            if (domainHasValue)
+            {
+                rejectPredicate = value =>
+                    value.StartsWith(key + "=", StringComparison.InvariantCultureIgnoreCase) &&
+                        value.IndexOf("domain=" + cookie.Domain, StringComparison.InvariantCultureIgnoreCase) != -1;
+            }
+            else if (pathHasValue)
+            {
+                rejectPredicate = value =>
+                    value.StartsWith(key + "=", StringComparison.InvariantCultureIgnoreCase) &&
+                        value.IndexOf("path=" + cookie.Path, StringComparison.InvariantCultureIgnoreCase) != -1;
+            }
+            else
+            {
+                rejectPredicate = value => value.StartsWith(key + "=", StringComparison.InvariantCultureIgnoreCase);
+            }
+            var existingValues = Headers.GetHeaders("Set-Cookie");
+            if (existingValues != null)
+            {
+                Headers["Set-Cookie"] = existingValues.Where(value => !rejectPredicate(value));
+            }
+
+            return SetCookie(key, new Cookie
+            {
+                Path = cookie.Path,
+                Domain = cookie.Domain,
+                Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            });
+        }
+
+
+        public class Cookie
+        {
+            public Cookie()
+            {
+                Path = "/";
+            }
+            public Cookie(string value)
+            {
+                Path = "/";
+                Value = value;
+            }
+            public string Value { get; set; }
+            public string Domain { get; set; }
+            public string Path { get; set; }
+            public DateTime? Expires { get; set; }
+            public bool Secure { get; set; }
+            public bool HttpOnly { get; set; }
         }
 
         public string ContentType
@@ -296,5 +398,7 @@ namespace Gate
             OnStart(() => OnEnd(ex));
             Autostart();
         }
+
+
     }
 }
