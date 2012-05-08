@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Ghost.Engine.Settings;
 using NDesk.Options;
 
@@ -31,19 +32,43 @@ namespace Ghost.Engine.CommandLine
             };
 
             var server = engine.Start(info);
-            HandleBreak(server.Dispose);
 
             info.Output.WriteLine("Started at {0}", info.Url);
-            while (true)
+            if (IsInputRedirected)
             {
-                var key = Console.ReadKey(true);
-                if (key.Key == ConsoleKey.Escape)
+                // read a single line that will never arrive, I guess...
+                // what's the best way to signal userless console process to exit?
+
+                Console.ReadLine(); 
+            }
+            else
+            {
+                HandleBreak(server.Dispose);
+
+                while (true)
                 {
-                    break;
+                    var key = Console.ReadKey(true);
+                    if (key.Key == ConsoleKey.Escape)
+                    {
+                        break;
+                    }
                 }
             }
             server.Dispose();
         }
+
+        public static bool IsInputRedirected
+        {
+            get { return FileType.Char != GetFileType(GetStdHandle(StdHandle.Stdin)); }
+        }
+
+        // P/Invoke:
+        private enum FileType { Unknown, Disk, Char, Pipe };
+        private enum StdHandle { Stdin = -10, Stdout = -11, Stderr = -12 };
+        [DllImport("kernel32.dll")]
+        private static extern FileType GetFileType(IntPtr hdl);
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr GetStdHandle(StdHandle std);
 
         static void HandleBreak(Action dispose)
         {
@@ -55,7 +80,7 @@ namespace Ghost.Engine.CommandLine
                 if (cancelPressed)
                 {
                     dispose();
-                    Environment.Exit(-1);
+                    Environment.Exit(1);
                     e.Cancel = true;
                 }
                 else
