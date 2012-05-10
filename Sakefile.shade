@@ -16,11 +16,15 @@ var packageDir='${Path.Combine(targetDir, "package")}'
 var homeDir='${Environment.GetEnvironmentVariable("HOME")}'
 set homeDir='${Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH")}' if='string.IsNullOrEmpty(homeDir)'
 
-var appProjects = '${Files.Include("src/Main/**/*.*sproj", "src/Hosts/**/*.*sproj", "src/Adapters/**/*.*sproj")}'
+var appProjects = '${Files.Include("src/Main/**/*.*sproj", "src/Hosts/**/*.*sproj", "src/Adapters/**/*.*sproj").Exclude("src/**/*Adapters.AspNetWebApi.*")}'
 var testProjects = '${Files.Include("src/Tests/**/*.*sproj")}'
 var testAssemblies = '${Files.Include("target/test/*.Tests.dll").Exclude("target/test/*.HttpListener.Tests.dll")}'
 
-#CleanTargetDir target='clean'
+-// Odd compiler error from this project - need to figure that out
+set appProjects = '${appProjects.Exclude("src/**/*.AspNetWebApi.csproj")}' if='IsMono'
+set testProjects = '${testProjects.Exclude("src/**/*.AspNetWebApi.csproj")}' if='IsMono'
+
+#delete-target target='clean'
   @{
     if (Directory.Exists(targetDir))
     {
@@ -29,28 +33,28 @@ var testAssemblies = '${Files.Include("target/test/*.Tests.dll").Exclude("target
     }
   }
 
-#ApplyVersion target='initialize'
-  update-assemblyinfo assemblyVersion='${version}'
+#apply-version target='initialize'
+  assemblyinfo each='var assemblyFile in Files.Include("src/**/AssemblyInfo.cs")' assemblyVersion='${version}'
 
-#InstallPackages target='initialize'
+#install-packages target='initialize'
   for each='var file in Files.Include("**/packages.config")'
     exec-clr program='.nuget/NuGet.exe' commandline='install ${file} -o packages'
 
-#BuildApp target='compile'
+#build-app target='compile'
   build each='var projectFile in appProjects' configuration='Release' outputDir='${buildDir}'
 
-#BuildTest target='test-compile'
+#build-tests target='test-compile'
   build each='var projectFile in testProjects' configuration='Debug' outputDir='${testDir}'
 
-#NUnitTest target='test'
-  nunit each='var testAssembly in testAssemblies'
+#run-tests target='test'
+  nunit each='var testFile in testAssemblies'
 
-#NugetPack target='package'
+#package-nuget target='package'
   copy sourceDir='src/Deploy' outputDir='target/build' overwrite='${true}'
   for each='var file in Files.BasePath(buildDir).Include("*.nuspec")'
     var baseName='${Path.GetFileNameWithoutExtension(file)}'
     nuget-pack nuspecFile='${file}' workingdir='${buildDir}' extra='-Properties "id=${baseName};authors=${authors}"'
 
-#NupkgInstall target='install'
+#install-nuget target='install'
   copy sourceDir='${buildDir}' include='*.nupkg' outputDir='${Path.Combine(homeDir, ".nuget")}' overwrite='${true}'
 
