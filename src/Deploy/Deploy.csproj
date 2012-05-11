@@ -74,16 +74,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </None>
-    <None Include="Ghost\bin\Ghost.exe.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Ghost.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Ghost\tools\install.ps1">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Quickstart.AspNetWebApi\Example-Startup-AspNetWebApi.cs.pp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -142,14 +132,6 @@
       <Project>{D96E8CF9-C2A5-4A35-814C-0B4FE9828B26}</Project>
       <Name>Gate.Hosts.Kayak</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Main\Ghost.Engine\Ghost.Engine.csproj">
-      <Project>{C225EB2E-E7A7-463F-B058-1705F204978E}</Project>
-      <Name>Ghost.Engine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Main\Ghost\Ghost.csproj">
-      <Project>{A15DD7AD-5930-4B76-8011-BBD1B1CC54DE}</Project>
-      <Name>Ghost</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Gate.Quickstart.AspNetWebApi.nuspec">
@@ -190,11 +172,6 @@
     </Reference>
     <Reference Include="System" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Ghost\content\ReadMe.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -203,11 +180,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Target Name="AfterBuild">
-    <ItemGroup>
-      <NuspecFiles Include="*.nuspec" />
-    </ItemGroup>
-    <Exec Command="$(ProjectDir)..\..\.nuget\NuGet.exe pack %(NuspecFiles.Identity) -Version $(PackageVersion) -Properties &quot;id=%(NuspecFiles.Filename);authors=HTTP Abstractions Working Group&quot;" WorkingDirectory="$(OutputPath)" />
-  </Target>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
 </Project>

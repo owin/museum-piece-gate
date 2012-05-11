@@ -49,10 +49,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Adapters.Nancy", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts", "src\Hosts\Gate.Hosts\Gate.Hosts.csproj", "{A6FB399F-6D35-45DB-87E6-C841764D5892}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ghost", "src\Main\Ghost\Ghost.csproj", "{A15DD7AD-5930-4B76-8011-BBD1B1CC54DE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ghost.Engine", "src\Main\Ghost.Engine\Ghost.Engine.csproj", "{C225EB2E-E7A7-463F-B058-1705F204978E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Builder.Tests", "src\Tests\Gate.Builder.Tests\Gate.Builder.Tests.csproj", "{A7D7E899-051C-4F6E-AFBD-DA0096B257F9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Welcome", ".Welcome", "{FF0F8984-BBC9-4A7D-88FF-BDC997AC3245}"
@@ -76,8 +72,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Hosts.Firefly", "src\Hosts\Gate.Hosts.Firefly\Gate.Hosts.Firefly.csproj", "{53619873-BED3-41F6-8B33-552E0B53FC1C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.HelloWorld", "src\Samples\Sample.HelloWorld\Sample.HelloWorld.csproj", "{30FF2CB1-231B-4D86-9B53-D5C667992984}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ghost.Engine.Tests", "src\Ghost.Engine.Tests\Ghost.Engine.Tests\Ghost.Engine.Tests.csproj", "{D74769C3-CC85-440E-BDB8-9B20BFBFDDAE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Adapters.AspNetWebApi", "src\Adapters\Gate.Adapters.AspNetWebApi\Gate.Adapters.AspNetWebApi.csproj", "{4E5EE713-0BC1-4641-989B-7DEF9E16979C}"
 EndProject

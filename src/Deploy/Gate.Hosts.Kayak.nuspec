@@ -5,7 +5,7 @@
     <version>$version$</version>
     <authors>$authors$</authors>
     <owners></owners>
-    <description>Gate.Hosts.Kayak provides Ghost.exe support for Kayak.</description>
+    <description>Gate.Hosts.Kayak provides Katana.exe support for Kayak.</description>
     <language>en-US</language>
     <projectUrl>https://github.com/owin/gate</projectUrl>
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>

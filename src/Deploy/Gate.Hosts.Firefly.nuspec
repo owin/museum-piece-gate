@@ -5,7 +5,7 @@
     <version>$version$</version>
     <authors>$authors$</authors>
     <owners></owners>
-    <description>Gate.Hosts.Firefly provides Ghost.exe support for Firefly.</description>
+    <description>Gate.Hosts.Firefly provides Katana.exe support for Firefly.</description>
     <language>en-US</language>
     <projectUrl>https://github.com/owin/gate</projectUrl>
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
