@@ -56,6 +56,7 @@ namespace Gate.Adapters.AspNetWebApi
 
         public static AppDelegate App(HttpServer server)
         {
+            var invoker = new HttpMessageInvoker(server);
             return (env, result, fault) =>
             {
                 var owinRequestMethod = Get<string>(env, "owin.RequestMethod");
@@ -96,8 +97,8 @@ namespace Gate.Adapters.AspNetWebApi
                         }
                     }
                 }
-
-                server.SubmitRequestAsync(request, cancellationToken)
+                
+                invoker.SendAsync(request, cancellationToken)
                     .Then(response =>
                     {
                         var status = (int)response.StatusCode + " " + response.ReasonPhrase;
