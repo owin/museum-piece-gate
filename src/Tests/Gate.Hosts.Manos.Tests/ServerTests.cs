@@ -22,9 +22,9 @@ namespace Gate.Hosts.Manos.Tests
         [Test]
         public void ServerWillRespondToRequests()
         {
-            using (Server.Create(Wilson.App(), 9090))
+            using (Server.Create(Wilson.App(), 19090))
             {
-                var request = (HttpWebRequest)WebRequest.Create("http://localhost:9090");
+                var request = (HttpWebRequest)WebRequest.Create("http://localhost:19090");
                 using (var response = (HttpWebResponse)request.GetResponse())
                 {
                     using (var reader = new StreamReader(response.GetResponseStream()))
@@ -66,9 +66,9 @@ namespace Gate.Hosts.Manos.Tests
                 CancellationToken.None);
             };
 
-            using (Server.Create(app, 9092))
+            using (Server.Create(app, 19092))
             {
-                var request = (HttpWebRequest)WebRequest.Create("http://localhost:9092/");
+                var request = (HttpWebRequest)WebRequest.Create("http://localhost:19092/");
                 request.Method = "POST";
                 using (var requestStream = request.GetRequestStream())
                 {
