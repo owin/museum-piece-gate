@@ -15,6 +15,7 @@ namespace Gate.Hosts.Kayak
     {
         public static IDisposable Create(AppDelegate app, int port, TextWriter output)
         {
+            app = ExecutionContextPerRequest.Middleware(app);
             var endPoint = new IPEndPoint(IPAddress.Any, port);
 
             var schedulerDelegate = new NullSchedulerDelegate(output);

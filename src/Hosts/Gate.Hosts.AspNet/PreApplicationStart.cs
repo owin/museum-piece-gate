@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Configuration;
+using System.IO;
 using System.Web;
+using System.Web.Hosting;
 using Gate.Hosts.AspNet;
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 
@@ -18,6 +20,11 @@ namespace Gate.Hosts.AspNet
                 if (string.IsNullOrWhiteSpace(appSetting) ||
                     string.Equals("Enabled", appSetting, StringComparison.InvariantCultureIgnoreCase))
                 {
+                    var physicalPath = HostingEnvironment.MapPath("~");
+                    if (physicalPath != null)
+                    {
+                        Directory.SetCurrentDirectory(physicalPath);
+                    }
 
                     DynamicModuleUtility.RegisterModule(typeof(Module));
                 }
