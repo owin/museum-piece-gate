@@ -36,7 +36,7 @@ namespace Gate.Hosts.Kayak
 
         static BodyDelegate WrapBodyDelegate(ExecutionContext context, BodyDelegate body)
         {
-            return (write, flush, end, cancellationToken) => ExecutionContext.Run(
+            return body == null ? (BodyDelegate)null : (write, flush, end, cancellationToken) => ExecutionContext.Run(
                 context.CreateCopy(),
                 _ => body(write, WrapFlushDelegate(context, flush), end, cancellationToken),
                 null);
@@ -44,7 +44,7 @@ namespace Gate.Hosts.Kayak
 
         static Func<Action, bool> WrapFlushDelegate(ExecutionContext context, Func<Action, bool> flush)
         {
-            return drained => flush(() => ExecutionContext.Run(context.CreateCopy(), _ => drained(), null));
+            return drained => drained == null ? flush(null) : flush(() => ExecutionContext.Run(context.CreateCopy(), _ => drained(), null));
         }
     }
 }
