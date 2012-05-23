@@ -1,6 +1,6 @@
 
 var PROJECT='Gate'
-var VERSION='0.3.7'
+var VERSION='0.3.8'
 var FULL_VERSION='${VERSION}-nightly'
 var AUTHORS='${PROJECT} contributors'
 
@@ -35,3 +35,17 @@ use-standard-goals features='nuget,nunit'
     NUGET_GATE_DEPLOY = 'https://nuget.org/api/v2/';
     FULL_VERSION = VERSION;
   }
+
+#sources-package-prepare target='package-prepare'
+  for each='var file in Files.Include("src/**/*.Sources.nuspec")'
+    var projectDir='${Path.GetDirectoryName(file)}'
+    var projectName='${Path.GetFileName(projectDir)}'
+    copy sourceDir='${projectDir}' include='**\*.cs' exclude='**\AssemblyInfo.cs' outputDir='${BUILD_DIR}\${projectName}' overwrite='${true}'
+    update-file each='var updateFile in Files.Include(BUILD_DIR + "/" + projectName + "/**/*.cs")'
+      @{
+        updateText = updateText
+          .Replace("public static partial class", "internal static partial class")
+          .Replace("public static class", "internal static class")
+          .Replace("public class", "internal class")
+          .Replace("public enum", "internal enum");
+      }
