@@ -55,6 +55,8 @@
     <Compile Include="Response.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Gate.Sources.nuspec" />
+    <None Include="Gate.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

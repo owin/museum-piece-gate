@@ -71,6 +71,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Gate.Middleware.Sources.nuspec" />
+    <None Include="Gate.Middleware.nuspec" />
     <None Include="packages.config" />
     <None Include="ShowExceptions.View.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
