@@ -52,11 +52,14 @@
       <Link>PipeResponse.cs</Link>
     </Compile>
     <Compile Include="AppHandler.cs" />
-    <Compile Include="AppHandlerSingleton.cs" />
-    <Compile Include="Handler.cs" />
-    <Compile Include="Module.cs" />
+    <Compile Include="AppSingleton.cs" />
+    <Compile Include="OwinHandler.cs" />
+    <Compile Include="OwinModule.cs" />
+    <Compile Include="OwinRoute.cs" />
+    <Compile Include="OwinRouteHandler.cs" />
     <Compile Include="PreApplicationStart.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RouteCollectionExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Main\Gate.Builder\Gate.Builder.csproj">

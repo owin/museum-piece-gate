@@ -16,7 +16,9 @@ namespace Gate.Hosts.AspNet
         {
             try
             {
-                var appSetting = ConfigurationManager.AppSettings["Gate.Hosts.AspNet.PreApplicationStart"];
+                DynamicModuleUtility.RegisterModule(typeof(OwinModule));
+
+                var appSetting = ConfigurationManager.AppSettings["Gate.AspNet.SetCurrentDirectory"];
                 if (string.IsNullOrWhiteSpace(appSetting) ||
                     string.Equals("Enabled", appSetting, StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -25,15 +27,11 @@ namespace Gate.Hosts.AspNet
                     {
                         Directory.SetCurrentDirectory(physicalPath);
                     }
-
-                    DynamicModuleUtility.RegisterModule(typeof(Module));
                 }
             }
             // ReSharper disable EmptyGeneralCatchClause
             catch
             {
-                // If we're unable to load MWI then just swallow the exception and don't allow
-                // the automagic hub registration
             }
             // ReSharper restore EmptyGeneralCatchClause
         }

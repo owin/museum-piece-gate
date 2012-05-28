@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using Owin;
 
 namespace Gate.Hosts.AspNet.Tests
 {
@@ -12,20 +13,20 @@ namespace Gate.Hosts.AspNet.Tests
         [Test]
         public void Factory_method_should_be_called_once()
         {
-            var handler = new AppHandler(null);
+            AppDelegate handler = (env,result,fault)=> { };
             var calls = 0;
-            AppHandlerSingleton.SetFactory(() =>
+            AppSingleton.SetFactory(() =>
             {
                 ++calls;
                 return handler;
             });
             Assert.That(calls, Is.EqualTo(0));
 
-            var handler1 = AppHandlerSingleton.Instance;
+            var handler1 = AppSingleton.Instance;
             Assert.That(calls, Is.EqualTo(1));
             Assert.That(handler1, Is.SameAs(handler));
 
-            var handler2 = AppHandlerSingleton.Instance;
+            var handler2 = AppSingleton.Instance;
             Assert.That(calls, Is.EqualTo(1));
             Assert.That(handler2, Is.SameAs(handler));
         }
@@ -33,33 +34,33 @@ namespace Gate.Hosts.AspNet.Tests
         [Test]
         public void Reassigning_factory_will_call_it_again()
         {
-            var handler = new AppHandler(null);
+            AppDelegate handler = (env, result, fault) => { };
             var calls = 0;
-            Func<AppHandler> factory = () =>
+            Func<AppDelegate> factory = () =>
             {
                 ++calls;
                 return handler;
             };
 
-            AppHandlerSingleton.SetFactory(factory);
+            AppSingleton.SetFactory(factory);
             Assert.That(calls, Is.EqualTo(0));
 
-            var handler1 = AppHandlerSingleton.Instance;
+            var handler1 = AppSingleton.Instance;
             Assert.That(calls, Is.EqualTo(1));
             Assert.That(handler1, Is.SameAs(handler));
 
-            var handler2 = AppHandlerSingleton.Instance;
+            var handler2 = AppSingleton.Instance;
             Assert.That(calls, Is.EqualTo(1));
             Assert.That(handler2, Is.SameAs(handler));
 
-            AppHandlerSingleton.SetFactory(factory);
+            AppSingleton.SetFactory(factory);
             Assert.That(calls, Is.EqualTo(1));
 
-            var handler3 = AppHandlerSingleton.Instance;
+            var handler3 = AppSingleton.Instance;
             Assert.That(calls, Is.EqualTo(2));
             Assert.That(handler3, Is.SameAs(handler));
 
-            var handler4 = AppHandlerSingleton.Instance;
+            var handler4 = AppSingleton.Instance;
             Assert.That(calls, Is.EqualTo(2));
             Assert.That(handler4, Is.SameAs(handler));
         }
