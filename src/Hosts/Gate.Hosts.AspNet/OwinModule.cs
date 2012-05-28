@@ -20,7 +20,7 @@ namespace Gate.Hosts.AspNet
             if (string.IsNullOrWhiteSpace(appSetting) ||
                 string.Equals("Enabled", appSetting, StringComparison.InvariantCultureIgnoreCase))
             {
-                var handler = new OwinHandler();
+                var handler = new OwinHandler(null);
                 app.PostResolveRequestCache += (sender, e) => app.Context.RemapHandler(handler);
             }
         }

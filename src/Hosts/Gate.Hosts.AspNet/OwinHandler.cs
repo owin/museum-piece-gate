@@ -1,14 +1,23 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Web;
+using Owin;
 
 namespace Gate.Hosts.AspNet
 {
     public class OwinHandler : IHttpAsyncHandler
     {
+        readonly AppDelegate _app;
+
+        public OwinHandler(AppDelegate app)
+        {
+            _app = app;
+        }
+
         public IAsyncResult BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData)
         {
-            var appHandler = new AppHandler(AppSingleton.Instance);
+            var app = _app ?? AppSingleton.Instance;
+            var appHandler = new AppHandler(app);
             var task = Task.Factory.FromAsync(appHandler.BeginProcessRequest, appHandler.EndProcessRequest, new HttpContextWrapper(context), extraData);
             if (cb != null)
                 task.ContinueWith(t => cb(t), TaskContinuationOptions.PreferFairness);
