@@ -32,8 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Owin">
-      <HintPath>..\..\..\packages\Owin.0.7\lib\net40\Owin.dll</HintPath>
+    <Reference Include="Owin, Version=0.8.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\packages\Owin.0.8-ctp1\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -48,6 +49,7 @@
     <Compile Include="AppBuilderRunExtensions.cs" />
     <Compile Include="AppBuilderUseExtensions.cs" />
     <Compile Include="Environment.cs" />
+    <Compile Include="OwinConstants.cs" />
     <Compile Include="Utils\ParamDictionary.cs" />
     <Compile Include="Utils\Spool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

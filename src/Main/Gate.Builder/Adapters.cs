@@ -6,21 +6,19 @@ using Owin;
 
 namespace Gate.Builder
 {
-    using ResultTuple = Tuple<string, IDictionary<String, IEnumerable<string>>, BodyDelegate>;
+    using ResultTuple = Tuple<string, IDictionary<String, string[]>, BodyDelegate>;
 
 #pragma warning disable 811
     using AppAction = Action< // app
         IDictionary<string, object>, // env
         Action< // result
             string, // status
-            IDictionary<string, IEnumerable<string>>, // headers
+            IDictionary<string, string[]>, // headers
             Action< // body
                 Func< // write
                     ArraySegment<byte>, // data                     
-                    bool>, // buffering
-                Func< // flush
                     Action, // continuation
-                    bool>, // async
+                    bool>, // buffering
                 Action< // end
                     Exception>, // error
                 CancellationToken>>, // cancel
@@ -29,10 +27,8 @@ namespace Gate.Builder
     using BodyAction = Action< // body
         Func< // write
             ArraySegment<byte>, // data                     
-            bool>, // buffering
-        Func< // flush
             Action, // continuation
-            bool>, // async
+            bool>, // buffering
         Action< // end
             Exception>, // error
         CancellationToken>; //cancel
@@ -95,12 +91,12 @@ namespace Gate.Builder
 
         public static BodyAction ToAction(BodyDelegate body)
         {
-            return (write, flush, end, cancel) => body(write, flush, end, cancel);
+            return (write, end, cancel) => body(write, end, cancel);
         }
 
         public static BodyDelegate ToDelegate(BodyAction body)
         {
-            return (write, flush, end, cancel) => body(write, flush, end, cancel);
+            return (write, end, cancel) => body(write, end, cancel);
         }
 
 

@@ -22,14 +22,36 @@ namespace Gate.Adapters.AspNetWebApi
         {
             var tcs = new TaskCompletionSource<object>();
             _body.Invoke(
-                data =>
+                (data, callback) =>
                 {
-                    stream.Write(data.Array, data.Offset, data.Count);
-                    return false;
-                },
-                _ =>
-                {
-                    stream.Flush();
+                    if (data.Count == 0)
+                    {
+                        stream.Flush();
+                    }
+                    else if (callback == null)
+                    {
+                        stream.Write(data.Array, data.Offset, data.Count);
+                    }
+                    else
+                    {
+                        var sr = stream.BeginWrite(data.Array, data.Offset, data.Count, ar =>
+                        {
+                            if (!ar.CompletedSynchronously)
+                            {
+                                try { stream.EndWrite(ar); }
+                                catch { }
+                                try { callback.Invoke(); }
+                                catch { }
+                            }
+                        }, null);
+
+                        if (!sr.CompletedSynchronously)
+                        {
+                            return true;
+                        }
+                        stream.EndWrite(sr);
+                        callback.Invoke();
+                    }
                     return false;
                 },
                 ex =>

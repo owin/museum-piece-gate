@@ -12,14 +12,12 @@ namespace Gate.Builder
        IDictionary<string, object>, // env
        Action< // result
            string, // status
-           IDictionary<string, IEnumerable<string>>, // headers
+           IDictionary<string, string[]>, // headers
            Action< // body
                Func< // write
                    ArraySegment<byte>, // data                     
-                   bool>, // buffering
-               Func< // flush
                    Action, // continuation
-                   bool>, // async
+                   bool>, // buffering
                Action< // end
                    Exception>, // error
                CancellationToken>>, // cancel
@@ -123,6 +121,16 @@ namespace Gate.Builder
         public AppDelegate Materialize()
         {
             return Materialize<AppDelegate>();
+        }
+
+        public IAppBuilder AddAdapters<TApp1, TApp2>(Func<TApp1, TApp2> adapter1, Func<TApp2, TApp1> adapter2)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDictionary<string, object> Context
+        {
+            get { throw new NotImplementedException(); }
         }
     }
 }

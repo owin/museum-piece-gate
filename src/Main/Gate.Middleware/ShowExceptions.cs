@@ -45,19 +45,18 @@ namespace Gate.Middleware
                             result(
                                 status,
                                 headers,
-                                (write, flush, end, token) =>
+                                (write, end, token) =>
                                 {
                                     showErrorPage = ex =>
                                     {
                                         if (ex != null)
                                         {
-                                            showErrorMessage(ex, data => write(data));
+                                            showErrorMessage(ex, data => write(data, null));
                                         }
                                         end(null);
                                     };
                                     body(
                                         write,
-                                        flush,
                                         showErrorPage,
                                         token);
                                 }),

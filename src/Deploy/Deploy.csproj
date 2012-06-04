@@ -41,6 +41,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Content Include="Hosts.AspNet\Web.config" />
+    <None Include="app.config" />
     <None Include="Quickstart.All\Example-Startup-All.cs.pp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

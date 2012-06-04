@@ -7,52 +7,52 @@ namespace Gate
 {
     public static class Headers
     {
-        public static IDictionary<string, IEnumerable<string>> New()
+        public static IDictionary<string, string[]> New()
         {
-            return new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
+            return new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public static IDictionary<string, IEnumerable<string>> New(IDictionary<string, IEnumerable<string>> headers)
+        public static IDictionary<string, string[]> New(IDictionary<string, string[]> headers)
         {
             if (headers == null)
                 return New();
 
-            return new Dictionary<string, IEnumerable<string>>(headers, StringComparer.OrdinalIgnoreCase);
+            return new Dictionary<string, string[]>(headers, StringComparer.OrdinalIgnoreCase);
         }
 
-        public static bool HasHeader(this IDictionary<string, IEnumerable<string>> headers,
+        public static bool HasHeader(this IDictionary<string, string[]> headers,
             string name)
         {
-            IEnumerable<string> values;
+            string[] values;
             if (!headers.TryGetValue(name, out values) || values == null)
                 return false;
             return values.Any(value => !string.IsNullOrWhiteSpace(value));
         }
 
-        public static IDictionary<string, IEnumerable<string>> SetHeader(this IDictionary<string, IEnumerable<string>> headers,
+        public static IDictionary<string, string[]> SetHeader(this IDictionary<string, string[]> headers,
             string name, string value)
         {
             headers[name] = new[] { value };
             return headers;
         }
 
-        public static IDictionary<string, IEnumerable<string>> SetHeader(this IDictionary<string, IEnumerable<string>> headers,
-            string name, IEnumerable<string> values)
+        public static IDictionary<string, string[]> SetHeader(this IDictionary<string, string[]> headers,
+            string name, string[] values)
         {
             headers[name] = values;
             return headers;
         }
 
-        public static IDictionary<string, IEnumerable<string>> AddHeader(this IDictionary<string, IEnumerable<string>> headers,
+        public static IDictionary<string, string[]> AddHeader(this IDictionary<string, string[]> headers,
             string name, string value)
         {
-            return AddHeader(headers, name, new[] {value});
+            return AddHeader(headers, name, new[] { value });
         }
 
-        public static IDictionary<string, IEnumerable<string>> AddHeader(this IDictionary<string, IEnumerable<string>> headers,
-            string name, IEnumerable<string> value)
+        public static IDictionary<string, string[]> AddHeader(this IDictionary<string, string[]> headers,
+            string name, string[] value)
         {
-            IEnumerable<string> values;
+            string[] values;
             if (headers.TryGetValue(name, out values))
             {
                 headers[name] = values.Concat(value).ToArray();
@@ -64,14 +64,14 @@ namespace Gate
             return headers;
         }
 
-        public static IEnumerable<string> GetHeaders(this IDictionary<string, IEnumerable<string>> headers,
+        public static string[] GetHeaders(this IDictionary<string, string[]> headers,
             string name)
         {
-            IEnumerable<string> value;
+            string[] value;
             return headers != null && headers.TryGetValue(name, out value) ? value : null;
         }
 
-        public static string GetHeader(this IDictionary<string, IEnumerable<string>> headers,
+        public static string GetHeader(this IDictionary<string, string[]> headers,
             string name)
         {
             var values = GetHeaders(headers, name);
@@ -80,39 +80,15 @@ namespace Gate
                 return null;
             }
 
-            if (values is string[])
+            switch (values.Length)
             {
-                var valueArray = (string[])values;
-                switch (valueArray.Length)
-                {
-                    case 0:
-                        return string.Empty;
-                    case 1:
-                        return valueArray[0];
-                    default:
-                        return string.Join(",", valueArray);
-                }
+                case 0:
+                    return string.Empty;
+                case 1:
+                    return values[0];
+                default:
+                    return string.Join(",", values);
             }
-
-            var enumerator = values.GetEnumerator();
-            if (!enumerator.MoveNext())
-                return string.Empty;
-
-            var string1 = enumerator.Current;
-            if (!enumerator.MoveNext())
-                return string1;
-
-            var string2 = enumerator.Current;
-            if (!enumerator.MoveNext())
-                return string1 + "," + string2;
-
-            var sb = new StringBuilder(string1 + "," + string2 + "," + enumerator.Current);
-            while (enumerator.MoveNext())
-            {
-                sb.Append(',');
-                sb.Append(enumerator.Current);
-            }
-            return sb.ToString();
         }
     }
 }

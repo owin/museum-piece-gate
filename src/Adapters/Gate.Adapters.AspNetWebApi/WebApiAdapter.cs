@@ -109,7 +109,7 @@ namespace Gate.Adapters.AspNetWebApi
 
                         var headers = headersEnumerable.ToDictionary(
                             kv => kv.Key,
-                            kv => kv.Value,
+                            kv => kv.Value.ToArray(),
                             StringComparer.InvariantCultureIgnoreCase);
 
                         result(status, headers, ResponseBody(response.Content));
@@ -129,14 +129,14 @@ namespace Gate.Adapters.AspNetWebApi
         {
             if (content == null)
             {
-                return (write, flush, end, cancel) => end(null);
+                return (write, end, cancel) => end(null);
             }
 
-            return (write, flush, end, cancel) =>
+            return (write, end, cancel) =>
             {
                 try
                 {
-                    var stream = new ResponseHttpStream(write, flush, end);
+                    var stream = new ResponseHttpStream(write, end);
                     content.CopyToAsync(stream)
                         .Then(() =>
                         {

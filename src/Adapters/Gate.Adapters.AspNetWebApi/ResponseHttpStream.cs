@@ -6,17 +6,14 @@ namespace Gate.Adapters.AspNetWebApi
 {
     class ResponseHttpStream : StreamNotImpl
     {
-        private readonly Func<ArraySegment<byte>, bool> _write;
-        private readonly Func<Action, bool> _flush;
+        private readonly Func<ArraySegment<byte>, Action, bool> _write;
         private Action<Exception> _end;
 
         public ResponseHttpStream(
-            Func<ArraySegment<byte>, bool> write,
-            Func<Action, bool> flush,
+            Func<ArraySegment<byte>, Action, bool> write,
             Action<Exception> end)
         {
             _write = write;
-            _flush = flush;
             _end = end;
         }
 
@@ -32,12 +29,12 @@ namespace Gate.Adapters.AspNetWebApi
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            _write(new ArraySegment<byte>(buffer, offset, count));
+            _write(new ArraySegment<byte>(buffer, offset, count), null);
         }
 
         public override void Flush()
         {
-            _flush(null);
+            _write(new ArraySegment<byte>(null, 0, 0), null);
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
@@ -47,8 +44,7 @@ namespace Gate.Adapters.AspNetWebApi
             {
                 tcs.Task.ContinueWith(_ => callback(tcs.Task)).Catch();
             }
-            if (!_write(new ArraySegment<byte>(buffer, offset, count)) ||
-                !_flush(() => tcs.TrySetResult(null)))
+            if (!_write(new ArraySegment<byte>(buffer, offset, count), () => tcs.TrySetResult(null)))
             {
                 tcs.TrySetResult(null);
             }
