@@ -43,11 +43,11 @@ namespace Gate.Hosts.Kayak
             if (body == null)
                 request.BodyDelegate = null;
             else
-                request.BodyDelegate = (write, flush, end, cancellationToken) =>
+                request.BodyDelegate = (write, end, cancellationToken) =>
                 {
                     var d = body.Connect(new DataConsumer(
-                        (data, continuation) => write(data) && continuation != null && flush(continuation),
-                        ex => end(ex),
+                        write,
+                        end,
                         () => end(null)));
                     cancellationToken.Register(d.Dispose);
                 };
@@ -60,7 +60,7 @@ namespace Gate.Hosts.Kayak
             return (status, headers, body) =>
             {
                 if (headers == null)
-                    headers = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
+                    headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
 
                 if (body != null &&
                     !headers.ContainsKey("Content-Length") &&

@@ -7,8 +7,7 @@ namespace Gate.Hosts
     class PipeRequest
     {
         readonly Stream _stream;
-        readonly Func<ArraySegment<byte>, bool> _write;
-        readonly Func<Action, bool> _flush;
+        readonly Func<ArraySegment<byte>, Action, bool> _write;
         Action<Exception> _end;
         readonly CancellationToken _cancellationToken;
 
@@ -21,14 +20,12 @@ namespace Gate.Hosts
 
         public PipeRequest(
             Stream stream,
-            Func<ArraySegment<byte>, bool> write,
-            Func<Action, bool> flush,
+            Func<ArraySegment<byte>, Action, bool> write,
             Action<Exception> end,
             CancellationToken cancellationToken)
         {
             _stream = stream;
             _write = write;
-            _flush = flush;
             _end = end;
             _cancellationToken = cancellationToken;
             _buffer = new byte[1024];
@@ -77,12 +74,9 @@ namespace Gate.Hosts
                                 return;
                             }
 
-                            if (_write(_segment))
+                            if (_write(_segment, NextCallback))
                             {
-                                if (_flush(NextCallback))
-                                {
-                                    return;
-                                }
+                                return;
                             }
 
                             mode = 0;

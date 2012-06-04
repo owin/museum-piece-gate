@@ -58,16 +58,20 @@ namespace Gate.Hosts.Kayak
             // write is not, because you want the return value to be
             // false when the data is not buffering.
 
-            return (write, flush, end, cancel) =>
+            return (write, end, cancel) =>
                 theScheduler.Post(() =>
                     body(
-                        write,
-                        drained =>
+                        (data, callback) =>
                         {
+                            if (callback == null)
+                            {
+                                return write(data, callback);
+                            }
+
                             theScheduler.Post(() =>
                             {
-                                if (!flush(() => { if (drained != null) theScheduler.Post(drained); }))
-                                    if (drained != null) drained.Invoke();
+                                if (!write(data, () => { theScheduler.Post(callback); }))
+                                    callback.Invoke();
                             });
                             return true;
                         },

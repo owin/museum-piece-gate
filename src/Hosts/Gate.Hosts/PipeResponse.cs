@@ -20,16 +20,43 @@ namespace Gate.Hosts
 
         public void Go(BodyDelegate body)
         {
-            body(OnWrite, OnFlush, OnEnd, CancellationToken);
+            body(OnWrite, OnEnd, CancellationToken);
         }
 
-        bool OnWrite(ArraySegment<byte> data)
+        bool OnWrite(ArraySegment<byte> data, Action continuation)
         {
             try
             {
                 if (_stream != null)
                 {
-                    _stream.Write(data.Array, data.Offset, data.Count);
+                    if (data.Count == 0)
+                    {
+                        _stream.Flush();
+                    }
+                    else if (continuation == null)
+                    {
+                        _stream.Write(data.Array, data.Offset, data.Count);
+                    }
+                    else
+                    {
+                        var sr = _stream.BeginWrite(data.Array, data.Offset, data.Count, ar =>
+                        {
+                            if (!ar.CompletedSynchronously)
+                            {
+                                try { _stream.EndWrite(ar); }
+                                catch { }
+                                try { continuation.Invoke(); }
+                                catch { }
+                            }
+                        }, null);
+
+                        if (!sr.CompletedSynchronously)
+                        {
+                            return true;
+                        }
+                        _stream.EndWrite(sr);
+                        continuation.Invoke();
+                    }
                 }
             }
             catch (Exception ex)

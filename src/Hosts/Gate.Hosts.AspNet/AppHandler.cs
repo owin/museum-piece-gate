@@ -38,7 +38,7 @@ namespace Gate.Hosts.AspNet
                 path = path.Substring(pathBase.Length);
 
             var requestHeaders = httpRequest.Headers.AllKeys
-                .ToDictionary(x => x, x => (IEnumerable<string>)httpRequest.Headers.GetValues(x), StringComparer.OrdinalIgnoreCase);
+                .ToDictionary(x => x, x => httpRequest.Headers.GetValues(x), StringComparer.OrdinalIgnoreCase);
 
             var env = new Dictionary<string, object>
             { 
@@ -81,7 +81,7 @@ namespace Gate.Hosts.AspNet
                                 body,
                                 httpContext.Response.OutputStream,
                                 ex => taskCompletionSource.TrySetException(ex),
-                                () => taskCompletionSource.TrySetResult(() => httpContext.Response.End()));
+                                () => taskCompletionSource.TrySetResult(() => { }));
                         }
                         catch (Exception ex)
                         {
@@ -90,7 +90,7 @@ namespace Gate.Hosts.AspNet
                     },
                     ex => taskCompletionSource.TrySetException(ex));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 taskCompletionSource.TrySetException(ex);
             }
@@ -157,7 +157,7 @@ namespace Gate.Hosts.AspNet
 
         static BodyDelegate RequestBody(Stream stream)
         {
-            return (write, flush, end, cancellationToken) => new PipeRequest(stream, write, flush, end, cancellationToken).Go();
+            return (write, end, cancellationToken) => new PipeRequest(stream, write, end, cancellationToken).Go();
         }
 
         static void ResponseBody(BodyDelegate body, Stream stream, Action<Exception> error, Action complete)

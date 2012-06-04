@@ -29,7 +29,11 @@ namespace Samples.ViaRouting
 
             // a route may also be added for a given builder method.
             // this can also be done from global.asax
-            RouteTable.Routes.AddOwinRoute("wilson", ConfigWilson);
+            RouteTable.Routes.AddOwinRoute("wilson-async", x => x.UseShowExceptions().Run(Wilson.AsyncApp()));
+
+            // a route may also be added for a given builder method.
+            // this can also be done from global.asax
+            RouteTable.Routes.AddOwinRoute("wilson", x => x.UseShowExceptions().Run(Wilson.App()));
 
             // a route may also be added for a given app delegate
             // this can also be done from global.asax
@@ -45,10 +49,10 @@ namespace Samples.ViaRouting
         {
             result(
                 "200 OK",
-                new Dictionary<string, IEnumerable<string>> { { "Content-Type", new[] { "text/plain" } } },
-                (write, flush, end, cancel) =>
+                new Dictionary<string, string[]> { { "Content-Type", new[] { "text/plain" } } },
+                (write, end, cancel) =>
                 {
-                    write(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello from lowest-level code")));
+                    write(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello from lowest-level code")), null);
                     end(null);
                 });
         }

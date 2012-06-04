@@ -165,6 +165,7 @@ namespace Gate.Middleware
     <li><a href=""#get-info"">GET</a></li>
     <li><a href=""#post-info"">POST</a></li>
     <li><a href=""#cookie-info"">Cookies</a></li>
+    <li><a href=""#header-info"">Headers</a></li>
     <li><a href=""#env-info"">ENV</a></li>
   </ul>
 </div>
@@ -255,7 +256,7 @@ namespace Gate.Middleware
 
 
   <h3 id=""cookie-info"">COOKIES</h3>
-  {% unless req.cookies.empty? %}
+  <% if (request.Cookies.Any()) { %>
     <table class=""req"">
       <thead>
         <tr>
@@ -264,19 +265,41 @@ namespace Gate.Middleware
         </tr>
       </thead>
       <tbody>
-        {% req.cookies.each { |key, val| %}
+        <% foreach(var kv in request.Cookies.OrderBy(kv => kv.Key)) { %>
           <tr>
-            <td>{%=h key %}</td>
-            <td class=""code""><div>{%=h val.inspect %}</div></td>
+            <td><%: kv.Key %></td>
+            <td class=""code""><div><%: kv.Value %></div></td>
           </tr>
-        {% } %}
+        <% } %>
       </tbody>
     </table>
-  {% else %}
+  <% } else  { %>
     <p>No cookie data.</p>
-  {% end %}
+  <% } %>
 
-  <h3 id=""env-info"">Rack ENV</h3>
+  <h3 id=""cookie-info"">HEADERS</h3>
+  <% if (request.Headers.Any()) { %>
+    <table class=""req"">
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% foreach(var kv in request.Headers.OrderBy(kv => kv.Key)) { %>
+          <tr>
+            <td nowrap=""nowrap""><%: kv.Key %></td>
+            <td class=""code""><div><% foreach(var v in kv.Value) { %><%: v %><br/><% } %></div></td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  <% } else  { %>
+    <p>No header data.</p>
+  <% } %>
+
+  <h3 id=""env-info"">OWIN ENV</h3>
     <table class=""req"">
       <thead>
         <tr>
