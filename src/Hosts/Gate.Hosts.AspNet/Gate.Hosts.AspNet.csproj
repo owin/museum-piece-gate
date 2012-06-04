@@ -46,6 +46,9 @@
     <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Main\Gate\OwinConstants.cs">
+      <Link>OwinConstants.cs</Link>
+    </Compile>
     <Compile Include="..\Gate.Hosts\PipeRequest.cs">
       <Link>PipeRequest.cs</Link>
     </Compile>

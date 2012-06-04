@@ -57,6 +57,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Main\Gate\OwinConstants.cs">
+      <Link>OwinConstants.cs</Link>
+    </Compile>
     <Compile Include="AppUtils.cs" />
     <Compile Include="FakeApp.cs" />
     <Compile Include="FakeConsumer.cs" />

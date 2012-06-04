@@ -18,8 +18,7 @@ namespace Gate.Hosts.Kayak
         {
             var cts = new CancellationTokenSource();
             del(
-                data => channel.OnData(data, null),
-                _ => false,
+                channel.OnData,
                 error =>
                 {
                     if (error == null) 

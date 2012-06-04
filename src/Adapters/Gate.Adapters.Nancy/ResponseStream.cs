@@ -7,14 +7,12 @@ namespace Gate.Adapters.Nancy
     class ResponseStream : Stream
     {
 
-        private Func<ArraySegment<byte>, bool> _write;
-        private Func<Action, bool> _flush;
+        private Func<ArraySegment<byte>, Action, bool> _write;
         private Action<Exception> _end;
 
-        public ResponseStream(Func<ArraySegment<byte>, bool> write, Func<Action, bool> flush, Action<Exception> end)
+        public ResponseStream(Func<ArraySegment<byte>, Action, bool> write, Action<Exception> end)
         {
             _write = write;
-            _flush = flush;
             _end = end;
         }
 
@@ -25,29 +23,24 @@ namespace Gate.Adapters.Nancy
 
         public void End(Exception ex)
         {
-            _write = _ => false;
-            _flush = _ => false;
+            _write = (data, callback) => false;
             Interlocked.Exchange(ref _end, _ => { }).Invoke(ex);
         }
 
         public override void Flush()
         {
-            _flush(null);
+            _write(new ArraySegment<byte>(null, 0, 0), null);
         }
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            _write(new ArraySegment<byte>(buffer, offset, count));
+            _write(new ArraySegment<byte>(buffer, offset, count), null);
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             var result = new WriteAsyncResult { AsyncState = state };
-            var delayed = _write(new ArraySegment<byte>(buffer, offset, count));
-
-            if (delayed)
-            {
-                delayed = _flush(() =>
+            var delayed = _write(new ArraySegment<byte>(buffer, offset, count), () =>
                 {
                     result.IsCompleted = true;
                     if (callback != null)
@@ -56,7 +49,6 @@ namespace Gate.Adapters.Nancy
                         catch { }
                     }
                 });
-            }
 
             if (!delayed)
             {

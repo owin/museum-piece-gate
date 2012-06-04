@@ -71,6 +71,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Main\Gate\OwinConstants.cs">
+      <Link>OwinConstants.cs</Link>
+    </Compile>
     <Compile Include="StaticFiles\BodyStreamTests.cs" />
     <Compile Include="ContentLengthTests.cs" />
     <Compile Include="StaticFiles\FileServerTests.cs" />

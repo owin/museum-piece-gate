@@ -60,6 +60,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Main\Gate\OwinConstants.cs">
+      <Link>OwinConstants.cs</Link>
+    </Compile>
     <Compile Include="..\Gate.Hosts\ErrorPage.cs">
       <Link>ErrorPage.cs</Link>
     </Compile>

@@ -64,7 +64,6 @@ namespace Gate.Adapters.Nancy
 
                 owinRequestBody.Invoke(
                     OnRequestData(body, onError),
-                    _ => false,
                     readError =>
                     {
                         if (readError != null)
@@ -87,22 +86,22 @@ namespace Gate.Adapters.Nancy
 
                                 var nancyResponse = context.Response;
                                 var status = String.Format("{0} {1}", (int)nancyResponse.StatusCode, nancyResponse.StatusCode);
-                                var headers = nancyResponse.Headers.ToDictionary(kv => kv.Key, kv => (IEnumerable<string>)new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
+                                var headers = nancyResponse.Headers.ToDictionary(kv => kv.Key, kv => new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
                                 if (!string.IsNullOrWhiteSpace(nancyResponse.ContentType))
                                 {
                                     headers["Content-Type"] = new[] { nancyResponse.ContentType };
                                 }
                                 if (nancyResponse.Cookies != null && nancyResponse.Cookies.Count != 0)
                                 {
-                                    headers["Set-Cookie"] = nancyResponse.Cookies.Select(cookie => cookie.ToString());
+                                    headers["Set-Cookie"] = nancyResponse.Cookies.Select(cookie => cookie.ToString()).ToArray();
                                 }
 
                                 result(
                                     status,
                                     headers,
-                                    (write, flush, end, cancel) =>
+                                    (write, end, cancel) =>
                                     {
-                                        using (var stream = new ResponseStream(write, flush, end))
+                                        using (var stream = new ResponseStream(write, end))
                                         {
                                             try
                                             {
@@ -150,18 +149,21 @@ namespace Gate.Adapters.Nancy
             return int.TryParse(header, NumberStyles.Any, CultureInfo.InvariantCulture, out contentLength) ? contentLength : 0;
         }
 
-        static void EmptyBody(Func<ArraySegment<byte>, bool> write, Func<Action, bool> flush, Action<Exception> end, CancellationToken cancellationToken)
+        static void EmptyBody(Func<ArraySegment<byte>, Action, bool> write, Action<Exception> end, CancellationToken cancellationToken)
         {
             end(null);
         }
 
-        static Func<ArraySegment<byte>, bool> OnRequestData(Stream body, Action<Exception> fault)
+        static Func<ArraySegment<byte>, Action, bool> OnRequestData(Stream body, Action<Exception> fault)
         {
-            return data =>
+            return (data, callback) =>
             {
                 try
                 {
-                    body.Write(data.Array, data.Offset, data.Count);
+                    if (data.Count != 0)
+                    {
+                        body.Write(data.Array, data.Offset, data.Count);
+                    }
                     return false;
                 }
                 catch (Exception ex)
