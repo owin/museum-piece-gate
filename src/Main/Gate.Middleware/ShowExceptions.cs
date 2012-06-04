@@ -92,7 +92,7 @@ namespace Gate.Middleware
         {
             foreach (var stackTrace in stackTraces.Where(value => !string.IsNullOrWhiteSpace(value)))
             {
-                var heap = new Chunk { Text = stackTrace, End = stackTrace.Length };
+                var heap = new Chunk { Text = stackTrace + "\r\n", End = stackTrace.Length + 2 };
                 for (var line = heap.Advance("\r\n"); line.HasValue; line = heap.Advance("\r\n"))
                 {
                     yield return StackFrame(line);
