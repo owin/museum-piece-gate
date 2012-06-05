@@ -63,13 +63,13 @@ namespace Gate.Hosts.Kayak.Tests
                 return new ArraySegment<byte>(b, 0, sb.Length);
             };
 
-            var app = new StaticApp(null, null, (write, flush, end, cancel) =>
+            var app = new StaticApp(null, null, (write, end, cancel) =>
             {
-                write(bytes("kanye "));
-                write(bytes("west "));
-                write(bytes("is "));
-                write(bytes("a "));
-                write(bytes("pussy."));
+                write(bytes("alpha "), null);
+                write(bytes("beta "), null);
+                write(bytes("gamma "), null);
+                write(bytes("delta "), null);
+                write(bytes("omega."), null);
                 end(null);
             });
 
@@ -91,7 +91,7 @@ namespace Gate.Hosts.Kayak.Tests
 
             var bodyString = bodyConsumer.Buffer.GetString();
 
-            Assert.That(bodyString, Is.EqualTo("kanye west is a pussy."));
+            Assert.That(bodyString, Is.EqualTo("alpha beta gamma delta omega."));
         }
 
 

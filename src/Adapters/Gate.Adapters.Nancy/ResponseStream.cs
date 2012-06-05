@@ -29,7 +29,7 @@ namespace Gate.Adapters.Nancy
 
         public override void Flush()
         {
-            _write(new ArraySegment<byte>(null, 0, 0), null);
+            _write(default(ArraySegment<byte>), null);
         }
 
         public override void Write(byte[] buffer, int offset, int count)

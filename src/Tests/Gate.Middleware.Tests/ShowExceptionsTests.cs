@@ -59,9 +59,9 @@ namespace Gate.Middleware.Tests
         {
             var app = new FakeApp { Status = "200 OK" };
             app.Headers.SetHeader("Content-Type", "text/html");
-            app.Body = (write, flush, end, cancel) =>
+            app.Body = (write, end, cancel) =>
             {
-                write(new ArraySegment<byte>(Encoding.UTF8.GetBytes("<p>so far so good</p>")));
+                write(new ArraySegment<byte>(Encoding.UTF8.GetBytes("<p>so far so good</p>")), null);
                 end(new ApplicationException("failed sending body"));
             };
 

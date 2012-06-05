@@ -80,29 +80,29 @@ namespace Gate.Tests
             return (env, result, fault) =>
             {
                 var callDisposed = (CancellationToken)env["host.CallDisposed"];
-                var requestHeaders = (IDictionary<string, IEnumerable<string>>)env["owin.RequestHeaders"];
+                var requestHeaders = (IDictionary<string, string[]>)env["owin.RequestHeaders"];
                 var requestBody = (BodyDelegate)env["owin.RequestBody"];
 
-                var responseHeaders = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase)
+                var responseHeaders = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
                 {
-                    {"Content-Type", requestHeaders["Content-Type"]}
+                    {"Content-Type", requestHeaders["Content-Type"].ToArray()}
                 };
-                BodyDelegate responseBody = (write, flush, end, cancel) => end(null);
+
+                Action<Func<ArraySegment<byte>, Action, bool>> repeatAllData = write => { };
 
                 requestBody.Invoke(
-                    data =>
+                    (data, callback) =>
                     {
                         var copy = new byte[data.Count];
                         Array.Copy(data.Array, data.Offset, copy, 0, data.Count);
-                        var next = responseBody;
-                        responseBody = (write, flush, end, cancel) =>
+                        var priorDelegate = repeatAllData;
+                        repeatAllData = write =>
                         {
-                            write(new ArraySegment<byte>(copy));
-                            next(write, flush, end, cancel);
+                            priorDelegate(write);
+                            write(new ArraySegment<byte>(copy), null);
                         };
                         return false;
                     },
-                    flushed => false,
                     ex =>
                     {
                         if (ex != null)
@@ -114,7 +114,11 @@ namespace Gate.Tests
                             result.Invoke(
                                 "200 OK",
                                 responseHeaders,
-                                responseBody);
+                                (write, end, cancel) =>
+                                {
+                                    repeatAllData(write);
+                                    end(null);
+                                });
                         }
                     },
                     callDisposed);
@@ -125,14 +129,14 @@ namespace Gate.Tests
         {
             return (env, result, fault) => result(
                 "200 OK",
-                new Dictionary<string, IEnumerable<string>>
+                new Dictionary<string, string[]>
                 {
                     {"Content-Type", new[] {"text/plain"}},
                     {"X-Server", new[] {"inproc"}}
                 },
-                (write, flush, end, cancel) =>
+                (write, end, cancel) =>
                 {
-                    write(new ArraySegment<byte>(Encoding.ASCII.GetBytes(text)));
+                    write(new ArraySegment<byte>(Encoding.ASCII.GetBytes(text)), null);
                     end(null);
                 });
         }

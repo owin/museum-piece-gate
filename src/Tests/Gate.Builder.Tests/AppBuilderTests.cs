@@ -14,12 +14,10 @@ namespace Gate.Builder.Tests
        IDictionary<string, object>, // env
        Action< // result
            string, // status
-           IDictionary<string, IEnumerable<string>>, // headers
+           IDictionary<string, string[]>, // headers
            Action< // body
                Func< // write
                    ArraySegment<byte>, // data                     
-                   bool>, // buffering
-               Func< // flush
                    Action, // continuation
                    bool>, // async
                Action< // end
@@ -34,18 +32,18 @@ namespace Gate.Builder.Tests
         static readonly AppDelegate TwoHundredFoo = (env, result, fault) => result(
             "200 Foo",
             Headers.New().SetHeader("Content-Type", "text/plain"),
-            (write, flush, end, cancel) =>
+            (write, end, cancel) =>
             {
-                write(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")));
+                write(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")), null);
                 end(null);
             });
 
         static readonly AppAction TwoHundredFooAction = (env, result, fault) => result(
             "200 Foo",
             Headers.New().SetHeader("Content-Type", "text/plain"),
-            (write, flush, end, cancel) =>
+            (write, end, cancel) =>
             {
-                write(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")));
+                write(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello Foo")), null);
                 end(null);
             });
 

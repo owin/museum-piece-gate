@@ -41,7 +41,7 @@ namespace Gate.Adapters.Nancy
 
                 var owinRequestMethod = Get<string>(env, OwinConstants.RequestMethod);
                 var owinRequestScheme = Get<string>(env, OwinConstants.RequestScheme);
-                var owinRequestHeaders = Get<IDictionary<string, IEnumerable<string>>>(env, OwinConstants.RequestHeaders);
+                var owinRequestHeaders = Get<IDictionary<string, string[]>>(env, OwinConstants.RequestHeaders);
                 var owinRequestPathBase = Get<string>(env, OwinConstants.RequestPathBase);
                 var owinRequestPath = Get<string>(env, OwinConstants.RequestPath);
                 var owinRequestQueryString = Get<string>(env, OwinConstants.RequestQueryString);
@@ -73,7 +73,7 @@ namespace Gate.Adapters.Nancy
                         }
 
                         body.Position = 0;
-                        var nancyRequest = new Request(owinRequestMethod, url, body, owinRequestHeaders, serverClientIp);
+                        var nancyRequest = new Request(owinRequestMethod, url, body, owinRequestHeaders.ToDictionary(kv => kv.Key, kv => (IEnumerable<string>)kv.Value, StringComparer.OrdinalIgnoreCase), serverClientIp);
 
                         engine.HandleRequest(
                             nancyRequest,
@@ -133,13 +133,13 @@ namespace Gate.Adapters.Nancy
             return env.TryGetValue(key, out value) && value is T ? (T)value : defaultValue;
         }
 
-        static string GetHeader(IDictionary<string, IEnumerable<string>> headers, string key)
+        static string GetHeader(IDictionary<string, string[]> headers, string key)
         {
-            IEnumerable<string> value;
+            string[] value;
             return headers.TryGetValue(key, out value) && value != null ? string.Join(",", value.ToArray()) : null;
         }
 
-        static long ExpectedLength(IDictionary<string, IEnumerable<string>> headers)
+        static long ExpectedLength(IDictionary<string, string[]> headers)
         {
             var header = GetHeader(headers, "Content-Length");
             if (string.IsNullOrWhiteSpace(header))

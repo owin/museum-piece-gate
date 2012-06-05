@@ -13,6 +13,9 @@ namespace Samples.ViaRouting
     {
         public void Configuration(IAppBuilder builder)
         {
+            var xx = default(ArraySegment<byte>);
+
+
             // routes can be added for each path prefix that should be
             // mapped to owin
             RouteTable.Routes.AddOwinRoute("hello");

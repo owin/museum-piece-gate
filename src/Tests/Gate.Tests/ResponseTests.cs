@@ -12,18 +12,18 @@ namespace Gate.Tests
     public class ResponseTests
     {
         string _status;
-        IDictionary<string, IEnumerable<string>> _headers;
+        IDictionary<string, string[]> _headers;
         BodyDelegate _body;
 
         [SetUp]
         public void Init()
         {
             _status = null;
-            _headers = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
+            _headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
             _body = null;
         }
 
-        void Result(string status, IDictionary<string, IEnumerable<string>> headers, BodyDelegate body)
+        void Result(string status, IDictionary<string, string[]> headers, BodyDelegate body)
         {
             _status = status;
             _headers = headers;
@@ -35,12 +35,14 @@ namespace Gate.Tests
             var memory = new MemoryStream();
             var wait = new ManualResetEvent(false);
             _body(
-                data =>
+                (data, callback) =>
                 {
-                    memory.Write(data.Array, data.Offset, data.Count);
+                    if (data != default(ArraySegment<byte>))
+                    {
+                        memory.Write(data.Array, data.Offset, data.Count);
+                    }
                     return false;
                 },
-                _ => false,
                 ex => wait.Set(),
                 CancellationToken.None);
             wait.WaitOne();

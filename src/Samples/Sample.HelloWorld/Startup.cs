@@ -27,12 +27,12 @@ namespace Sample.HelloWorld
                 resp.Write("<h3>Environment</h3>");
                 foreach (var kv in req)
                 {
-                    if (kv.Value is IDictionary<string, IEnumerable<string>>)
+                    if (kv.Value is IDictionary<string, string[]>)
                     {
                         resp.Write("<li>&laquo;")
                             .Write(kv.Key)
                             .Write("&raquo;<br/><ul>");
-                        foreach (var kv2 in kv.Value as IDictionary<string, IEnumerable<string>>)
+                        foreach (var kv2 in kv.Value as IDictionary<string, string[]>)
                         {
                             resp.Write("<li>&laquo;")
                                 .Write(kv2.Key)

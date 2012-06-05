@@ -52,7 +52,7 @@ namespace Gate.TestHelpers
         /// <summary>
         /// Determines the response headers that will be passed to result delegate by Call
         /// </summary>
-        public IDictionary<string, IEnumerable<string>> Headers { get; set; }
+        public IDictionary<string, string[]> Headers { get; set; }
 
         /// <summary>
         /// Determines the response body that will be passed to result delegate by Call

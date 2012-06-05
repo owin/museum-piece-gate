@@ -77,14 +77,13 @@ namespace Gate.Hosts.Manos
                             }
 
                             body(
-                                data =>
+                                (data, callback) =>
                                 {
                                     var duplicate = new byte[data.Count];
                                     Array.Copy(data.Array, data.Offset, duplicate, 0, data.Count);
                                     transaction.Response.Write(duplicate);
                                     return false;
                                 },
-                                _ => false,
                                 ex => transaction.Response.End(),
                                 cts.Token);
                         },
@@ -161,12 +160,12 @@ namespace Gate.Hosts.Manos
 
         static BodyDelegate RequestBody(string postBody, Encoding encoding)
         {
-            return (write, flush, end, cancel) =>
+            return (write, end, cancel) =>
             {
                 try
                 {
                     var data = new ArraySegment<byte>(encoding.GetBytes(postBody));
-                    write(data);
+                    write(data, null);
                     end(null);
                 }
                 catch (Exception ex)

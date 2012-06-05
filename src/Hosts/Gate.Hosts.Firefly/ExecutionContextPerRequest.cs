@@ -36,15 +36,15 @@ namespace Gate.Hosts.Firefly
 
         static BodyDelegate WrapBodyDelegate(ExecutionContext context, BodyDelegate body)
         {
-            return body == null ? (BodyDelegate)null : (write, flush, end, cancellationToken) => ExecutionContext.Run(
+            return body == null ? (BodyDelegate)null : (write, end, cancellationToken) => ExecutionContext.Run(
                 context.CreateCopy(),
-                _ => body(write, WrapFlushDelegate(context, flush), end, cancellationToken),
+                _ => body(WrapWriteDelegate(context, write), end, cancellationToken),
                 null);
         }
 
-        static Func<Action, bool> WrapFlushDelegate(ExecutionContext context, Func<Action, bool> flush)
+        static Func<ArraySegment<byte>, Action, bool> WrapWriteDelegate(ExecutionContext context, Func<ArraySegment<byte>, Action, bool> write)
         {
-            return drained => drained == null ? flush(null) : flush(() => ExecutionContext.Run(context.CreateCopy(), _ => drained(), null));
+            return (data, callback) => callback == null ? write(data, null) : write(data, () => ExecutionContext.Run(context.CreateCopy(), _ => callback(), null));
         }
     }
 }

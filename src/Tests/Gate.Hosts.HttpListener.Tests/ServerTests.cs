@@ -67,12 +67,11 @@ namespace Gate.Hosts.HttpListener.Tests
             {
                 var body = (BodyDelegate)env[OwinConstants.RequestBody];
 
-                body(data =>
+                body((data,callback) =>
                 {
                     requestData.Write(data.Array, data.Offset, data.Count);
                     return false;
-                },
-                _ => false,
+                },                
                 _ => Wilson.App().Invoke(env, result, fault),
                 CancellationToken.None);
             };

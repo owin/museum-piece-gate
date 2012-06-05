@@ -46,8 +46,7 @@ namespace Gate.Hosts.Kayak.Tests
         {
             var c = new BufferingConsumer();
             del(
-                data => c.OnData(data, null),
-                _ => false,
+                c.OnData,
                 ex =>
                 {
                     if (ex == null) c.OnEnd();
@@ -119,13 +118,13 @@ namespace Gate.Hosts.Kayak.Tests
     public class StaticApp
     {
         string status;
-        IDictionary<string, IEnumerable<string>> headers;
+        IDictionary<string, string[]> headers;
         BodyDelegate body;
 
         public Action OnRequest;
         public IDictionary<string, object> Env;
 
-        public StaticApp(string status, IDictionary<string, IEnumerable<string>> headers, BodyDelegate body)
+        public StaticApp(string status, IDictionary<string, string[]> headers, BodyDelegate body)
         {
             this.status = status;
             this.headers = headers;
@@ -157,11 +156,11 @@ namespace Gate.Hosts.Kayak.Tests
         {
             var app = new StaticApp(
                     "200 OK",
-                    new Dictionary<string, IEnumerable<string>>(),
-                    (write, flush, end, cancel) =>
+                    new Dictionary<string, string[]>(),
+                    (write, end, cancel) =>
                     {
-                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("12345")));
-                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")));
+                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("12345")), null);
+                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")), null);
                         end(null);
                     });
 
@@ -183,14 +182,14 @@ namespace Gate.Hosts.Kayak.Tests
         {
             var app = new StaticApp(
                     "200 OK",
-                    new Dictionary<string, IEnumerable<string>>()
+                    new Dictionary<string, string[]>()
                     {
                         { "Transfer-Encoding", new[]{"chunked"} }
                     },
-                    (write, flush, end, cancel) =>
+                    (write, end, cancel) =>
                     {
-                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("12345")));
-                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")));
+                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("12345")), null);
+                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("67890")), null);
                         end(null);
 
                     });

@@ -37,7 +37,7 @@ namespace Gate.TestHelpers
 
             public IDictionary<string, object> Environment { get; set; }
             public string ResponseStatus { get; set; }
-            public IDictionary<string, IEnumerable<string>> ResponseHeaders { get; set; }
+            public IDictionary<string, string[]> ResponseHeaders { get; set; }
             public BodyDelegate ResponseBody { get; set; }
 
             public Exception Exception { get; set; }
@@ -118,13 +118,13 @@ namespace Gate.TestHelpers
                 return tcs.Task;
             }
 
-            static IDictionary<string, IEnumerable<string>> RequestHeaders(HttpRequestMessage request)
+            static IDictionary<string, string[]> RequestHeaders(HttpRequestMessage request)
             {
                 IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers = request.Headers;
                 if (request.Content != null)
                     headers = headers.Concat(request.Content.Headers);
 
-                var requestHeaders = headers.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
+                var requestHeaders = headers.ToDictionary(kv => kv.Key, kv => kv.Value.ToArray(), StringComparer.OrdinalIgnoreCase);
                 return requestHeaders;
             }
 
@@ -132,12 +132,12 @@ namespace Gate.TestHelpers
             {
                 if (request.Content == null)
                 {
-                    return (write, flush, end, cancel) => end(null);
+                    return (write, end, cancel) => end(null);
                 }
 
-                return (write, flush, end, cancel) =>
+                return (write, end, cancel) =>
                 {
-                    var task = request.Content.CopyToAsync(new BodyDelegateStream(write, flush, cancel));
+                    var task = request.Content.CopyToAsync(new BodyDelegateStream(write, cancel));
                     if (task.IsFaulted)
                     {
                         end(task.Exception);
@@ -154,7 +154,7 @@ namespace Gate.TestHelpers
             }
 
 
-            static HttpResponseMessage MakeResponseMessage(string status, IDictionary<string, IEnumerable<string>> headers, BodyDelegate body)
+            static HttpResponseMessage MakeResponseMessage(string status, IDictionary<string, string[]> headers, BodyDelegate body)
             {
                 var httpStatusCode = (HttpStatusCode)int.Parse(status.Substring(0, 3));
                 var response = new HttpResponseMessage(httpStatusCode);
@@ -170,7 +170,7 @@ namespace Gate.TestHelpers
                     {
                         if (response.Content == null)
                         {
-                            response.Content = MakeResponseContent((write, flush, end, cancel) => end(null));
+                            response.Content = MakeResponseContent((write, end, cancel) => end(null));
                         }
                         response.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
                     }
@@ -197,16 +197,18 @@ namespace Gate.TestHelpers
                 {
                     var tcs = new TaskCompletionSource<object>();
                     _body.Invoke(
-                        data =>
+                        (data, callback) =>
                         {
-                            stream.Write(data.Array, data.Offset, data.Count);
+                            if (data == default(ArraySegment<byte>))
+                            {
+                                stream.Flush();
+                            }
+                            else
+                            {
+                                stream.Write(data.Array, data.Offset, data.Count);
+                            }
                             return false;
-                        },
-                        flushed =>
-                        {
-                            stream.Flush();
-                            return false;
-                        },
+                        },                       
                         ex =>
                         {
                             if (ex == null)
@@ -231,20 +233,18 @@ namespace Gate.TestHelpers
 
             class BodyDelegateStream : Stream
             {
-                readonly Func<ArraySegment<byte>, bool> _write;
-                readonly Func<Action, bool> _flush;
+                readonly Func<ArraySegment<byte>, Action, bool> _write;
                 readonly CancellationToken _cancellationToken;
 
-                public BodyDelegateStream(Func<ArraySegment<byte>, bool> write, Func<Action, bool> flush, CancellationToken cancellationToken)
+                public BodyDelegateStream(Func<ArraySegment<byte>, Action, bool> write, CancellationToken cancellationToken)
                 {
                     _write = write;
-                    _flush = flush;
                     _cancellationToken = cancellationToken;
                 }
 
                 public override void Flush()
                 {
-                    _flush(null);
+                    _write(new ArraySegment<byte>(), null);
                 }
 
                 public override long Seek(long offset, SeekOrigin origin)
@@ -264,7 +264,7 @@ namespace Gate.TestHelpers
 
                 public override void Write(byte[] buffer, int offset, int count)
                 {
-                    _write(new ArraySegment<byte>(buffer, offset, count));
+                    _write(new ArraySegment<byte>(buffer, offset, count), null);
                 }
 
                 public override bool CanRead

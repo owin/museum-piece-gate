@@ -112,7 +112,7 @@ namespace Gate.Tests
         {
             var env = new Dictionary<string, object>
             {
-                {"owin.RequestHeaders", new Dictionary<string, IEnumerable<string>>()}
+                {"owin.RequestHeaders", new Dictionary<string, string[]>()}
             };
             var request = new Request(env);
             Assert.That(request.ContentType, Is.Null);

@@ -43,9 +43,9 @@ namespace Gate.Hosts.Kayak
             set { _env[RequestMethodKey] = value; }
         }
 
-        public IDictionary<string, IEnumerable<string>> Headers
+        public IDictionary<string, string[]> Headers
         {
-            get { return Get<IDictionary<string, IEnumerable<string>>>(RequestHeadersKey); }
+            get { return Get<IDictionary<string, string[]>>(RequestHeadersKey); }
             set { _env[RequestHeadersKey] = value; }
         }
 

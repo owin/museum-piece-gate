@@ -29,9 +29,9 @@ namespace Gate.Hosts.Kayak
                     env[kv.Key] = kv.Value;
 
             if (head.Headers == null)
-                request.Headers = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
+                request.Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
             else
-                request.Headers = head.Headers.ToDictionary(kv => kv.Key, kv => (IEnumerable<string>)new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
+                request.Headers = head.Headers.ToDictionary(kv => kv.Key, kv => new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
 
             request.Method = head.Method ?? "";
             request.Path = head.Path ?? "";

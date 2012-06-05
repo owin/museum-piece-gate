@@ -28,7 +28,7 @@ namespace Gate.Middleware.Tests.StaticFiles
         {
             return new Dictionary<string, object>
             {
-                {OwinConstants.RequestHeaders, new Dictionary<string, IEnumerable<string>>
+                {OwinConstants.RequestHeaders, new Dictionary<string, string[]>
                 {
                     {"Range", new[]{rangeHeader}}
                 }}
@@ -76,7 +76,7 @@ namespace Gate.Middleware.Tests.StaticFiles
         {
             return RangeHeader.Parse(new Dictionary<string, object>
             {
-                {OwinConstants.RequestHeaders, new Dictionary<string, IEnumerable<string>>
+                {OwinConstants.RequestHeaders, new Dictionary<string, string[]>
                 {
                     {"Range", new[]{rangeString}}
                 }}

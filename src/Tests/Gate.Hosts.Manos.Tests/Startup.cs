@@ -15,11 +15,11 @@ namespace Gate.Hosts.Manos.Tests
         static AppDelegate App(AppDelegate arg)
         {
             return (env, result, fault) => result("200 OK",
-                new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase) { { "Content-Type", new[] { "text/plain" } } },
-                (write, flush, end, cancel) =>
+                new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase) { { "Content-Type", new[] { "text/plain" } } },
+                (write, end, cancel) =>
                 {
                     var bytes = Encoding.Default.GetBytes("This is a custom page");
-                    write(new ArraySegment<byte>(bytes));
+                    write(new ArraySegment<byte>(bytes), null);
                     end(null);
                 });
         }

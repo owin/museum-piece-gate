@@ -71,14 +71,14 @@ namespace Gate.TestHelpers
             {
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
-                    bodyDelegate.Invoke(this.OnWrite, this.OnFlush, this.OnEnd, this.CancellationToken);
+                    bodyDelegate.Invoke(this.OnWrite, this.OnEnd, this.CancellationToken);
                     this.bodyDelegateInvoked = true;
                 });
                 this.sync.Wait();
             }
             else
             {
-                bodyDelegate.Invoke(this.OnWrite, this.OnFlush, this.OnEnd, this.CancellationToken);
+                bodyDelegate.Invoke(this.OnWrite, this.OnEnd, this.CancellationToken);
                 this.bodyDelegateInvoked = true;
             }
         }
@@ -117,18 +117,12 @@ namespace Gate.TestHelpers
             this.sync.Set();
         }
 
-        bool OnWrite(ArraySegment<byte> data)
-        {
-            // No continuation - consume sync.
-            // and return false to indicate we won't be calling the continuation
-            this.ConsumeDataSync(data);
-            return false;
-        }
-
-        bool OnFlush(Action continuation)
+        bool OnWrite(ArraySegment<byte> data, Action continuation)
         {
             this.ContinuationSent = continuation != null;
 
+            // consume sync and return false to indicate we won't be calling the continuation
+            this.ConsumeDataSync(data);
             return false;
         }
 

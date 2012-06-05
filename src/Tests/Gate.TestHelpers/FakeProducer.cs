@@ -21,8 +21,7 @@ namespace Gate.TestHelpers
         int chunkSize;
         bool autoSend;
 
-        Func<ArraySegment<byte>, bool> _write;
-        Func<Action, bool> _flush;
+        Func<ArraySegment<byte>, Action, bool> _write;
         Action<Exception> _end;
         CancellationToken _cancellationtoken;
 
@@ -66,10 +65,9 @@ namespace Gate.TestHelpers
         /// <param name="onError">On error delegate</param>
         /// <param name="onComplete">On complete delegate</param>
         /// <returns>Cancellation delegate</returns>
-        public void BodyDelegate(Func<ArraySegment<byte>, bool> write, Func<Action, bool> flush, Action<Exception> end, CancellationToken cancellationtoken)
+        public void BodyDelegate(Func<ArraySegment<byte>, Action, bool> write, Action<Exception> end, CancellationToken cancellationtoken)
         {
             _write = write;
-            _flush = flush;
             _end = end;
             _cancellationtoken = cancellationtoken;
 
@@ -141,26 +139,18 @@ namespace Gate.TestHelpers
                 // returns false, signifying it won't call the continuation,
                 // we set it straight away.
                 var sync = new ManualResetEventSlim();
-                if (!this._write(currentChunk))
+                if (!this._write(currentChunk, sync.Set))
                 {
                     // write false means transmit completed
                     sync.Set();
-                }
-                else if (!this._flush(sync.Set))
-                {
-                    // flush false means transmit completed, callback will not occur
-                    sync.Set();
-                }
+                }                
 
                 // Wait for the contination to be called, if it is going to be
                 sync.Wait();
             }
             else
             {
-                if (this._write(currentChunk) && this._flush(null))
-                {
-                    throw new InvalidOperationException("Consumer returned true for 'will invoke continuation' when continuation was null");
-                }
+                this._write(currentChunk, null);
             }
         }
 

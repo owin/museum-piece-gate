@@ -34,7 +34,7 @@ namespace Gate.Adapters.AspNetWebApi
 
         public override void Flush()
         {
-            _write(new ArraySegment<byte>(null, 0, 0), null);
+            _write(default(ArraySegment<byte>), null);
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)

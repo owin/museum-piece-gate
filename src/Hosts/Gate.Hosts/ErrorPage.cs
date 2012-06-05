@@ -33,11 +33,11 @@ namespace Gate.Hosts
                     result(
                         "500 Internal Server Error",
                         ResponseHeaders,
-                        (write, flush, end, cancel) =>
+                        (write, end, cancel) =>
                         {
                             try
                             {
-                                write(Body);
+                                write(Body, null);
                                 end(null);
                             }
                             catch (Exception error)
@@ -60,10 +60,9 @@ namespace Gate.Hosts
                             result(
                                 status,
                                 headers,
-                                (write, flush, end, cancel) =>
+                                (write, end, cancel) =>
                                     body(
                                         write,
-                                        flush,
                                         ex =>
                                         {
                                             if (ex != null)
