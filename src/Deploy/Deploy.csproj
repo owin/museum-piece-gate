@@ -40,7 +40,10 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Content Include="Hosts.AspNet\Web.config" />
+    <Content Include="Hosts.AspNet\Web.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="app.config" />
     <None Include="Quickstart.All\Example-Startup-All.cs.pp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

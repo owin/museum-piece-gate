@@ -21,13 +21,15 @@ namespace Sample.Nancy
                 {
                     response.Status = "200 OK";
                     response.ContentType = "text/html";
-                    response.Start(() => response
-                        .Write("<h1>Sample.App</h1>")
-                        .Write("<p><a href='{0}/wilson/'>Wilson</a></p>", request.PathBase)
-                        .Write("<p><a href='{0}/wilsonasync/'>Wilson (async)</a></p>", request.PathBase)
-                        .Write("<p><a href='{0}/nancy/'>Nancy</a></p>", request.PathBase)
-                        .Write("<p><a href='{0}/fileupload'>File Upload</a></p>", request.PathBase)
-                        .End());
+                    response.Start(() =>
+                    {
+                        response.Write("<h1>Sample.App</h1>");
+                        response.Write("<p><a href='{0}/wilson/'>Wilson</a></p>", request.PathBase);
+                        response.Write("<p><a href='{0}/wilsonasync/'>Wilson (async)</a></p>", request.PathBase);
+                        response.Write("<p><a href='{0}/nancy/'>Nancy</a></p>", request.PathBase);
+                        response.Write("<p><a href='{0}/fileupload'>File Upload</a></p>", request.PathBase);
+                        response.End();
+                    });
                 }
                 else
                 {

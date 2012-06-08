@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Owin;
 using Gate.Utils;
 
@@ -19,6 +21,7 @@ namespace Gate
         Func<ArraySegment<byte>, Action, bool> _responseWrite;
         Action<Exception> _responseEnd;
         CancellationToken _responseCancellationToken = CancellationToken.None;
+        Stream _outputStream;
 
         public Response(ResultDelegate result)
             : this(result, "200 OK")
@@ -234,22 +237,86 @@ namespace Gate
             Start(status);
         }
 
-        public Response Write(string text)
+        public Stream OutputStream
+        {
+            get
+            {
+                if (_outputStream == null)
+                {
+                    Interlocked.Exchange(ref _outputStream, new ResponseStream(this));
+                }
+                return _outputStream;
+            }
+        }
+
+        public bool Write(string text)
         {
             // this could be more efficient if it spooled the immutable strings instead...
             var data = Encoding.GetBytes(text);
             return Write(new ArraySegment<byte>(data));
         }
 
-        public Response Write(string format, params object[] args)
+        public bool Write(string format, params object[] args)
         {
             return Write(string.Format(format, args));
         }
 
-        public Response Write(ArraySegment<byte> data)
+        public bool Write(ArraySegment<byte> data)
         {
-            _responseWrite(data, null);
-            return this;
+            return _responseWrite(data, null);
+        }
+
+        public bool Write(ArraySegment<byte> data, Action callback)
+        {
+            return _responseWrite(data, callback);
+        }
+
+        public Task WriteAsync(ArraySegment<byte> data)
+        {
+            var tcs = new TaskCompletionSource<object>();
+            if (!_responseWrite(data, () => tcs.SetResult(null)))
+                tcs.SetResult(null);
+            return tcs.Task;
+        }
+
+        public IAsyncResult BeginWrite(ArraySegment<byte> data, AsyncCallback callback, object state)
+        {
+            var tcs = new TaskCompletionSource<object>(state);
+            if (!_responseWrite(data, () => tcs.SetResult(null)))
+                tcs.SetResult(null);
+            tcs.Task.ContinueWith(t => callback(t));
+            return tcs.Task;
+        }
+
+        public void EndWrite(IAsyncResult result)
+        {
+            ((Task)result).Wait();
+        }
+
+
+        public bool Flush()
+        {
+            return Write(default(ArraySegment<byte>));
+        }
+
+        public bool Flush(Action callback)
+        {
+            return Write(default(ArraySegment<byte>), callback);
+        }
+
+        public Task FlushAsync()
+        {
+            return WriteAsync(default(ArraySegment<byte>));
+        }
+
+        public IAsyncResult BeginFlush(AsyncCallback callback, object state)
+        {
+            return BeginWrite(default(ArraySegment<byte>), callback, state);
+        }
+
+        public void EndFlush(IAsyncResult result)
+        {
+            EndWrite(result);
         }
 
         public void End()
@@ -294,6 +361,7 @@ namespace Gate
             {
                 throw new InvalidOperationException("Start must only be called once on a Response and it must be called before Write or End");
             };
+
 
         void Autostart()
         {
@@ -369,7 +437,82 @@ namespace Gate
             OnStart(() => OnEnd(ex));
             Autostart();
         }
+    }
+
+    class ResponseStream : Stream
+    {
+        readonly Response _response;
+
+        public ResponseStream(Response response)
+        {
+            _response = response;
+        }
+
+        public override void Flush()
+        {
+            _response.Flush();
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            _response.Write(ToArraySegment(buffer, offset, count));
+        }
+
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        {
+            return _response.BeginWrite(ToArraySegment(buffer, offset, count), callback, state);
+        }
+
+        public override void EndWrite(IAsyncResult asyncResult)
+        {
+            _response.EndWrite(asyncResult);
+        }
+
+        static ArraySegment<byte> ToArraySegment(byte[] buffer, int offset, int count)
+        {
+            return buffer == null ? default(ArraySegment<byte>) : new ArraySegment<byte>(buffer, offset, count);
+        }
 
 
+        public override bool CanRead
+        {
+            get { return false; }
+        }
+
+        public override bool CanSeek
+        {
+            get { return false; }
+        }
+
+        public override bool CanWrite
+        {
+            get { return true; }
+        }
+
+        public override long Length
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override long Position
+        {
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
+        }
     }
 }

@@ -67,12 +67,12 @@ namespace Gate.Tests
         [Test]
         public void Write_calls_will_spool_until_finish_is_called()
         {
-            new Response(Result) { Status = "200 Yep" }
-                .Write("this")
-                .Write("is")
-                .Write("a")
-                .Write("test")
-                .End();
+            var resp = new Response(Result) { Status = "200 Yep" };
+            resp.Write("this");
+            resp.Write("is");
+            resp.Write("a");
+            resp.Write("test");
+            resp.End();
 
             Assert.That(_status, Is.EqualTo("200 Yep"));
             var data = Encoding.UTF8.GetString(Consume());
