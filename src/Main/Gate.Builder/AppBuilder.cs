@@ -47,16 +47,26 @@ namespace Gate.Builder
         }
 
         readonly IList<Delegate> _stack;
+        readonly IDictionary<string, object> _context;
+        readonly IDictionary<Tuple<Type, Type>, Func<object, object>> _adapters = new Dictionary<Tuple<Type, Type>, Func<object, object>>();
 
         public AppBuilder()
         {
             _stack = new List<Delegate>();
+            _context = new Dictionary<string, object>();
             AddAdapter<AppDelegate, AppAction>(Adapters.ToAction);
             AddAdapter<AppAction, AppDelegate>(Adapters.ToDelegate);
             AddAdapter<AppDelegate, AppTaskDelegate>(Adapters.ToTaskDelegate);
             AddAdapter<AppTaskDelegate, AppDelegate>(Adapters.ToDelegate);
             AddAdapter<AppAction, AppTaskDelegate>(app => Adapters.ToTaskDelegate(Adapters.ToDelegate(app)));
             AddAdapter<AppTaskDelegate, AppAction>(app => Adapters.ToAction(Adapters.ToDelegate(app)));
+        }
+
+        public AppBuilder(IDictionary<string, object> context, IDictionary<Tuple<Type, Type>, Func<object, object>> adapters)
+        {
+            _stack = new List<Delegate>();
+            _context = context;
+            _adapters = adapters;
         }
 
         public IAppBuilder Use<TApp>(Func<TApp, TApp> middleware)
@@ -74,46 +84,54 @@ namespace Gate.Builder
 
         public TApp Materialize<TApp>()
         {
-            var app = (Delegate)NotFound.App();
+            var app = (object)NotFound.App();
             app = _stack
                 .Reverse()
                 .Aggregate(app, Wrap);
-            return (TApp)(Object)Adapt(app, typeof(TApp));
+            return (TApp)Adapt(app, typeof(TApp));
         }
 
-        Delegate Wrap(Delegate app, Delegate middleware)
+        object Wrap(object app, Delegate middleware)
         {
             var middlewareFlavor = middleware.Method.ReturnType;
             var neededApp = Adapt(app, middlewareFlavor);
-            return (Delegate)middleware.DynamicInvoke(neededApp);
+            return middleware.DynamicInvoke(neededApp);
         }
 
-        Delegate Adapt(Delegate currentApp, Type neededFlavor)
+        object Adapt(object currentApp, Type neededFlavor)
         {
             var currentFlavor = currentApp.GetType();
-            if (currentFlavor == neededFlavor)
+            if (neededFlavor.IsAssignableFrom(currentFlavor))
                 return currentApp;
 
-            Func<Delegate, Delegate> adapter;
-            if (_adapters.TryGetValue(Tuple.Create(currentFlavor, neededFlavor), out adapter))
-                return adapter(currentApp);
+            foreach (var kv in _adapters)
+            {
+                if (neededFlavor.IsAssignableFrom(kv.Key.Item2) &&
+                    kv.Key.Item1.IsAssignableFrom(currentFlavor))
+                {
+                    return kv.Value.Invoke(currentApp);
+                }
+            }
 
             throw new Exception(string.Format("Unable to convert from {0} to {1}", currentFlavor, neededFlavor));
         }
 
-        readonly IDictionary<Tuple<Type, Type>, Func<Delegate, Delegate>> _adapters = new Dictionary<Tuple<Type, Type>, Func<Delegate, Delegate>>();
+
         void AddAdapter<TCurrent, TNeeded>(Func<TCurrent, TNeeded> adapter)
         {
-            _adapters.Add(Tuple.Create(typeof(TCurrent), typeof(TNeeded)), Adapter(adapter));
+            var key = Tuple.Create(typeof(TCurrent), typeof(TNeeded));
+            if (!_adapters.ContainsKey(key))
+                _adapters.Add(key, Adapter(adapter));
         }
-        Func<Delegate, Delegate> Adapter<TCurrent, TNeeded>(Func<TCurrent, TNeeded> adapter)
+
+        Func<object, object> Adapter<TCurrent, TNeeded>(Func<TCurrent, TNeeded> adapter)
         {
-            return app => (Delegate)(Object)adapter((TCurrent)(Object)app);
+            return app => adapter((TCurrent)app);
         }
 
         public AppDelegate Build(Action<IAppBuilder> fork)
         {
-            var b = new AppBuilder();
+            var b = new AppBuilder(_context, _adapters);
             fork(b);
             return b.Materialize<AppDelegate>();
         }
@@ -125,12 +143,14 @@ namespace Gate.Builder
 
         public IAppBuilder AddAdapters<TApp1, TApp2>(Func<TApp1, TApp2> adapter1, Func<TApp2, TApp1> adapter2)
         {
-            throw new NotImplementedException();
+            AddAdapter(adapter1);
+            AddAdapter(adapter2);
+            return this;
         }
 
         public IDictionary<string, object> Context
         {
-            get { throw new NotImplementedException(); }
+            get { return _context; }
         }
     }
 }
