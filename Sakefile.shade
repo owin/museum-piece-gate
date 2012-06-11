@@ -13,6 +13,8 @@ var TEST_ASSEMBLIES='${Files.Include("target/test/**/*.Tests.dll").Exclude("targ
 
 var NUGET_GALLERY_SOURCE='https://nuget.org/api/v2/'
 var NUGET_ASPNET_SOURCE='http://www.myget.org/F/aspnetwebstacknightly/'
+var NUGET_OWIN_SOURCE='http://www.myget.org/F/gate/'
+
 var NUGET_GATE_DEPLOY='http://www.myget.org/F/gate/'
 
 -// include range of standard general targets. run "sake targets" to display
@@ -24,7 +26,7 @@ use-standard-goals features='nuget,nunit'
 -// additional work targets are defined below
 
 #nuget-initialize target='initialize'
-  nuget-install each='var package in Files.Include("src/**/packages.config")' outputDir='packages' extra='-Source ${NUGET_GALLERY_SOURCE};${NUGET_ASPNET_SOURCE}'
+  nuget-install each='var package in Files.Include("src/**/packages.config")' outputDir='packages' extra='-Source ${NUGET_GALLERY_SOURCE};${NUGET_ASPNET_SOURCE};${NUGET_OWIN_SOURCE}'
   
 #nuget-deploy target='deploy' description='Upload NuGet packages to gallery'
   nuget-push each='var nupkgFile in Files.Include("target/*.nupkg")' extra='-Source ${NUGET_GATE_DEPLOY}'
