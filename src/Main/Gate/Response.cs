@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -45,7 +46,185 @@ namespace Gate
             Encoding = Encoding.UTF8;
         }
 
-        public string Status { get; set; }
+        public Response(ResultDelegate result, int statusCode)
+            : this(result, statusCode, new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase))
+        {
+        }
+
+        public Response(ResultDelegate result, int statusCode, IDictionary<string, string[]> headers)
+        {
+            _result = result;
+
+            _responseWrite = EarlyResponseWrite;
+            _responseEnd = EarlyResponseEnd;
+
+            StatusCode = statusCode;
+            Headers = headers;
+            Encoding = Encoding.UTF8;
+        }
+
+        int _statusCode;
+        string _reasonPhrase;
+
+        public string Status
+        {
+            get
+            {
+                var reasonPhrase = ReasonPhrase;
+                return string.IsNullOrEmpty(reasonPhrase)
+                    ? StatusCode.ToString(CultureInfo.InvariantCulture)
+                    : StatusCode.ToString(CultureInfo.InvariantCulture) + " " + reasonPhrase;
+            }
+            set
+            {
+                if (value.Length < 3 || (value.Length >= 4 && value[3] != ' '))
+                {
+                    throw new ArgumentException("Status must be a string with 3 digit statuscode, a space, and a reason phrase");
+                }
+                _statusCode = int.Parse(value.Substring(0, 3));
+                _reasonPhrase = value.Length < 4 ? null : value.Substring(4);
+            }
+        }
+        public int StatusCode
+        {
+            get
+            {
+                return _statusCode;
+            }
+            set
+            {
+                if (_statusCode != value)
+                {
+                    _statusCode = value;
+                    _reasonPhrase = null;
+                }
+            }
+        }
+        public string ReasonPhrase
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_reasonPhrase))
+                {
+                    switch (_statusCode)
+                    {
+                        case 100:
+                            return "Continue";
+                        case 101:
+                            return "Switching Protocols";
+                        case 102:
+                            return "Processing";
+                        case 200:
+                            return "OK";
+                        case 201:
+                            return "Created";
+                        case 202:
+                            return "Accepted";
+                        case 203:
+                            return "Non-Authoritative Information";
+                        case 204:
+                            return "No Content";
+                        case 205:
+                            return "Reset Content";
+                        case 206:
+                            return "Partial Content";
+                        case 207:
+                            return "Multi-Status";
+                        case 226:
+                            return "IM Used";
+                        case 300:
+                            return "Multiple Choices";
+                        case 301:
+                            return "Moved Permanently";
+                        case 302:
+                            return "Found";
+                        case 303:
+                            return "See Other";
+                        case 304:
+                            return "Not Modified";
+                        case 305:
+                            return "Use Proxy";
+                        case 306:
+                            return "Reserved";
+                        case 307:
+                            return "Temporary Redirect";
+                        case 400:
+                            return "Bad Request";
+                        case 401:
+                            return "Unauthorized";
+                        case 402:
+                            return "Payment Required";
+                        case 403:
+                            return "Forbidden";
+                        case 404:
+                            return "Not Found";
+                        case 405:
+                            return "Method Not Allowed";
+                        case 406:
+                            return "Not Acceptable";
+                        case 407:
+                            return "Proxy Authentication Required";
+                        case 408:
+                            return "Request Timeout";
+                        case 409:
+                            return "Conflict";
+                        case 410:
+                            return "Gone";
+                        case 411:
+                            return "Length Required";
+                        case 412:
+                            return "Precondition Failed";
+                        case 413:
+                            return "Request Entity Too Large";
+                        case 414:
+                            return "Request-URI Too Long";
+                        case 415:
+                            return "Unsupported Media Type";
+                        case 416:
+                            return "Requested Range Not Satisfiable";
+                        case 417:
+                            return "Expectation Failed";
+                        case 418:
+                            return "I'm a Teapot";
+                        case 422:
+                            return "Unprocessable Entity";
+                        case 423:
+                            return "Locked";
+                        case 424:
+                            return "Failed Dependency";
+                        case 426:
+                            return "Upgrade Required";
+                        case 500:
+                            return "Internal Server Error";
+                        case 501:
+                            return "Not Implemented";
+                        case 502:
+                            return "Bad Gateway";
+                        case 503:
+                            return "Service Unavailable";
+                        case 504:
+                            return "Gateway Timeout";
+                        case 505:
+                            return "HTTP Version Not Supported";
+                        case 506:
+                            return "Variant Also Negotiates";
+                        case 507:
+                            return "Insufficient Storage";
+                        case 510:
+                            return "Not Extended";
+                        default:
+                            return null;
+                    }
+                }
+                return _reasonPhrase;
+            }
+            set
+            {
+                _reasonPhrase = value;
+            }
+        }
+
+
         public IDictionary<string, string[]> Headers { get; set; }
         public Encoding Encoding { get; set; }
         public bool Buffer { get; set; }
@@ -436,83 +615,6 @@ namespace Gate
         {
             OnStart(() => OnEnd(ex));
             Autostart();
-        }
-    }
-
-    class ResponseStream : Stream
-    {
-        readonly Response _response;
-
-        public ResponseStream(Response response)
-        {
-            _response = response;
-        }
-
-        public override void Flush()
-        {
-            _response.Flush();
-        }
-
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void SetLength(long value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            _response.Write(ToArraySegment(buffer, offset, count));
-        }
-
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            return _response.BeginWrite(ToArraySegment(buffer, offset, count), callback, state);
-        }
-
-        public override void EndWrite(IAsyncResult asyncResult)
-        {
-            _response.EndWrite(asyncResult);
-        }
-
-        static ArraySegment<byte> ToArraySegment(byte[] buffer, int offset, int count)
-        {
-            return buffer == null ? default(ArraySegment<byte>) : new ArraySegment<byte>(buffer, offset, count);
-        }
-
-
-        public override bool CanRead
-        {
-            get { return false; }
-        }
-
-        public override bool CanSeek
-        {
-            get { return false; }
-        }
-
-        public override bool CanWrite
-        {
-            get { return true; }
-        }
-
-        public override long Length
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public override long Position
-        {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
         }
     }
 }

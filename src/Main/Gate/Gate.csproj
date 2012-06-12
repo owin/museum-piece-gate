@@ -50,6 +50,8 @@
     <Compile Include="AppBuilderUseExtensions.cs" />
     <Compile Include="Environment.cs" />
     <Compile Include="OwinConstants.cs" />
+    <Compile Include="RequestStream.cs" />
+    <Compile Include="ResponseStream.cs" />
     <Compile Include="Utils\ParamDictionary.cs" />
     <Compile Include="Utils\Spool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

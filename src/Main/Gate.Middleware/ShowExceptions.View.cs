@@ -334,7 +334,9 @@ write(@"
 
   <h3 id=""post-info"">POST</h3>
   ");
- if (request.Post.Any()) { 
+ 
+  var form = request.ReadForm();
+  if (form.Any()) { 
 write(@"
     <table class=""req"">
       <thead>
@@ -345,7 +347,7 @@ write(@"
       </thead>
       <tbody>
           ");
- foreach(var kv in request.Post.OrderBy(kv => kv.Key)) { 
+ foreach(var kv in form.OrderBy(kv => kv.Key)) { 
 write(@"
           <tr>
             <td>");

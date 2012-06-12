@@ -233,7 +233,9 @@ namespace Gate.Middleware
   <% } %>
 
   <h3 id=""post-info"">POST</h3>
-  <% if (request.Post.Any()) { %>
+  <% 
+  var form = request.ReadForm();
+  if (form.Any()) { %>
     <table class=""req"">
       <thead>
         <tr>
@@ -242,7 +244,7 @@ namespace Gate.Middleware
         </tr>
       </thead>
       <tbody>
-          <% foreach(var kv in request.Post.OrderBy(kv => kv.Key)) { %>
+          <% foreach(var kv in form.OrderBy(kv => kv.Key)) { %>
           <tr>
             <td><%: kv.Key %></td>
             <td class=""code""><div><%: kv.Value %></div></td>

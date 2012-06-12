@@ -1,18 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Gate.Utils;
 
 namespace Gate
 {
     using BodyAction = Action<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, CancellationToken>;
-    
+
     public class Request : Environment
     {
-        static readonly char[] CommaSemicolon = new[] {',', ';'};
+        static readonly char[] CommaSemicolon = new[] { ',', ';' };
 
-        public Request(IDictionary<string, object> env) : base(env)
+        public Request(IDictionary<string, object> env)
+            : base(env)
         {
         }
 
@@ -21,13 +24,13 @@ namespace Gate
             get
             {
                 var text = QueryString;
-                if (Get<string>("Gate.Helpers.Request.Query:text") != text ||
-                    Get<IDictionary<string, string>>("Gate.Helpers.Request.Query") == null)
+                if (Get<string>("Gate.Request.Query#text") != text ||
+                    Get<IDictionary<string, string>>("Gate.Request.Query") == null)
                 {
-                    this["Gate.Helpers.Request.Query:text"] = text;
-                    this["Gate.Helpers.Request.Query"] = ParamDictionary.Parse(text);
+                    this["Gate.Request.Query#text"] = text;
+                    this["Gate.Request.Query"] = ParamDictionary.Parse(text);
                 }
-                return Get<IDictionary<string, string>>("Gate.Helpers.Request.Query");
+                return Get<IDictionary<string, string>>("Gate.Request.Query");
             }
         }
 
@@ -100,57 +103,81 @@ namespace Gate
             }
         }
 
-
-        public IDictionary<string, string> Post
+        public Stream OpenInputStream()
         {
-            get
-            {
-                if (HasFormData || HasParseableData)
-                {
-                    var input = BodyDelegate;
-                    if (input == null)
-                    {
-                        throw new InvalidOperationException("Missing input");
-                    }
-
-                    if (!ReferenceEquals(Get<object>("Gate.Helpers.Request.Post:input"), input) ||
-                        Get<IDictionary<string, string>>("Gate.Helpers.Request.Post") == null)
-                    {
-                        var text = ToText(input, Encoding.UTF8);
-                        this["Gate.Helpers.Request.Post:input"] = input;
-                        this["Gate.Helpers.Request.Post:text"] = text;
-                        this["Gate.Helpers.Request.Post"] = ParamDictionary.Parse(text);
-                    }
-                    return Get<IDictionary<string, string>>("Gate.Helpers.Request.Post");
-                }
-
-                return ParamDictionary.Parse("");
-            }
+            var inputStream = new RequestStream();
+            inputStream.Start(BodyDelegate, CallDisposed);
+            return inputStream;
         }
 
-
-        static string ToText(Owin.BodyDelegate body, Encoding encoding)
+        public Task<string> ReadTextAsync()
         {
+            var text = Get<string>("Gate.Request.Text");
+            var thisInput = BodyDelegate;
+            var lastInput = Get<object>("Gate.Request.Text#input");
+            var tcs = new TaskCompletionSource<string>();
+            if (text != null && ReferenceEquals(thisInput, lastInput))
+            {
+                tcs.SetResult(text);
+                return tcs.Task;
+            }
+            var encoding = Encoding.UTF8;
+
             var sb = new StringBuilder();
-            var wait = new ManualResetEvent(false);
-            Exception exception = null;
-            body.Invoke(
-                (data, _) =>
-                {
-                    sb.Append(encoding.GetString(data.Array, data.Offset, data.Count));
-                    return false;
-                },
+
+            thisInput.Invoke(
+                (data, callback) => false,
                 ex =>
                 {
-                    exception = ex;
-                    wait.Set();
+                    if (ex != null)
+                    {
+                        tcs.SetException(ex);
+                    }
+                    else
+                    {
+                        tcs.SetResult(sb.ToString());
+                    }
                 },
-                CancellationToken.None);
+                CallDisposed);
+            return tcs.Task;
+        }
 
-            wait.WaitOne();
-            if (exception != null)
-                throw new AggregateException(exception);
-            return sb.ToString();
+        public string ReadText()
+        {
+            return ReadTextAsync().Result;
+        }
+
+        public Task<IDictionary<string, string>> ReadFormAsync()
+        {
+            if (!HasFormData && !HasParseableData)
+            {
+                var tcs = new TaskCompletionSource<IDictionary<string, string>>();
+                tcs.SetResult(ParamDictionary.Parse(""));
+                return tcs.Task;
+            }
+
+            var form = Get<IDictionary<string, string>>("Gate.Request.Form");
+            var thisInput = Get<object>(OwinConstants.RequestBody);
+            var lastInput = Get<object>("Gate.Request.Form#input");
+            if (form != null && ReferenceEquals(thisInput, lastInput))
+            {
+                var tcs = new TaskCompletionSource<IDictionary<string, string>>();
+                tcs.SetResult(form);
+                return tcs.Task;
+            }
+
+            return ReadTextAsync().ContinueWith(t =>
+            {
+                form = ParamDictionary.Parse(t.Result);
+                this["Gate.Request.Form#input"] = thisInput;
+                this["Gate.Request.Form"] = form;
+                return form;
+            }, TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        public IDictionary<string, string> ReadForm()
+        {
+            return ReadFormAsync().Result;
         }
 
 
