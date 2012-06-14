@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Gate.Utils;
@@ -10,6 +11,7 @@ namespace Gate
     public class RequestStream : Stream
     {
         readonly Spool _spool;
+        Exception _error;
 
         public RequestStream()
         {
@@ -28,6 +30,7 @@ namespace Gate
 
         void OnEnd(Exception error)
         {
+            _error = error;
             _spool.PushComplete();
         }
 
@@ -50,6 +53,11 @@ namespace Gate
         {
             var retval = new int[1];
             _spool.Pull(new ArraySegment<byte>(buffer, offset, count), retval, null);
+            if (retval[0] == 0 && _error != null)
+            {
+                // return error that arrived from request stream source
+                throw new TargetInvocationException(_error);
+            }
             return retval[0];
         }
 
@@ -57,11 +65,26 @@ namespace Gate
         {
             var tcs = new TaskCompletionSource<int>(state);
             var retval = new int[1];
-            if (!_spool.Pull(new ArraySegment<byte>(buffer, offset, count), retval, () => tcs.SetResult(retval[0])))
+            Action result = () =>
             {
-                tcs.SetResult(retval[0]);
+                if (retval[0] == 0 && _error != null)
+                {
+                    // return error that arrived from request stream source
+                    tcs.SetException(_error);
+                }
+                else
+                {
+                    tcs.SetResult(retval[0]);
+                }
+            };
+            if (!_spool.Pull(new ArraySegment<byte>(buffer, offset, count), retval, result))
+            {
+                result.Invoke();
             }
-            tcs.Task.ContinueWith(t => callback(t));
+            if (callback != null)
+            {
+                tcs.Task.Then(() => callback(tcs.Task));
+            }
             return tcs.Task;
         }
 

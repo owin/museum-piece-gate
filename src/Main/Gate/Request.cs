@@ -200,25 +200,12 @@ namespace Gate
                 tcs.SetResult(text);
                 return tcs.Task;
             }
-            var encoding = Encoding.UTF8;
 
-            var sb = new StringBuilder();
+            var buffer = new MemoryStream();
 
-            thisInput.Invoke(
-                (data, callback) => false,
-                ex =>
-                {
-                    if (ex != null)
-                    {
-                        tcs.SetException(ex);
-                    }
-                    else
-                    {
-                        tcs.SetResult(sb.ToString());
-                    }
-                },
-                CallDisposed);
-            return tcs.Task;
+            //TODO: determine encoding from request content type
+            return CopyToStreamAsync(buffer, CallDisposed)
+                .Then(() => new StreamReader(buffer).ReadToEnd());
         }
 
         public string ReadText()
@@ -245,13 +232,13 @@ namespace Gate
                 return tcs.Task;
             }
 
-            return ReadTextAsync().ContinueWith(t =>
+            return ReadTextAsync().Then(text =>
             {
-                form = ParamDictionary.Parse(t.Result);
+                form = ParamDictionary.Parse(text);
                 this["Gate.Request.Form#input"] = thisInput;
                 this["Gate.Request.Form"] = form;
                 return form;
-            }, TaskContinuationOptions.ExecuteSynchronously);
+            });
         }
 
         public IDictionary<string, string> ReadForm()

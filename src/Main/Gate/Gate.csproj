@@ -41,6 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppBuilderInlineExtensions.cs" />
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.1-ctp1\TaskHelpers.cs" />
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.1-ctp1\TaskHelpersExtensions.cs" />
     <Compile Include="Headers.cs" />
     <Compile Include="Mapping\MapBuilder.cs" />
     <Compile Include="Mapping\UrlMapper.cs" />

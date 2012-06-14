@@ -164,18 +164,6 @@ namespace Gate.Tests
             Assert.That(request.Cookies["foo"], Is.EqualTo("bar"));
         }
 
-        [Test]
-        public void ItShouldRaiseAnyErrorsOnEveryRequest()
-        {
-            var headers = Headers.New().SetHeader("Cookie", "foo=%");
-            var request = new Request(new Dictionary<string, object>
-            {
-                {"owin.RequestHeaders", headers}
-            });
-
-            Assert.Throws<UriFormatException>(() => { var x = request.Cookies; });
-            Assert.Throws<UriFormatException>(() => { var x = request.Cookies; });
-        }
 
         [Test]
         public void ItShouldParseCookiesAccordingToRFC2109()
