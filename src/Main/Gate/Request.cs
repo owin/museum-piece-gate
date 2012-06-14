@@ -110,6 +110,85 @@ namespace Gate
             return inputStream;
         }
 
+        public Task CopyToStreamAsync(Stream stream, CancellationToken cancel)
+        {
+            var tcs = new TaskCompletionSource<object>();
+            BodyDelegate.Invoke(
+                (data, callback) =>
+                {
+                    try
+                    {
+                        if (data.Array == null)
+                        {
+                            stream.Flush();
+                            return false;
+                        }
+                        if (callback == null)
+                        {
+                            stream.Write(data.Array, data.Offset, data.Count);
+                            return false;
+                        }
+                        var sr = stream.BeginWrite(
+                            data.Array,
+                            data.Offset,
+                            data.Count,
+                            ar =>
+                            {
+                                if (ar.CompletedSynchronously)
+                                {
+                                    return;
+                                }
+                                try
+                                {
+                                    stream.EndWrite(ar);
+                                }
+                                catch (Exception ex)
+                                {
+                                    tcs.TrySetException(ex);
+                                }
+                                finally
+                                {
+                                    try
+                                    {
+                                        callback();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        tcs.TrySetException(ex);
+                                    }
+                                }
+                            },
+                            null);
+
+                        if (!sr.CompletedSynchronously)
+                        {
+                            return true;
+                        }
+
+                        stream.EndWrite(sr);
+                        return false;
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.SetException(ex);
+                        return false;
+                    }
+                },
+                ex =>
+                {
+                    if (ex == null)
+                    {
+                        tcs.TrySetResult(null);
+                    }
+                    else
+                    {
+                        tcs.TrySetException(ex);
+                    }
+                },
+                cancel);
+            return tcs.Task;
+        }
+
         public Task<string> ReadTextAsync()
         {
             var text = Get<string>("Gate.Request.Text");
