@@ -6,7 +6,7 @@ namespace Gate.Adapters.AspNetWebApi
     class StreamNotImpl : Stream
     {
         public override void Flush()
-        {
+        {            
         }
 
         public override long Seek(long offset, SeekOrigin origin)

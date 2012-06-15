@@ -1,6 +1,6 @@
 
 var PROJECT='Gate'
-var VERSION='0.5.0'
+var VERSION='${BuildVersion("0.5")}'
 var FULL_VERSION='${VERSION}-ctp1'
 var AUTHORS='${PROJECT} contributors'
 
@@ -16,6 +16,20 @@ var NUGET_ASPNET_SOURCE='http://www.myget.org/F/aspnetwebstacknightly/'
 var NUGET_OWIN_SOURCE='http://www.myget.org/F/gate/'
 
 var NUGET_GATE_DEPLOY='http://www.myget.org/F/gate/'
+
+
+functions
+  @{
+      string BuildVersion(string version)
+      {
+          if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("BUILD_NUMBER")))
+          {
+            return version + "." + Environment.GetEnvironmentVariable("BUILD_NUMBER");
+          }
+          return version;
+      }
+  }
+
 
 -// include range of standard general targets. run "sake targets" to display
 use-standard-lifecycle
