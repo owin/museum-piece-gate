@@ -11,8 +11,8 @@
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
     <tags></tags>
     <dependencies>
-      <dependency id="Gate.Hosts.AspNet" version="$version$"/>
-      <dependency id="Gate.Middleware" version="$version$"/>
+      <dependency id="Gate.Hosts.AspNet" version="[$version$]"/>
+      <dependency id="Gate.Middleware" version="[$version$]"/>
     </dependencies>
   </metadata>
   <files>

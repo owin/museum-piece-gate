@@ -11,7 +11,7 @@
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
     <tags></tags>
     <dependencies>
-      <dependency id="Gate.Quickstart.Core" version="$version$"/>
+      <dependency id="Gate.Quickstart.Core" version="[$version$]"/>
     </dependencies>
   </metadata>
   <files>

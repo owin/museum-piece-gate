@@ -11,11 +11,11 @@
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
     <tags></tags>
     <dependencies>
-      <dependency id="Gate.Quickstart.AspNetWebApi" version="$version$"/>
-      <dependency id="Gate.Quickstart.Direct" version="$version$"/>
-      <dependency id="Gate.Quickstart.Nancy" version="$version$"/>
-      <dependency id="Gate.Quickstart.SignalR" version="$version$"/>
-      <dependency id="Gate.Quickstart.Wilson" version="$version$"/>
+      <dependency id="Gate.Quickstart.AspNetWebApi" version="[$version$]"/>
+      <dependency id="Gate.Quickstart.Direct" version="[$version$]"/>
+      <dependency id="Gate.Quickstart.Nancy" version="[$version$]"/>
+      <dependency id="Gate.Quickstart.SignalR" version="[$version$]"/>
+      <dependency id="Gate.Quickstart.Wilson" version="[$version$]"/>
     </dependencies>
   </metadata>
   <files>    

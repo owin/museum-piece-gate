@@ -11,8 +11,8 @@
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
     <tags></tags>
     <dependencies>
-      <dependency id="Gate.Builder" version="$version$"/>
-      <dependency id="Owin" version="0.8.0-ctp1"/>
+      <dependency id="Gate.Builder" version="[$version$]"/>
+      <dependency id="Owin" version="[0.8-ctp1]"/>
       <dependency id="Microsoft.Web.Infrastructure" version="1.0.0.0"/>
     </dependencies>
   </metadata>
