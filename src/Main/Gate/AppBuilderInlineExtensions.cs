@@ -12,12 +12,12 @@ namespace Gate
 
         public static IAppBuilder RunDirect(this IAppBuilder builder, Action<Request, Response> app)
         {
-            return builder.Run<AppDelegate>(() => (env, result, fault) => app(new Request(env), new Response(result)));
+            return builder.Run<AppDelegate>(() => (call, callback) => app(new Request(call), new Response(callback)));
         }
 
         public static IAppBuilder UseDirect(this IAppBuilder builder, Action<Request, Response, Action> app)
         {
-            return builder.Use<AppDelegate>(next => (env, result, fault) => app(new Request(env), new Response(result), () => next(env, result, fault)));
+            return builder.Use<AppDelegate>(next => (call, callback) => app(new Request(call), new Response(callback), () => next(call, callback)));
         }
     }
 }

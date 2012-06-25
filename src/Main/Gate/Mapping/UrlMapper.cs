@@ -39,11 +39,10 @@ namespace Gate.Mapping
         }
 
         public void Call(
-            IDictionary<string, object> env,
-            ResultDelegate result,
-            Action<Exception> fault)
+            CallParameters call,
+            Action<ResultParameters, Exception> callback)
         {
-            var paths = new Paths(env);
+            var paths = new Paths(call.Environment);
             var path = paths.Path;
             var pathBase = paths.PathBase;
             Action finish = () =>
@@ -55,12 +54,12 @@ namespace Gate.Mapping
             if (match == null)
             {
                 // fall-through to default
-                _app(env, result, fault);
+                _app(call, callback);
                 return;
             }
             paths.PathBase = pathBase + match.Item1;
             paths.Path = path.Substring(match.Item1.Length);
-            match.Item2.Invoke(env, result, fault);
+            match.Item2.Invoke(call, callback);
         }
 
         /// <summary>

@@ -5,20 +5,112 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Gate.Utils;
+using Owin;
 
 namespace Gate
 {
     using BodyAction = Action<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, CancellationToken>;
 
-    public class Request : Environment
+    public class Request
     {
+        CallParameters _call;
         static readonly char[] CommaSemicolon = new[] { ',', ';' };
 
-        public Request(IDictionary<string, object> env)
-            : base(env)
+        public Request(CallParameters call)
         {
+            _call = call;
         }
 
+        public IDictionary<string, object> Environment
+        {
+            get { return _call.Environment; }
+            set { _call.Environment = value; }
+        }
+        public IDictionary<string, string[]> Headers
+        {
+            get { return _call.Headers; }
+            set { _call.Headers = value; }
+        }
+        public BodyDelegate Body
+        {
+            get { return _call.Body; }
+            set { _call.Body = value; }
+        }
+        public CancellationToken CallDisposed
+        {
+            get { return _call.CallDisposed; }
+            set { _call.CallDisposed = value; }
+        }
+
+        private T Get<T>(string name)
+        {
+            object value;
+            return Environment.TryGetValue(name, out value) ? (T)value : default(T);
+        }
+
+        /// <summary>
+        /// "owin.Version" The string "1.0" indicating OWIN version 1.0. 
+        /// </summary>
+        public string Version
+        {
+            get { return Get<string>("owin.Version"); }
+            set { Environment["owin.Version"] = value; }
+        }
+
+        /// <summary>
+        /// "owin.RequestMethod" A string containing the HTTP request method of the request (e.g., "GET", "POST"). 
+        /// </summary>
+        public string Method
+        {
+            get { return Get<string>("owin.RequestMethod"); }
+            set { Environment["owin.RequestMethod"] = value; }
+        }
+
+        /// <summary>
+        /// "owin.RequestScheme" A string containing the URI scheme used for the request (e.g., "http", "https").  
+        /// </summary>
+        public string Scheme
+        {
+            get { return Get<string>("owin.RequestScheme"); }
+            set { Environment["owin.RequestScheme"] = value; }
+        }
+
+        /// <summary>
+        /// "owin.RequestPathBase" A string containing the portion of the request path corresponding to the "root" of the application delegate. The value may be an empty string.  
+        /// </summary>
+        public string PathBase
+        {
+            get { return Get<string>("owin.RequestPathBase"); }
+            set { Environment["owin.RequestPathBase"] = value; }
+        }
+
+        /// <summary>
+        /// "owin.RequestPath" A string containing the request path. The path must be relative to the "root" of the application delegate. 
+        /// </summary>
+        public string Path
+        {
+            get { return Get<string>("owin.RequestPath"); }
+            set { Environment["owin.RequestPath"] = value; }
+        }
+
+        /// <summary>
+        /// "owin.QueryString" A string containing the query string component of the HTTP request URI (e.g., "foo=bar&baz=quux"). The value may be an empty string.
+        /// </summary>
+        public string QueryString
+        {
+            get { return Get<string>("owin.RequestQueryString"); }
+            set { Environment["owin.RequestQueryString"] = value; }
+        }
+
+
+        /// <summary>
+        /// "host.TraceOutput" A TextWriter that directs trace or logger output to an appropriate place for the host
+        /// </summary>
+        public TextWriter TraceOutput
+        {
+            get { return Get<TextWriter>("host.TraceOutput"); }
+            set { Environment["host.TraceOutput"] = value; }
+        }
         public IDictionary<string, string> Query
         {
             get
@@ -27,8 +119,8 @@ namespace Gate
                 if (Get<string>("Gate.Request.Query#text") != text ||
                     Get<IDictionary<string, string>>("Gate.Request.Query") == null)
                 {
-                    this["Gate.Request.Query#text"] = text;
-                    this["Gate.Request.Query"] = ParamDictionary.Parse(text);
+                    Environment["Gate.Request.Query#text"] = text;
+                    Environment["Gate.Request.Query"] = ParamDictionary.Parse(text);
                 }
                 return Get<IDictionary<string, string>>("Gate.Request.Query");
             }
@@ -43,7 +135,7 @@ namespace Gate
                 if (cookies == null)
                 {
                     cookies = new Dictionary<string, string>(StringComparer.Ordinal);
-                    Env["Gate.Request.Cookies#dictionary"] = cookies;
+                    Environment["Gate.Request.Cookies#dictionary"] = cookies;
                 }
 
                 var text = Headers.GetHeader("Cookie");
@@ -55,7 +147,7 @@ namespace Gate
                         if (!cookies.ContainsKey(kv.Key))
                             cookies.Add(kv);
                     }
-                    Env["Gate.Request.Cookies#text"] = text;
+                    Environment["Gate.Request.Cookies#text"] = text;
                 }
                 return cookies;
             }
@@ -106,27 +198,25 @@ namespace Gate
         public Stream OpenInputStream()
         {
             var inputStream = new RequestStream();
-            inputStream.Start(BodyDelegate, CallDisposed);
+            inputStream.Start(Body, CallDisposed);
             return inputStream;
         }
 
         public Task CopyToStreamAsync(Stream stream, CancellationToken cancel)
         {
             var tcs = new TaskCompletionSource<object>();
-            BodyDelegate.Invoke(
+            Body.Invoke(
                 (data, callback) =>
                 {
-                    try
-                    {
                         if (data.Array == null)
                         {
                             stream.Flush();
-                            return false;
+                            return OwinConstants.CompletedSynchronously;
                         }
                         if (callback == null)
                         {
                             stream.Write(data.Array, data.Offset, data.Count);
-                            return false;
+                            return OwinConstants.CompletedSynchronously;
                         }
                         var sr = stream.BeginWrite(
                             data.Array,
@@ -144,13 +234,13 @@ namespace Gate
                                 }
                                 catch (Exception ex)
                                 {
-                                    tcs.TrySetException(ex);
+                                    callback(ex);
                                 }
                                 finally
                                 {
                                     try
                                     {
-                                        callback();
+                                        callback(null);
                                     }
                                     catch (Exception ex)
                                     {
@@ -162,17 +252,11 @@ namespace Gate
 
                         if (!sr.CompletedSynchronously)
                         {
-                            return true;
+                            return OwinConstants.CompletingAsynchronously;
                         }
 
                         stream.EndWrite(sr);
-                        return false;
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.SetException(ex);
-                        return false;
-                    }
+                        return OwinConstants.CompletedSynchronously;
                 },
                 ex =>
                 {
@@ -192,7 +276,7 @@ namespace Gate
         public Task<string> ReadTextAsync()
         {
             var text = Get<string>("Gate.Request.Text");
-            var thisInput = BodyDelegate;
+            var thisInput = Body;
             var lastInput = Get<object>("Gate.Request.Text#input");
             var tcs = new TaskCompletionSource<string>();
             if (text != null && ReferenceEquals(thisInput, lastInput))
@@ -235,8 +319,8 @@ namespace Gate
             return ReadTextAsync().Then(text =>
             {
                 form = ParamDictionary.Parse(text);
-                this["Gate.Request.Form#input"] = thisInput;
-                this["Gate.Request.Form"] = form;
+                Environment["Gate.Request.Form#input"] = thisInput;
+                Environment["Gate.Request.Form"] = form;
                 return form;
             });
         }
@@ -281,6 +365,11 @@ namespace Gate
                     serverName = Get<string>("server.SERVER_ADDRESS");
                 return serverName;
             }
+        }
+
+        public CallParameters Call
+        {
+            get { return _call; }
         }
     }
 }

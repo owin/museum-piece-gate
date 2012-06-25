@@ -22,19 +22,21 @@ namespace Gate
             return Call;
         }
 
-        public static void Call(IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault)
+        public static void Call(CallParameters call, Action<ResultParameters, Exception> callback)
         {
-            result(
-                "404 Not Found",
-                new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+            callback(new ResultParameters
+            {
+                Status = 404,
+                Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
                 {
                     {"Content-Type", new[] {"text/html"}}
                 },
-                (write, end, cancellationToken) =>
+                Body = (write, end, cancel) =>
                 {
                     write(Body, null);
                     end(null);
-                });
+                }
+            }, null);
         }
     }
 }

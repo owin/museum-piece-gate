@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading;
 
 namespace Gate.Utils
@@ -16,7 +17,7 @@ namespace Gate.Utils
             _eagerPull = eagerPull;
         }
 
-        public bool Push(ArraySegment<byte> data, Action continuation)
+        public Owin.TempEnum Push(ArraySegment<byte> data, Action<Exception> continuation)
         {
             //todo - protect against concurrent async calls
             lock (_asyncPull)
@@ -34,7 +35,7 @@ namespace Gate.Utils
                     {
                         var pullContinuation = _asyncPull.Continuation;
                         _asyncPull.Continuation = null;
-                        pullContinuation();
+                        pullContinuation(null);
                     }
                 }
 
@@ -43,13 +44,13 @@ namespace Gate.Utils
                 {
                     var pullContinuation = _asyncPull.Continuation;
                     _asyncPull.Continuation = null;
-                    pullContinuation();
+                    pullContinuation(null);
                 }
 
                 // push fully consumed
                 if (data.Count == 0)
                 {
-                    return false;
+                    return OwinConstants.CompletedSynchronously;
                 }
 
                 // delay if possible
@@ -59,7 +60,7 @@ namespace Gate.Utils
                     {
                         _asyncPush.Data = data;
                         _asyncPush.Continuation = continuation;
-                        return true;
+                        return OwinConstants.CompletingAsynchronously;
                     }
                 }
 
@@ -67,28 +68,29 @@ namespace Gate.Utils
                 lock (_buffer)
                 {
                     _buffer.Push(data);
-                    return false;
+                    return OwinConstants.CompletedSynchronously;
                 }
             }
         }
 
-        public void PushComplete()
+        public void PushComplete(Exception error)
         {
             lock (_asyncPull)
             {
                 _complete = true;
+                _completeError = error;
                 if (_asyncPull.Continuation != null)
                 {
                     var pullContinuation = _asyncPull.Continuation;
                     _asyncPull.Continuation = null;
-                    pullContinuation();
+                    pullContinuation(_completeError);
                 }
             }
         }
 
-        public bool Pull(ArraySegment<byte> data, int[] retval, Action continuation)
+        public Owin.TempEnum Pull(ArraySegment<byte> data, int[] retval, Action<Exception> continuation)
         {
-            Action exitGate = null;
+            Action exitLatch = null;
             lock (_asyncPush)
             {
                 // draw from buffer and outstanding push operations first
@@ -102,7 +104,10 @@ namespace Gate.Utils
                             retval[0] += c;
                         });
                     }
-                    if (data.Count == 0) return false;
+                    if (data.Count == 0)
+                    {
+                        return OwinConstants.CompletedSynchronously;
+                    }
                     Drain(_asyncPush.Data, data, (d0, d1, c) =>
                     {
                         _asyncPush.Data = d0;
@@ -113,21 +118,21 @@ namespace Gate.Utils
                     {
                         var pushContinuation = _asyncPush.Continuation;
                         _asyncPush.Continuation = null;
-                        pushContinuation();
+                        pushContinuation(null);
                     }
                 }
             }
-                
+
             // return partially filled when eager
             if (_eagerPull && retval[0] != 0)
             {
-                return false;
+                return OwinConstants.CompletedSynchronously;
             }
 
             // pull fully satisfied
             if (data.Count == 0)
             {
-                return false;
+                return OwinConstants.CompletedSynchronously;
             }
 
             //todo - there's a simultaneous push-pull problem entering this lock...
@@ -135,7 +140,14 @@ namespace Gate.Utils
             {
                 lock (_asyncPush)
                 {
-                    if (_complete) return false;
+                    if (_complete)
+                    {
+                        if (_completeError != null)
+                        {
+                            throw new TargetInvocationException(_completeError);
+                        }
+                        return OwinConstants.CompletedSynchronously;
+                    }
 
                     _asyncPull.Data = data;
                     _asyncPull.Retval = retval;
@@ -145,21 +157,33 @@ namespace Gate.Utils
                     }
                     else
                     {
-                        var gate = new ManualResetEvent(false);
-                        _asyncPull.Continuation = () => { gate.Set(); };
-                        exitGate = () => { gate.WaitOne(); };
+                        var latch = new ManualResetEvent(false);
+                        Exception latchError = null;
+                        _asyncPull.Continuation = error =>
+                        {
+                            latchError = error;
+                            latch.Set();
+                        };
+                        exitLatch = () =>
+                        {
+                            latch.WaitOne();
+                            if (latchError != null)
+                            {
+                                throw new TargetInvocationException(latchError);
+                            }
+                        };
                     }
                 }
             }
 
 
-            if (exitGate != null)
+            if (exitLatch != null)
             {
-                exitGate();
-                return false;
+                exitLatch();
+                return OwinConstants.CompletedSynchronously;
             }
 
-            return true;
+            return OwinConstants.CompletingAsynchronously;
         }
 
 
@@ -192,12 +216,13 @@ namespace Gate.Utils
 
             public ArraySegment<byte> Data { get; set; }
             public int[] Retval { get; set; }
-            public Action Continuation { get; set; }
+            public Action<Exception> Continuation { get; set; }
         }
 
 
         readonly Buffer _buffer = new Buffer();
         bool _complete;
+        Exception _completeError;
 
         class Buffer
         {

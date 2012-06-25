@@ -11,7 +11,6 @@ namespace Gate
     public class RequestStream : Stream
     {
         readonly Spool _spool;
-        Exception _error;
 
         public RequestStream()
         {
@@ -23,15 +22,14 @@ namespace Gate
             body.Invoke(OnWrite, OnEnd, cancel);
         }
 
-        bool OnWrite(ArraySegment<byte> data, Action callback)
+        Owin.TempEnum OnWrite(ArraySegment<byte> data, Action<Exception> callback)
         {
             return _spool.Push(data, callback);
         }
 
         void OnEnd(Exception error)
         {
-            _error = error;
-            _spool.PushComplete();
+            _spool.PushComplete(error);
         }
 
         public override void Flush()
@@ -53,11 +51,6 @@ namespace Gate
         {
             var retval = new int[1];
             _spool.Pull(new ArraySegment<byte>(buffer, offset, count), retval, null);
-            if (retval[0] == 0 && _error != null)
-            {
-                // return error that arrived from request stream source
-                throw new TargetInvocationException(_error);
-            }
             return retval[0];
         }
 
@@ -65,21 +58,21 @@ namespace Gate
         {
             var tcs = new TaskCompletionSource<int>(state);
             var retval = new int[1];
-            Action result = () =>
+            Action<Exception> result = error =>
             {
-                if (retval[0] == 0 && _error != null)
+                if (error != null)
                 {
                     // return error that arrived from request stream source
-                    tcs.SetException(_error);
+                    tcs.SetException(error);
                 }
                 else
                 {
                     tcs.SetResult(retval[0]);
                 }
             };
-            if (!_spool.Pull(new ArraySegment<byte>(buffer, offset, count), retval, result))
+            if (_spool.Pull(new ArraySegment<byte>(buffer, offset, count), retval, result) == OwinConstants.CompletedSynchronously)
             {
-                result.Invoke();
+                result.Invoke(null);
             }
             if (callback != null)
             {

@@ -13,58 +13,64 @@ namespace Gate
 {
     public class Response
     {
-        ResultDelegate _result;
+        Action<ResultParameters, Exception> _callback;
+        ResultParameters _result;
 
         int _autostart;
         readonly Object _onStartSync = new object();
         Action _onStart = () => { };
 
-        Func<ArraySegment<byte>, Action, bool> _responseWrite;
+        Func<ArraySegment<byte>, Action<Exception>, Owin.TempEnum> _responseWrite;
         Action<Exception> _responseEnd;
         CancellationToken _responseCancellationToken = CancellationToken.None;
         Stream _outputStream;
 
-        public Response(ResultDelegate result)
-            : this(result, "200 OK")
+        public Response(Action<ResultParameters, Exception> callback)
+            : this(callback, 200)
         {
         }
 
-        public Response(ResultDelegate result, string status)
-            : this(result, status, new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase))
+        public Response(Action<ResultParameters, Exception> callback, int statusCode)
+            : this(callback, statusCode, new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase))
         {
         }
 
-        public Response(ResultDelegate result, string status, IDictionary<string, string[]> headers)
+        public Response(Action<ResultParameters, Exception> callback, int statusCode, IDictionary<string, string[]> headers)
+            : this(callback, statusCode, headers, new Dictionary<string, object>())
         {
-            _result = result;
+        }
+
+        public Response(Action<ResultParameters, Exception> callback, int statusCode, IDictionary<string, string[]> headers, IDictionary<string, object> properties)
+        {
+            _callback = callback;
+            _result = new ResultParameters
+            {
+                Status = statusCode,
+                Headers = headers,
+                Body = ResponseBody,
+                Properties = properties
+            };
 
             _responseWrite = EarlyResponseWrite;
             _responseEnd = EarlyResponseEnd;
 
-            Status = status;
-            Headers = headers;
             Encoding = Encoding.UTF8;
         }
 
-        public Response(ResultDelegate result, int statusCode)
-            : this(result, statusCode, new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase))
+        public IDictionary<string, string[]> Headers
         {
+            get { return _result.Headers; }
+            set { _result.Headers = value; }
+        }
+        public IDictionary<string, object> Properties
+        {
+            get { return _result.Properties; }
+            set { _result.Properties = value; }
         }
 
-        public Response(ResultDelegate result, int statusCode, IDictionary<string, string[]> headers)
-        {
-            _result = result;
+        public Encoding Encoding { get; set; }
+        public bool Buffer { get; set; }
 
-            _responseWrite = EarlyResponseWrite;
-            _responseEnd = EarlyResponseEnd;
-
-            StatusCode = statusCode;
-            Headers = headers;
-            Encoding = Encoding.UTF8;
-        }
-
-        int _statusCode;
-        string _reasonPhrase;
 
         public string Status
         {
@@ -81,153 +87,38 @@ namespace Gate
                 {
                     throw new ArgumentException("Status must be a string with 3 digit statuscode, a space, and a reason phrase");
                 }
-                _statusCode = int.Parse(value.Substring(0, 3));
-                _reasonPhrase = value.Length < 4 ? null : value.Substring(4);
+                _result.Status = int.Parse(value.Substring(0, 3));
+                ReasonPhrase = value.Length < 4 ? null : value.Substring(4);
             }
         }
+
         public int StatusCode
         {
             get
             {
-                return _statusCode;
+                return _result.Status;
             }
             set
             {
-                if (_statusCode != value)
+                if (_result.Status != value)
                 {
-                    _statusCode = value;
-                    _reasonPhrase = null;
+                    _result.Status = value;
+                    ReasonPhrase = null;
                 }
             }
         }
+
         public string ReasonPhrase
         {
             get
             {
-                if (string.IsNullOrEmpty(_reasonPhrase))
-                {
-                    switch (_statusCode)
-                    {
-                        case 100:
-                            return "Continue";
-                        case 101:
-                            return "Switching Protocols";
-                        case 102:
-                            return "Processing";
-                        case 200:
-                            return "OK";
-                        case 201:
-                            return "Created";
-                        case 202:
-                            return "Accepted";
-                        case 203:
-                            return "Non-Authoritative Information";
-                        case 204:
-                            return "No Content";
-                        case 205:
-                            return "Reset Content";
-                        case 206:
-                            return "Partial Content";
-                        case 207:
-                            return "Multi-Status";
-                        case 226:
-                            return "IM Used";
-                        case 300:
-                            return "Multiple Choices";
-                        case 301:
-                            return "Moved Permanently";
-                        case 302:
-                            return "Found";
-                        case 303:
-                            return "See Other";
-                        case 304:
-                            return "Not Modified";
-                        case 305:
-                            return "Use Proxy";
-                        case 306:
-                            return "Reserved";
-                        case 307:
-                            return "Temporary Redirect";
-                        case 400:
-                            return "Bad Request";
-                        case 401:
-                            return "Unauthorized";
-                        case 402:
-                            return "Payment Required";
-                        case 403:
-                            return "Forbidden";
-                        case 404:
-                            return "Not Found";
-                        case 405:
-                            return "Method Not Allowed";
-                        case 406:
-                            return "Not Acceptable";
-                        case 407:
-                            return "Proxy Authentication Required";
-                        case 408:
-                            return "Request Timeout";
-                        case 409:
-                            return "Conflict";
-                        case 410:
-                            return "Gone";
-                        case 411:
-                            return "Length Required";
-                        case 412:
-                            return "Precondition Failed";
-                        case 413:
-                            return "Request Entity Too Large";
-                        case 414:
-                            return "Request-URI Too Long";
-                        case 415:
-                            return "Unsupported Media Type";
-                        case 416:
-                            return "Requested Range Not Satisfiable";
-                        case 417:
-                            return "Expectation Failed";
-                        case 418:
-                            return "I'm a Teapot";
-                        case 422:
-                            return "Unprocessable Entity";
-                        case 423:
-                            return "Locked";
-                        case 424:
-                            return "Failed Dependency";
-                        case 426:
-                            return "Upgrade Required";
-                        case 500:
-                            return "Internal Server Error";
-                        case 501:
-                            return "Not Implemented";
-                        case 502:
-                            return "Bad Gateway";
-                        case 503:
-                            return "Service Unavailable";
-                        case 504:
-                            return "Gateway Timeout";
-                        case 505:
-                            return "HTTP Version Not Supported";
-                        case 506:
-                            return "Variant Also Negotiates";
-                        case 507:
-                            return "Insufficient Storage";
-                        case 510:
-                            return "Not Extended";
-                        default:
-                            return null;
-                    }
-                }
-                return _reasonPhrase;
+                object value;
+                var reasonPhrase = Properties.TryGetValue("owin.ReasonPhrase", out value) ? Convert.ToString(value) : null;
+                return string.IsNullOrEmpty(reasonPhrase) ? ReasonPhrases.ToReasonPhrase(StatusCode) : reasonPhrase;
             }
-            set
-            {
-                _reasonPhrase = value;
-            }
+            set { Properties["owin.ReasonPhrase"] = value; }
         }
 
-
-        public IDictionary<string, string[]> Headers { get; set; }
-        public Encoding Encoding { get; set; }
-        public bool Buffer { get; set; }
 
         public string GetHeader(string name)
         {
@@ -374,7 +265,7 @@ namespace Gate
         public Response Start()
         {
             _autostart = 1;
-            Interlocked.Exchange(ref _result, ResultCalledAlready).Invoke(Status, Headers, ResponseBody);
+            Interlocked.Exchange(ref _callback, ResultCalledAlready).Invoke(_result, null);
             return this;
         }
 
@@ -428,42 +319,55 @@ namespace Gate
             }
         }
 
-        public bool Write(string text)
+        public Owin.TempEnum Write(string text)
         {
             // this could be more efficient if it spooled the immutable strings instead...
             var data = Encoding.GetBytes(text);
             return Write(new ArraySegment<byte>(data));
         }
 
-        public bool Write(string format, params object[] args)
+        public Owin.TempEnum Write(string format, params object[] args)
         {
             return Write(string.Format(format, args));
         }
 
-        public bool Write(ArraySegment<byte> data)
+        public Owin.TempEnum Write(ArraySegment<byte> data)
         {
             return _responseWrite(data, null);
         }
 
-        public bool Write(ArraySegment<byte> data, Action callback)
+        public Owin.TempEnum Write(ArraySegment<byte> data, Action<Exception> callback)
         {
             return _responseWrite(data, callback);
         }
 
         public Task WriteAsync(ArraySegment<byte> data)
         {
-            var tcs = new TaskCompletionSource<object>();
-            if (!_responseWrite(data, () => tcs.SetResult(null)))
-                tcs.SetResult(null);
-            return tcs.Task;
+            return (Task)BeginWrite(data, null, null);
         }
 
         public IAsyncResult BeginWrite(ArraySegment<byte> data, AsyncCallback callback, object state)
         {
-            var tcs = new TaskCompletionSource<object>(state);
-            if (!_responseWrite(data, () => tcs.SetResult(null)))
+            var tcs = new TaskCompletionSource<object>();
+            Action<Exception> continuation = error =>
+            {
+                if (error != null)
+                {
+                    tcs.SetException(error);
+                }
+                else
+                {
+                    tcs.SetResult(null);
+                }
+            };
+            if (_responseWrite.Invoke(data, continuation) == OwinConstants.CompletedSynchronously)
+            {
                 tcs.SetResult(null);
-            tcs.Task.ContinueWith(t => callback(t));
+            }
+            if (callback != null)
+            {
+                tcs.Task.Finally(() => callback(tcs.Task));
+            }
             return tcs.Task;
         }
 
@@ -473,12 +377,12 @@ namespace Gate
         }
 
 
-        public bool Flush()
+        public Owin.TempEnum Flush()
         {
             return Write(default(ArraySegment<byte>));
         }
 
-        public bool Flush(Action callback)
+        public Owin.TempEnum Flush(Action<Exception> callback)
         {
             return Write(default(ArraySegment<byte>), callback);
         }
@@ -521,7 +425,7 @@ namespace Gate
         }
 
         void ResponseBody(
-            Func<ArraySegment<byte>, Action, bool> write,
+            Func<ArraySegment<byte>, Action<Exception>, Owin.TempEnum> write,
             Action<Exception> end,
             CancellationToken cancellationToken)
         {
@@ -535,8 +439,8 @@ namespace Gate
         }
 
 
-        static readonly ResultDelegate ResultCalledAlready =
-            (_, __, ___) =>
+        static readonly Action<ResultParameters, Exception> ResultCalledAlready =
+            (result, error) =>
             {
                 throw new InvalidOperationException("Start must only be called once on a Response and it must be called before Write or End");
             };
@@ -586,7 +490,7 @@ namespace Gate
             }
         }
 
-        bool EarlyResponseWrite(ArraySegment<byte> data, Action callback)
+        Owin.TempEnum EarlyResponseWrite(ArraySegment<byte> data, Action<Exception> callback)
         {
             var copy = data;
             if (copy.Count != 0)
@@ -598,16 +502,16 @@ namespace Gate
                 () =>
                 {
                     var willCallback = _responseWrite(copy, callback);
-                    if (callback != null && willCallback == false)
+                    if (callback != null && willCallback == OwinConstants.CompletingAsynchronously)
                     {
-                        callback.Invoke();
+                        callback.Invoke(null);
                     }
                 });
             if (!Buffer || data.Array == null)
             {
                 Autostart();
             }
-            return true;
+            return OwinConstants.CompletingAsynchronously;
         }
 
 

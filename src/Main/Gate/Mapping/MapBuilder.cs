@@ -37,9 +37,9 @@ namespace Gate.Mapping
             return _builder.AddAdapters(adapter1, adapter2);
         }
 
-        public IDictionary<string, object> Context
+        public IDictionary<string, object> Properties
         {
-            get { return _builder.Context; }
+            get { return _builder.Properties; }
         }
     }
 }
