@@ -49,7 +49,7 @@ namespace Gate.Builder.Tests
 
         AppDelegate Build(Action<IAppBuilder> b)
         {
-            return AppBuilder.BuildConfiguration(b);
+            return AppBuilder.BuildPipeline(b);
         }
 
         [Test]

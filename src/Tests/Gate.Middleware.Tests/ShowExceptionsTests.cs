@@ -14,7 +14,7 @@ namespace Gate.Middleware.Tests
     {
         AppDelegate Build(Action<IAppBuilder> b)
         {
-            return AppBuilder.BuildConfiguration(b);
+            return AppBuilder.BuildPipeline(b);
         }
 
         [Test]

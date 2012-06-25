@@ -48,7 +48,7 @@ namespace Gate.Middleware.Tests
                     write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("world.")));
                 });
 
-            var response = AppUtils.Call(AppBuilder.BuildConfiguration(b => b
+            var response = AppUtils.Call(AppBuilder.BuildPipeline(b => b
                 .UseChunked()
                 .Run(app)));
 
@@ -70,7 +70,7 @@ namespace Gate.Middleware.Tests
                     write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("world.")));
                 });
 
-            var response = AppUtils.Call(AppBuilder.BuildConfiguration(b => b
+            var response = AppUtils.Call(AppBuilder.BuildPipeline(b => b
                 .UseChunked()
                 .Run(app)));
 
@@ -91,7 +91,7 @@ namespace Gate.Middleware.Tests
                     write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("world.")));
                 });
 
-            var response = AppUtils.Call(AppBuilder.BuildConfiguration(b => b
+            var response = AppUtils.Call(AppBuilder.BuildPipeline(b => b
                 .UseChunked()
                 .Run(app)));
 

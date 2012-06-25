@@ -14,7 +14,7 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Method_is_overridden_if_override_present()
         {
-            var result = new FakeHost(AppBuilder.BuildConfiguration(b => b
+            var result = new FakeHost(AppBuilder.BuildPipeline(b => b
                 .UseMethodOverride()
                 .Run(AppUtils.ShowEnvironment))).Invoke(r => {
                     r.Method = "POST";
@@ -27,7 +27,7 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Method_is_unchanged_if_override_not_present()
         {
-            var result = new FakeHost(AppBuilder.BuildConfiguration(b => b
+            var result = new FakeHost(AppBuilder.BuildPipeline(b => b
                 .UseMethodOverride()
                 .Run(AppUtils.ShowEnvironment))).Invoke(r =>
                 {

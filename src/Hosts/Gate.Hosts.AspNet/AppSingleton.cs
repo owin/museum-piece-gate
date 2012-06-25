@@ -41,7 +41,7 @@ namespace Gate.Hosts.AspNet
         public static AppDelegate DefaultFactory()
         {
             var configurationString = ConfigurationManager.AppSettings["Gate.Startup"];
-            return AppBuilder.BuildConfiguration(configurationString);
+            return AppBuilder.BuildPipeline(configurationString);
         }
     }
 }

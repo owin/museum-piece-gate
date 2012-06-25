@@ -50,7 +50,7 @@ namespace Gate.TestHelpers
         /// <returns></returns>
         public static TestHttpClient ForConfiguration(Action<IAppBuilder> configuration)
         {
-            return ForAppDelegate(AppBuilder.BuildConfiguration(configuration));
+            return ForAppDelegate(AppBuilder.BuildPipeline(configuration));
         }
 
         /// <summary>

@@ -11,7 +11,7 @@ namespace Gate.TestHelpers
     {
         public static FakeHostResponse CallPipe(Action<IAppBuilder> pipe, Action<FakeHostRequest> request)
         {
-            return new FakeHost(AppBuilder.BuildConfiguration(pipe)).Invoke(request);
+            return new FakeHost(AppBuilder.BuildPipeline(pipe)).Invoke(request);
         }
 
         public static FakeHostResponse CallPipe(Action<IAppBuilder> pipe)

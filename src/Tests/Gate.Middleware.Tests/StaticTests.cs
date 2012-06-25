@@ -53,7 +53,7 @@ namespace Gate.Middleware.Tests
         {
             var app = new FakeApp("200 OK", "Hello World");
             app.Headers.SetHeader("Content-Type", "text/plain");
-            var config = AppBuilder.BuildConfiguration(b => b.UseStatic().Run(app.AppDelegate));
+            var config = AppBuilder.BuildPipeline(b => b.UseStatic().Run(app.AppDelegate));
             var host = new FakeHost(config);
             var response = host.GET("/johnson/and/johnson");
 
