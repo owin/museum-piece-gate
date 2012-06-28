@@ -1,47 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Owin;
 
 namespace Gate.Middleware
 {
     public static partial class ShowExceptions
     {
-        static void ErrorPage(IDictionary<string,object> env, Exception ex, Action<string> write)
+        static void ErrorPage(CallParameters call, Exception ex, Action<string> write)
         {
             // XXX test this more thoroughly on mono, it shouldn't throw NullRef,
             // but rather, branch gracefully if something comes up null
-            try {
-
-            var request = new Request(env);
-            var path = request.PathBase + request.Path;
-            var frames = StackFrames(ex);
-            var first = frames.FirstOrDefault();
-            var location = "";
-            if (ex.TargetSite != null && ex.TargetSite.DeclaringType != null)
+            try
             {
-                location = ex.TargetSite.DeclaringType.FullName + "." + ex.TargetSite.Name;
-            }
-            else if (first != null)
-            {
-                location = first.Function;
-            }
+
+                var request = new Request(call);
+                var path = request.PathBase + request.Path;
+                var frames = StackFrames(ex);
+                var first = frames.FirstOrDefault();
+                var location = "";
+                if (ex.TargetSite != null && ex.TargetSite.DeclaringType != null)
+                {
+                    location = ex.TargetSite.DeclaringType.FullName + "." + ex.TargetSite.Name;
+                }
+                else if (first != null)
+                {
+                    location = first.Function;
+                }
 
 
-            // adapted from Django <djangoproject.com>
-            // Copyright (c) 2005, the Lawrence Journal-World
-            // Used under the modified BSD license:
-            // http://www.xfree86.org/3.3.6/COPYRIGHT2.html#5
-            write(@"
+                // adapted from Django <djangoproject.com>
+                // Copyright (c) 2005, the Lawrence Journal-World
+                // Used under the modified BSD license:
+                // http://www.xfree86.org/3.3.6/COPYRIGHT2.html#5
+                write(@"
 <!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN"" ""http://www.w3.org/TR/html4/loose.dtd"">
 <html lang=""en"">
 <head>
   <meta http-equiv=""content-type"" content=""text/html; charset=utf-8"" />
   <meta name=""robots"" content=""NONE,NOARCHIVE"" />
   <title>");
-write(h(ex.GetType().Name));
-write(@" at ");
-write(h(path));
-write(@"</title>
+                write(h(ex.GetType().Name));
+                write(@" at ");
+                write(h(path));
+                write(@"</title>
   <style type=""text/css"">
     html * { padding:0; margin:0; }
     body * { padding:10px 20px; }
@@ -147,47 +149,52 @@ write(@"</title>
 
 <div id=""summary"">
   <h1>");
-write(h(ex.GetType().Name));
-write(@" at ");
-write(h(path));
-write(@"</h1>
+                write(h(ex.GetType().Name));
+                write(@" at ");
+                write(h(path));
+                write(@"</h1>
   <h2>");
-write(h(ex.Message));
-write(@"</h2>
+                write(h(ex.Message));
+                write(@"</h2>
   <table><tr>
     <th>.NET</th>
     <td>
 ");
- if (!string.IsNullOrEmpty(location) && !string.IsNullOrEmpty(first.File) ) { 
-write(@"
+                if (!string.IsNullOrEmpty(location) && !string.IsNullOrEmpty(first.File))
+                {
+                    write(@"
       <code>");
-write(h( location ));
-write(@"</code>: in <code>");
-write(h( first.File ));
-write(@"</code>, line ");
-write(h( first.Line ));
-write(@"
+                    write(h(location));
+                    write(@"</code>: in <code>");
+                    write(h(first.File));
+                    write(@"</code>, line ");
+                    write(h(first.Line));
+                    write(@"
 ");
- } else if (!string.IsNullOrEmpty(location)) { 
-write(@"
+                }
+                else if (!string.IsNullOrEmpty(location))
+                {
+                    write(@"
       <code>");
-write(h( location ));
-write(@"</code>
+                    write(h(location));
+                    write(@"</code>
 ");
- } else { 
-write(@"
+                }
+                else
+                {
+                    write(@"
       unknown location
 ");
- } 
-write(@"
+                }
+                write(@"
     </td>
   </tr><tr>
     <th>Web</th>
     <td><code>");
-write(h(request.Method ));
-write(@" ");
-write(h( request.Host + path ));
-write(@" </code></td>
+                write(h(request.Method));
+                write(@" ");
+                write(h(request.Host + path));
+                write(@" </code></td>
   </tr></table>
 
   <h3>Jump to:</h3>
@@ -204,92 +211,98 @@ write(@" </code></td>
   <h2>Traceback <span>(innermost first)</span></h2>
   <ul class=""traceback"">
 ");
- foreach(var frameIndex in frames.Select((frame,index)=>Tuple.Create(frame,index))) { 
-     var frame = frameIndex.Item1;
-     var index = frameIndex.Item2;
+                foreach (var frameIndex in frames.Select((frame, index) => Tuple.Create(frame, index)))
+                {
+                    var frame = frameIndex.Item1;
+                    var index = frameIndex.Item2;
 
-write(@"
+                    write(@"
       <li class=""frame"">
         <code>");
-write(h( frame.File ));
-write(@"</code>: in <code>");
-write(h( frame.Function ));
-write(@"</code>
+                    write(h(frame.File));
+                    write(@"</code>: in <code>");
+                    write(h(frame.Function));
+                    write(@"</code>
 
           ");
- if (frame.ContextCode != null) { 
-write(@"
+                    if (frame.ContextCode != null)
+                    {
+                        write(@"
           <div class=""context"" id=""c{%=h frame.object_id %}"">
               ");
- if (frame.PreContextCode != null) { 
-write(@"
+                        if (frame.PreContextCode != null)
+                        {
+                            write(@"
               <ol start=""");
-write(h( frame.PreContextLine+1 ));
-write(@""" class=""pre-context"" id=""pre");
-write(h( index ));
-write(@""">
+                            write(h(frame.PreContextLine + 1));
+                            write(@""" class=""pre-context"" id=""pre");
+                            write(h(index));
+                            write(@""">
                 ");
- foreach(var line in frame.PreContextCode) { 
-write(@"
+                            foreach (var line in frame.PreContextCode)
+                            {
+                                write(@"
                 <li onclick=""toggle('pre");
-write(h( index ));
-write(@"', 'post");
-write(h( index ));
-write(@"')"">");
-write(h( line ));
-write(@"</li>
+                                write(h(index));
+                                write(@"', 'post");
+                                write(h(index));
+                                write(@"')"">");
+                                write(h(line));
+                                write(@"</li>
                 ");
- } 
-write(@"
+                            }
+                            write(@"
               </ol>
               ");
- } 
-write(@"
+                        }
+                        write(@"
 
             <ol start=""");
-write(h( frame.Line ));
-write(@""" class=""context-line"">
+                        write(h(frame.Line));
+                        write(@""" class=""context-line"">
               <li onclick=""toggle('pre");
-write(h( index ));
-write(@"', 'post");
-write(h( index ));
-write(@"')"">");
-write(h( frame.ContextCode ));
-write(@"<span>...</span></li></ol>
+                        write(h(index));
+                        write(@"', 'post");
+                        write(h(index));
+                        write(@"')"">");
+                        write(h(frame.ContextCode));
+                        write(@"<span>...</span></li></ol>
 
               ");
- if (frame.PostContextCode != null) { 
-write(@"
+                        if (frame.PostContextCode != null)
+                        {
+                            write(@"
               <ol start='");
-write(h( frame.Line+1 ));
-write(@"' class=""post-context"" id=""post");
-write(h( index ));
-write(@""">
+                            write(h(frame.Line + 1));
+                            write(@"' class=""post-context"" id=""post");
+                            write(h(index));
+                            write(@""">
                 ");
- foreach(var line in frame.PostContextCode) { 
-write(@"
+                            foreach (var line in frame.PostContextCode)
+                            {
+                                write(@"
                 <li onclick=""toggle('pre");
-write(h( index ));
-write(@"', 'post");
-write(h( index ));
-write(@"')"">");
-write(h( line ));
-write(@"</li>
+                                write(h(index));
+                                write(@"', 'post");
+                                write(h(index));
+                                write(@"')"">");
+                                write(h(line));
+                                write(@"</li>
                 ");
- } 
-write(@"
+                            }
+                            write(@"
               </ol>
               ");
- } 
-write(@"
+                        }
+                        write(@"
           </div>
           ");
- } 
-write(@"
+                    }
+                    write(@"
       </li>
 ");
- } 
-write(@"
+                }
+                write(@"
   </ul>
 </div>
 
@@ -298,8 +311,9 @@ write(@"
 
   <h3 id=""get-info"">GET</h3>
   ");
- if (request.Query.Any()) { 
-write(@"
+                if (request.Query.Any())
+                {
+                    write(@"
     <table class=""req"">
       <thead>
         <tr>
@@ -309,35 +323,39 @@ write(@"
       </thead>
       <tbody>
           ");
- foreach(var kv in request.Query.OrderBy(kv => kv.Key)) { 
-write(@"
+                    foreach (var kv in request.Query.OrderBy(kv => kv.Key))
+                    {
+                        write(@"
           <tr>
             <td>");
-write(h( kv.Key ));
-write(@"</td>
+                        write(h(kv.Key));
+                        write(@"</td>
             <td class=""code""><div>");
-write(h( kv.Value ));
-write(@"</div></td>
+                        write(h(kv.Value));
+                        write(@"</div></td>
           </tr>
           ");
- } 
-write(@"
+                    }
+                    write(@"
       </tbody>
     </table>
   ");
- } else  { 
-write(@"
+                }
+                else
+                {
+                    write(@"
     <p>No GET data.</p>
   ");
- } 
-write(@"
+                }
+                write(@"
 
   <h3 id=""post-info"">POST</h3>
   ");
- 
-  var form = request.ReadForm();
-  if (form.Any()) { 
-write(@"
+
+                var form = request.ReadForm();
+                if (form.Any())
+                {
+                    write(@"
     <table class=""req"">
       <thead>
         <tr>
@@ -347,34 +365,38 @@ write(@"
       </thead>
       <tbody>
           ");
- foreach(var kv in form.OrderBy(kv => kv.Key)) { 
-write(@"
+                    foreach (var kv in form.OrderBy(kv => kv.Key))
+                    {
+                        write(@"
           <tr>
             <td>");
-write(h( kv.Key ));
-write(@"</td>
+                        write(h(kv.Key));
+                        write(@"</td>
             <td class=""code""><div>");
-write(h( kv.Value ));
-write(@"</div></td>
+                        write(h(kv.Value));
+                        write(@"</div></td>
           </tr>
           ");
- } 
-write(@"
+                    }
+                    write(@"
       </tbody>
     </table>
   ");
- } else  { 
-write(@"
+                }
+                else
+                {
+                    write(@"
     <p>No POST data.</p>
   ");
- } 
-write(@"
+                }
+                write(@"
 
 
   <h3 id=""cookie-info"">COOKIES</h3>
   ");
- if (request.Cookies.Any()) { 
-write(@"
+                if (request.Cookies.Any())
+                {
+                    write(@"
     <table class=""req"">
       <thead>
         <tr>
@@ -384,33 +406,37 @@ write(@"
       </thead>
       <tbody>
         ");
- foreach(var kv in request.Cookies.OrderBy(kv => kv.Key)) { 
-write(@"
+                    foreach (var kv in request.Cookies.OrderBy(kv => kv.Key))
+                    {
+                        write(@"
           <tr>
             <td>");
-write(h( kv.Key ));
-write(@"</td>
+                        write(h(kv.Key));
+                        write(@"</td>
             <td class=""code""><div>");
-write(h( kv.Value ));
-write(@"</div></td>
+                        write(h(kv.Value));
+                        write(@"</div></td>
           </tr>
         ");
- } 
-write(@"
+                    }
+                    write(@"
       </tbody>
     </table>
   ");
- } else  { 
-write(@"
+                }
+                else
+                {
+                    write(@"
     <p>No cookie data.</p>
   ");
- } 
-write(@"
+                }
+                write(@"
 
   <h3 id=""cookie-info"">HEADERS</h3>
   ");
- if (request.Headers.Any()) { 
-write(@"
+                if (request.Headers.Any())
+                {
+                    write(@"
     <table class=""req"">
       <thead>
         <tr>
@@ -420,31 +446,35 @@ write(@"
       </thead>
       <tbody>
         ");
- foreach(var kv in request.Headers.OrderBy(kv => kv.Key)) { 
-write(@"
+                    foreach (var kv in request.Headers.OrderBy(kv => kv.Key))
+                    {
+                        write(@"
           <tr>
             <td nowrap=""nowrap"">");
-write(h( kv.Key ));
-write(@"</td>
+                        write(h(kv.Key));
+                        write(@"</td>
             <td class=""code""><div>");
- foreach(var v in kv.Value) { 
-write(h( v ));
-write(@"<br/>");
- } 
-write(@"</div></td>
+                        foreach (var v in kv.Value)
+                        {
+                            write(h(v));
+                            write(@"<br/>");
+                        }
+                        write(@"</div></td>
           </tr>
         ");
- } 
-write(@"
+                    }
+                    write(@"
       </tbody>
     </table>
   ");
- } else  { 
-write(@"
+                }
+                else
+                {
+                    write(@"
     <p>No header data.</p>
   ");
- } 
-write(@"
+                }
+                write(@"
 
   <h3 id=""env-info"">OWIN ENV</h3>
     <table class=""req"">
@@ -456,19 +486,20 @@ write(@"
       </thead>
       <tbody>
         ");
- foreach(var kv in env.OrderBy(kv=>kv.Key)) { 
-write(@"
+                foreach (var kv in call.Environment.OrderBy(kv => kv.Key))
+                {
+                    write(@"
           <tr>
             <td>");
-write(h(kv.Key));
-write(@"</td>
+                    write(h(kv.Key));
+                    write(@"</td>
             <td class=""code""><div>");
-write(h(kv.Value));
-write(@"</div></td>
+                    write(h(kv.Value));
+                    write(@"</div></td>
           </tr>
           ");
- } 
-write(@"
+                }
+                write(@"
       </tbody>
     </table>
 
@@ -483,7 +514,9 @@ write(@"
 </body>
 </html>
             ");
-            } catch {
+            }
+            catch
+            {
                 return;
             }
         }

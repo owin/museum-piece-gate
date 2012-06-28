@@ -37,6 +37,7 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ErrorPage.cs" />
+    <Compile Include="ExecutionContextPerRequest.cs" />
     <Compile Include="PipeRequest.cs" />
     <Compile Include="PipeResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

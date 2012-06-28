@@ -10,11 +10,11 @@ namespace Gate.Middleware.StaticFiles
 {
     public class FileServer
     {
-        private const string OK = "200 OK";
-        private const string PartialContent = "206 Partial Content";
-        private const string NotFound = "404 Not Found";
-        private const string Forbidden = "403 Forbidden";
-        private const string RequestedRangeNotSatisfiable = "416 Requested Range Not Satisfiable";
+        private const int OK = 200;
+        private const int PartialContent = 206;
+        private const int NotFound = 404;
+        private const int Forbidden = 403;
+        private const int RequestedRangeNotSatisfiable = 416;
 
         private readonly string root;
         private string pathInfo;
@@ -28,9 +28,9 @@ namespace Gate.Middleware.StaticFiles
             this.root = root;
         }
 
-        public void Invoke(IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault)
+        public void Invoke(CallParameters call, Action<ResultParameters, Exception> callback)
         {
-            pathInfo = env[OwinConstants.RequestPath].ToString();
+            pathInfo = call.Environment[OwinConstants.RequestPath].ToString();
 
             if (pathInfo.StartsWith("/"))
             {
@@ -39,7 +39,7 @@ namespace Gate.Middleware.StaticFiles
 
             if (pathInfo.Contains(".."))
             {
-                Fail(Forbidden, "Forbidden").Invoke(env, result, fault);
+                Fail(Forbidden, "Forbidden").Invoke(call, callback);
                 return;
             }
 
@@ -47,57 +47,61 @@ namespace Gate.Middleware.StaticFiles
 
             if (!File.Exists(path))
             {
-                Fail(NotFound, "File not found: " + pathInfo).Invoke(env, result, fault);
+                Fail(NotFound, "File not found: " + pathInfo).Invoke(call, callback);
                 return;
             }
 
             try
             {
-                Serve(env).Invoke(env, result, fault);
+                Serve(call, callback);
             }
             catch (UnauthorizedAccessException)
             {
-                Fail(Forbidden, "Forbidden").Invoke(env, result, fault);
+                Fail(Forbidden, "Forbidden").Invoke(call, callback);
             }
         }
 
-        private static AppDelegate Fail(string status, string body, IDictionary<string, string[]> headers = null)
+        private static AppDelegate Fail(int status, string body, IDictionary<string, string[]> headers = null)
         {
-            return (env, res, err) =>
-                res(
-                    status,
-                    Headers.New(headers)
+            return (call, callback) =>
+                callback(new ResultParameters
+                {
+                    Status = status,
+                    Headers = Headers.New(headers)
                         .SetHeader("Content-Type", "text/plain")
                         .SetHeader("Content-Length", body.Length.ToString())
                         .SetHeader("X-Cascade", "pass"),
-                    TextBody.Create(body, Encoding.UTF8)
-                  );
+                    Body = TextBody.Create(body, Encoding.UTF8)
+                }, null);
         }
 
-        private AppDelegate Serve(IDictionary<string, object> environment)
+        private void Serve(CallParameters call, Action<ResultParameters, Exception> callback)
         {
             var fileInfo = new FileInfo(path);
             var size = fileInfo.Length;
 
-            string status;
+            int status;
             var headers = Headers.New()
                 .SetHeader("Last-Modified", fileInfo.LastWriteTimeUtc.ToHttpDateString())
                 .SetHeader("Content-Type", Mime.MimeType(fileInfo.Extension, "text/plain"));
 
-            if (!RangeHeader.IsValid(environment))
+            if (!RangeHeader.IsValid(call.Headers))
             {
                 status = OK;
                 range = new Tuple<long, long>(0, size - 1);
             }
             else
             {
-                var ranges = RangeHeader.Parse(environment, size);
+                var ranges = RangeHeader.Parse(call.Headers, size);
 
                 if (ranges == null)
                 {
                     // Unsatisfiable.  Return error and file size.
-                    return Fail(RequestedRangeNotSatisfiable, "Byte range unsatisfiable",
-                                Headers.New().SetHeader("Content-Range", "bytes */" + size));
+                    Fail(
+                        RequestedRangeNotSatisfiable,
+                        "Byte range unsatisfiable",
+                        Headers.New().SetHeader("Content-Range", "bytes */" + size))
+                        .Invoke(call, callback);
                 }
 
                 if (ranges.Count() > 1)
@@ -118,17 +122,19 @@ namespace Gate.Middleware.StaticFiles
 
             headers.SetHeader("Content-Length", size.ToString());
 
-            return (env, res, err) =>
+            try
             {
-                try
+                callback(new ResultParameters
                 {
-                    res(status, headers, FileBody.Create(path, range));
-                }
-                catch (Exception ex)
-                {
-                    err(ex);
-                }
-            };
+                    Status = status,
+                    Headers = headers,
+                    Body = FileBody.Create(path, range)
+                }, null);
+            }
+            catch (Exception ex)
+            {
+                callback(default(ResultParameters), ex);
+            }
         }
     }
 }

@@ -18,7 +18,14 @@ namespace Gate.Hosts.Kayak
         {
             var cts = new CancellationTokenSource();
             del(
-                channel.OnData,
+                (data, continuation)=>
+                {
+                    if (channel.OnData(data, () => continuation(null)) == true)
+                    {
+                        return OwinConstants.CompletingAsynchronously;
+                    }
+                    return OwinConstants.CompletedSynchronously;
+                },
                 error =>
                 {
                     if (error == null) 

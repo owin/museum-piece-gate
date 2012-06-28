@@ -15,10 +15,10 @@ namespace Gate.Middleware
 
         public static AppDelegate App()
         {
-            return (env, result, fault) =>
+            return (call, callback) =>
             {
-                var request = new Request(env);
-                var response = new Response(result) { Buffer = true, ContentType = "text/html" };
+                var request = new Request(call);
+                var response = new Response(callback) { Buffer = true, ContentType = "text/html" };
                 var wilson = "left - right\r\n123456789012\r\nhello world!\r\n";
 
                 var href = "?flip=left";
@@ -45,10 +45,10 @@ namespace Gate.Middleware
 
         public static AppDelegate AsyncApp()
         {
-            return (env, result, fault) =>
+            return (call, callback) =>
             {
-                var request = new Request(env);
-                var response = new Response(result)
+                var request = new Request(call);
+                var response = new Response(callback)
                 {
                     ContentType = "text/html",
                 };
@@ -85,7 +85,7 @@ namespace Gate.Middleware
                     }
                     catch (Exception ex)
                     {
-                        fault(ex);
+                        callback(default(ResultParameters), ex);
                     }
                 });
             };

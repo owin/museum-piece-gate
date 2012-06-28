@@ -30,18 +30,16 @@ namespace Gate.Middleware
 
         public static AppDelegate Middleware(AppDelegate app, string contentType)
         {
-            return (env, result, fault) => app(
-                env,
-                (status, headers, body) =>
+            return (call, callback) => app(call, (result, error) =>
+            {
+                if (error == null && !result.Headers.HasHeader("Content-Type"))
                 {
-                    if (!headers.HasHeader("Content-Type"))
-                    {
-                        headers.SetHeader("Content-Type", contentType);
-                    }
+                    result.Headers.SetHeader("Content-Type", contentType);
+                }
 
-                    result(status, headers, body);
-                },
-                fault);
+                callback(result, error);
+            });
         }
+
     }
 }

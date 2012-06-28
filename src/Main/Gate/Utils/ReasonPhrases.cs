@@ -1,12 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Globalization;
 
 namespace Gate.Utils
 {
     public static class ReasonPhrases
     {
+        public static string ToStatus(int statusCode, string reasonPhrase = null)
+        {
+            if (string.IsNullOrEmpty(reasonPhrase))
+            {
+                reasonPhrase = ToReasonPhrase(statusCode);
+            }
+            return statusCode.ToString(CultureInfo.InvariantCulture) + " " + reasonPhrase;
+        }
+
         public static string ToReasonPhrase(int statusCode)
         {
             switch (statusCode)

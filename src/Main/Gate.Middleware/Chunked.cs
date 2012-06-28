@@ -19,49 +19,41 @@ namespace Gate.Middleware
         public static AppDelegate Middleware(AppDelegate app)
         {
             return
-                (env, result, fault) =>
-                    app(
-                        env,
-                        (status, headers, body) =>
-                        {
-                            if (IsStatusWithNoNoEntityBody(status) ||
-                                headers.ContainsKey("Content-Length") ||
-                                headers.ContainsKey("Transfer-Encoding"))
+                (call, callback) => app(call, (result, error) =>
+                {
+                    if (IsStatusWithNoNoEntityBody(result.Status) ||
+                        result.Headers.ContainsKey("Content-Length") ||
+                            result.Headers.ContainsKey("Transfer-Encoding"))
+                    {
+                        callback(result, error);
+                    }
+                    else
+                    {
+                        result.Headers.AddHeader("Transfer-Encoding", "chunked");
+                        var body = result.Body;
+                        result.Body =
+                            (write, end, cancel) => body((data, continuation) =>
                             {
-                                result(status, headers, body);
-                            }
-                            else
-                            {
-                                headers["Transfer-Encoding"] = new[] { "chunked" };
+                                if (data.Count == 0)
+                                {
+                                    return write(data, continuation);
+                                }
 
-                                result(
-                                    status,
-                                    headers,
-                                    (write, end, cancel) =>
-                                        body(
-                                            (data, callback) =>
-                                            {
-                                                if (data.Count == 0)
-                                                {
-                                                    return write(data, callback);
-                                                }
-
-                                                write(ChunkPrefix((uint)data.Count), null);
-                                                write(data, null);
-                                                return write(EndOfChunk, callback);
-                                            },
-                                            ex =>
-                                            {
-                                                if (ex == null)
-                                                {
-                                                    write(FinalChunk, null);
-                                                }
-                                                end(ex);
-                                            },
-                                            cancel));
-                            }
-                        },
-                        fault);
+                                write(ChunkPrefix((uint) data.Count), null);
+                                write(data, null);
+                                return write(EndOfChunk, continuation);
+                            },
+                                ex =>
+                                {
+                                    if (ex == null)
+                                    {
+                                        write(FinalChunk, null);
+                                    }
+                                    end(ex);
+                                },
+                                cancel);
+                    }
+                });
         }
 
         public static ArraySegment<byte> ChunkPrefix(uint dataCount)
@@ -85,12 +77,12 @@ namespace Gate.Middleware
             return new ArraySegment<byte>(prefixBytes, shift / 4, 10 - shift / 4);
         }
 
-        private static bool IsStatusWithNoNoEntityBody(string status)
+        private static bool IsStatusWithNoNoEntityBody(int status)
         {
-            return status.StartsWith("1") ||
-                status.StartsWith("204") ||
-                status.StartsWith("205") ||
-                status.StartsWith("304");
+            return (status >= 100 && status < 200) ||
+                status == 204 ||
+                status == 205 ||
+                status == 304;
         }
     }
 }

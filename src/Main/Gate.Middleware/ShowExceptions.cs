@@ -17,11 +17,11 @@ namespace Gate.Middleware
 
         public static AppDelegate Middleware(AppDelegate app)
         {
-            return (env, result, fault) =>
+            return (call, callback) =>
             {
                 Action<Exception, Action<ArraySegment<byte>>> showErrorMessage =
                     (ex, write) =>
-                        ErrorPage(env, ex, text =>
+                        ErrorPage(call, ex, text =>
                         {
                             var data = Encoding.ASCII.GetBytes(text);
                             write(new ArraySegment<byte>(data));
@@ -29,7 +29,7 @@ namespace Gate.Middleware
 
                 Action<Exception> showErrorPage = ex =>
                 {
-                    var response = new Response(result) { Status = "500 Internal Server Error", ContentType = "text/html" };
+                    var response = new Response(callback) { Status = "500 Internal Server Error", ContentType = "text/html" };
                     response.Start(() =>
                     {
                         showErrorMessage(ex, data => response.Write(data));
@@ -39,28 +39,30 @@ namespace Gate.Middleware
 
                 try
                 {
-                    app(
-                        env,
-                        (status, headers, body) =>
-                            result(
-                                status,
-                                headers,
-                                (write, end, token) =>
+                    app(call, (result, error) =>
+                    {
+                        if (error != null)
+                        {
+                            showErrorPage(error);
+                        }
+                        else
+                        {
+                            var body = result.Body;
+                            result.Body = (write, end, cancel) =>
+                            {
+                                showErrorPage = ex =>
                                 {
-                                    showErrorPage = ex =>
+                                    if (ex != null)
                                     {
-                                        if (ex != null)
-                                        {
-                                            showErrorMessage(ex, data => write(data, null));
-                                        }
-                                        end(null);
-                                    };
-                                    body(
-                                        write,
-                                        showErrorPage,
-                                        token);
-                                }),
-                        ex => showErrorPage(ex));
+                                        showErrorMessage(ex, data => write(data, null));
+                                    }
+                                    end(null);
+                                };
+                                body.Invoke(write, showErrorPage, cancel);
+                            };
+                            callback(result, null);
+                        }
+                    });
                 }
                 catch (Exception exception)
                 {

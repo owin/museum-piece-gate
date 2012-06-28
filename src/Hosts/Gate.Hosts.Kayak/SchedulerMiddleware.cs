@@ -31,25 +31,31 @@ namespace Gate.Hosts.Kayak
             this.scheduler = scheduler;
         }
 
-        public void Invoke(IDictionary<string, object> env, ResultDelegate result, Action<Exception> error)
+        public void Invoke(CallParameters call, Action<ResultParameters, Exception> callback)
         {
-            var request = new RequestEnvironment(env);
+            var request = new RequestEnvironment(call.Environment);
             var theScheduler = scheduler ?? request.Scheduler;
 
-            var oldBody = request.BodyDelegate;
+            var oldBody = call.Body;
 
             if (oldBody != null)
             {
-                request.BodyDelegate = RescheduleBody(theScheduler, request.BodyDelegate);
+                call.Body = RescheduleBody(theScheduler, call.Body);
             }
+
             wrapped(
-                env,
-                (status, headers, body) =>
+                call,
+                (result, error) =>
                     theScheduler.Post(() =>
-                        result(status, headers, RescheduleBody(theScheduler, body))),
-                e =>
-                    theScheduler.Post(() =>
-                        error(e)));
+                    {
+                        result.Body = RescheduleBody(theScheduler, result.Body);
+                        callback(result, error);
+                    }));
+
+            //            result(status, headers, RescheduleBody(theScheduler, body))),
+            //    e =>
+            //        theScheduler.Post(() =>
+            //            error(e)));
         }
 
         static BodyDelegate RescheduleBody(IScheduler theScheduler, BodyDelegate body)

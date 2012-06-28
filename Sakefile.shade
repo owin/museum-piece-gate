@@ -1,13 +1,17 @@
 
 var PROJECT='Gate'
-var VERSION='0.6'
-var FULL_VERSION='${VERSION}-ctp1'
+var VERSION='0.7'
+var FULL_VERSION='${VERSION}-ctp2'
 var AUTHORS='${PROJECT} contributors'
 
 var BASE_DIR='${Directory.GetCurrentDirectory()}'
 var TARGET_DIR='${Path.Combine(BASE_DIR, "target")}'
 var BUILD_DIR='${Path.Combine(TARGET_DIR, "build")}'
 var TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
+
+var SRC='src'
+var BUILD_PROJECTS='${Files.Include("src/Main/Gate/Gate.csproj","src/Main/Gate.Builder/Gate.Builder.csproj")}'
+var TEST_PROJECTS='${Files.Include(SRC+"/**/*.Tests.csproj-")}'
 
 var TEST_ASSEMBLIES='${Files.Include("target/test/**/*.Tests.dll").Exclude("target/test/**/HttpListener.Tests.dll")}'
 

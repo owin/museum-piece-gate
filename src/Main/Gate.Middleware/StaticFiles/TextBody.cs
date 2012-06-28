@@ -27,7 +27,7 @@ namespace Gate.Middleware.StaticFiles
         }
 
 
-        public void Start(Func<ArraySegment<byte>, Action, bool> write, Action<Exception> end, CancellationToken cancellationToken)
+        public void Start(Func<ArraySegment<byte>, Action<Exception>, TempEnum> write, Action<Exception> end, CancellationToken cancellationToken)
         {
             bodyStream = new BodyStream(write, end, cancellationToken);
 

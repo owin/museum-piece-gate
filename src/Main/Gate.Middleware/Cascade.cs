@@ -67,7 +67,7 @@ namespace Gate.Middleware
 
             // the first non-404 result will the the one to take effect
             // any subsequent apps are not called
-            return (env, result, fault) =>
+            return (call, callback) =>
             {
                 var iter = apps.GetEnumerator();
                 iter.MoveNext();
@@ -80,12 +80,12 @@ namespace Gate.Middleware
                     {
                         hot = false;
                         iter.Current.Invoke(
-                            env,
-                            (status, headers, body) =>
+                            call,
+                            (result, error) =>
                             {
                                 try
                                 {
-                                    if (status.StartsWith("404") && iter.MoveNext())
+                                    if (result.Status == 404 && iter.MoveNext())
                                     {
                                         // ReSharper disable AccessToModifiedClosure
                                         if (threadId == Thread.CurrentThread.ManagedThreadId)
@@ -100,15 +100,14 @@ namespace Gate.Middleware
                                     }
                                     else
                                     {
-                                        result(status, headers, body);
+                                        callback(result, error);
                                     }
                                 }
                                 catch (Exception ex)
                                 {
-                                    fault(ex);
+                                    callback(default(ResultParameters), ex);
                                 }
-                            },
-                            fault);
+                            });
                     }
                     threadId = 0;
                 };

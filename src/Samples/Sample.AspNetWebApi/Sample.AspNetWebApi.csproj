@@ -74,10 +74,6 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Adapters\Gate.Adapters.AspNetWebApi\Gate.Adapters.AspNetWebApi.csproj">
-      <Project>{4E5EE713-0BC1-4641-989B-7DEF9E16979C}</Project>
-      <Name>Gate.Adapters.AspNetWebApi</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Hosts\Gate.Hosts.AspNet\Gate.Hosts.AspNet.csproj">
       <Project>{F32E456A-F26E-4C5D-93B8-311941A714E4}</Project>
       <Name>Gate.Hosts.AspNet</Name>

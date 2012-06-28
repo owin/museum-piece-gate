@@ -36,7 +36,9 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ExecutionContextPerRequest.cs" />
+    <Compile Include="..\Gate.Hosts\ExecutionContextPerRequest.cs">
+      <Link>ExecutionContextPerRequest.cs</Link>
+    </Compile>
     <Compile Include="ServerFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

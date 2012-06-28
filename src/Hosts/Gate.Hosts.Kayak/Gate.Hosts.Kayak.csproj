@@ -49,10 +49,12 @@
     <Compile Include="..\..\Main\Gate\OwinConstants.cs">
       <Link>OwinConstants.cs</Link>
     </Compile>
+    <Compile Include="..\Gate.Hosts\ExecutionContextPerRequest.cs">
+      <Link>ExecutionContextPerRequest.cs</Link>
+    </Compile>
     <Compile Include="DataConsumer.cs" />
     <Compile Include="DataProducer.cs" />
     <Compile Include="Disposable.cs" />
-    <Compile Include="ExecutionContextPerRequest.cs" />
     <Compile Include="GateRequestDelegate.cs" />
     <Compile Include="HttpServerExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

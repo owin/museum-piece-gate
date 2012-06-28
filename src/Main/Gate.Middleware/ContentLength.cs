@@ -19,47 +19,43 @@ namespace Gate.Middleware
         public static AppDelegate Middleware(AppDelegate app)
         {
             return
-                (env, result, fault) =>
+                (call, callback) =>
                     app(
-                        env,
-                        (status, headers, body) =>
+                        call,
+                        (result, error) =>
                         {
-                            if (IsStatusWithNoNoEntityBody(status) ||
-                                headers.ContainsKey("Content-Length") ||
-                                headers.ContainsKey("Transfer-Encoding"))
+                            if (error != null ||
+                                IsStatusWithNoNoEntityBody(result.Status) ||
+                                result.Headers.ContainsKey("Content-Length") ||
+                                result.Headers.ContainsKey("Transfer-Encoding"))
                             {
-                                result(status, headers, body);
+                                callback(result, error);
                             }
                             else
                             {
-                                var token = CancellationToken.None;
-                                object obj;
-                                if (env.TryGetValue(typeof(CancellationToken).FullName, out obj) && obj is CancellationToken)
-                                    token = (CancellationToken)obj;
-
                                 var buffer = new DataBuffer();
-                                body(
+                                result.Body.Invoke(
                                     buffer.Add,
                                     ex =>
                                     {
                                         buffer.End(ex);
-                                        headers["Content-Length"] = new[] { buffer.GetCount().ToString() };
-                                        result(status, headers, buffer.Body);
+                                        result.Headers.SetHeader("Content-Length", buffer.GetCount().ToString());
+                                        result.Body = buffer.Body;
+                                        callback(result, null);
                                     },
-                                    token);
+                                    call.CallDisposed);
                             }
-                        },
-                        fault);
+                        });
         }
 
 
 
-        private static bool IsStatusWithNoNoEntityBody(string status)
+        private static bool IsStatusWithNoNoEntityBody(int status)
         {
-            return status.StartsWith("1") ||
-                status.StartsWith("204") ||
-                status.StartsWith("205") ||
-                status.StartsWith("304");
+            return (status >= 100 && status < 200) ||
+                status == 204 ||
+                status == 205 ||
+                status == 304;
         }
 
         class DataBuffer
@@ -73,7 +69,7 @@ namespace Gate.Middleware
                 return _buffers.Aggregate(0, (c, d) => c + d.Count);
             }
 
-            public bool Add(ArraySegment<byte> data, Action continuation)
+            public TempEnum Add(ArraySegment<byte> data, Action<Exception> continuation)
             {
                 var remaining = data;
                 while (remaining.Count != 0)
@@ -88,7 +84,7 @@ namespace Gate.Middleware
                     _tail = new ArraySegment<byte>(_tail.Array, _tail.Offset, _tail.Count + copyCount);
                     remaining = new ArraySegment<byte>(remaining.Array, remaining.Offset + copyCount, remaining.Count - copyCount);
                 }
-                return false;
+                return OwinConstants.CompletedSynchronously;
             }
 
             public void End(Exception error)
@@ -98,7 +94,7 @@ namespace Gate.Middleware
             }
 
             public void Body(
-                Func<ArraySegment<byte>, Action, bool> write,
+                Func<ArraySegment<byte>, Action<Exception>, TempEnum> write,
                 Action<Exception> end,
                 CancellationToken cancel)
             {

@@ -87,17 +87,18 @@ namespace Gate.Middleware
             return new Static(app).Invoke;
         }
 
-        public void Invoke(IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault)
+        public void Invoke(CallParameters call, Action<ResultParameters, Exception> callback)
         {
-            var path = env[OwinConstants.RequestPath].ToString();
+            var path = call.Environment[OwinConstants.RequestPath].ToString();
 
             if (urls.Any(path.StartsWith))
             {
-                fileServer.Invoke(env, result, fault);
-                return;
+                fileServer.Invoke(call, callback);
             }
-
-            app.Invoke(env, result, fault);
+            else
+            {
+                app.Invoke(call, callback);
+            }
         }
     }
 }

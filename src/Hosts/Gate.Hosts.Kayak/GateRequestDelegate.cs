@@ -55,27 +55,40 @@ namespace Gate.Hosts.Kayak
             appDelegate(env, HandleResponse(response), HandleError(response));
         }
 
-        ResultDelegate HandleResponse(IHttpResponseDelegate response)
+        Action<ResultParameters, Exception> HandleResponse(IHttpResponseDelegate response)
         {
-            return (status, headers, body) =>
+            return (result, error) =>
             {
-                if (headers == null)
-                    headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+                if (error != null)
+                {
+                    HandleError(response).Invoke(error);
+                    return;
+                }
 
-                if (body != null &&
-                    !headers.ContainsKey("Content-Length") &&
-                    !headers.ContainsKey("Transfer-Encoding"))
+                if (result.Headers == null)
+                {
+                    result.Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+                }
+
+                if (result.Body != null &&
+                    !result.Headers.ContainsKey("Content-Length") &&
+                    !result.Headers.ContainsKey("Transfer-Encoding"))
                 {
                     // disable keep-alive in this case
-                    headers["Connection"] = new[] {"close"};
+                    result.Headers["Connection"] = new[] { "close" };
                 }
 
                 response.OnResponse(new HttpResponseHead()
                     {
-                        Status = status,
-                        Headers = headers.ToDictionary(kv => kv.Key, kv => string.Join("\r\n", kv.Value.ToArray()), StringComparer.OrdinalIgnoreCase),
-                    }, body == null ? null : new DataProducer(body));                
+                        Status = GetStatus(result),
+                        Headers = result.Headers.ToDictionary(kv => kv.Key, kv => string.Join("\r\n", kv.Value.ToArray()), StringComparer.OrdinalIgnoreCase),
+                    }, result.Body == null ? null : new DataProducer(result.Body));
             };
+        }
+
+        private string GetStatus(ResultParameters result)
+        {
+            throw new NotImplementedException();
         }
 
         Action<Exception> HandleError(IHttpResponseDelegate response)

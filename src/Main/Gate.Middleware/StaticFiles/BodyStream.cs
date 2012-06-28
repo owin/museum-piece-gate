@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using Owin;
 
 namespace Gate.Middleware.StaticFiles
 {
@@ -27,11 +28,11 @@ namespace Gate.Middleware.StaticFiles
     {
         private readonly StateMachine<BodyStreamCommand, BodyStreamState> stateMachine;
 
-        public Func<ArraySegment<byte>, Action, bool> Write { get; private set; }
+        public Func<ArraySegment<byte>, Action<Exception>, TempEnum> Write { get; private set; }
         public Action<Exception> End { get; private set; }
         public CancellationToken CancellationToken { get; private set; }
 
-        public BodyStream(Func<ArraySegment<byte>, Action, bool> write, Action<Exception> end, CancellationToken cancellationToken)
+        public BodyStream(Func<ArraySegment<byte>, Action<Exception>, Owin.TempEnum> write, Action<Exception> end, CancellationToken cancellationToken)
         {
             stateMachine = new StateMachine<BodyStreamCommand, BodyStreamState>();
             stateMachine.Initialize(BodyStreamState.Ready);
@@ -87,7 +88,7 @@ namespace Gate.Middleware.StaticFiles
                 return;
             }
 
-            Action resume = null;
+            Action<Exception> resume = null;
             Action pause = () => { };
 
             if (continuation != null)
@@ -98,7 +99,7 @@ namespace Gate.Middleware.StaticFiles
             }
 
             // call on-next with back-pressure support
-            if (Write(part, resume))
+            if (Write(part, resume) == TempEnum.CompletingAsynchronously)
             {
                 pause.Invoke();
             }
@@ -119,7 +120,7 @@ namespace Gate.Middleware.StaticFiles
             stateMachine.Invoke(BodyStreamCommand.Pause);
         }
 
-        public void Resume()
+        public void Resume(Exception ex)
         {
             stateMachine.Invoke(BodyStreamCommand.Resume);
         }
