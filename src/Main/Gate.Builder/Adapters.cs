@@ -1,139 +1,80 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Owin;
 
 namespace Gate.Builder
 {
-    //    using ResultTuple = Tuple<string, IDictionary<String, string[]>, BodyDelegate>;
+    using AppFunc = Func< // Call
+        IDictionary<string, object>, // Environment
+        IDictionary<string, string[]>, // Headers
+        Stream, // Body
+        CancellationToken, // CallCancelled
+        Task<Tuple< //Result
+            IDictionary<string, object>, // Properties
+            int, // Status
+            IDictionary<string, string[]>, // Headers
+            Func< // CopyTo
+                Stream, // Body
+                CancellationToken, // CopyToCancelled
+                Task>>>>; // Done
 
-    //#pragma warning disable 811
-    //    using AppAction = Action< // app
-    //        IDictionary<string, object>, // env
-    //        Action< // result
-    //            string, // status
-    //            IDictionary<string, string[]>, // headers
-    //            Action< // body
-    //                Func< // write
-    //                    ArraySegment<byte>, // data                     
-    //                    Action, // continuation
-    //                    bool>, // buffering
-    //                Action< // end
-    //                    Exception>, // error
-    //                CancellationToken>>, // cancel
-    //        Action<Exception>>; // error
-
-    //    using BodyAction = Action< // body
-    //        Func< // write
-    //            ArraySegment<byte>, // data                     
-    //            Action, // continuation
-    //            bool>, // buffering
-    //        Action< // end
-    //            Exception>, // error
-    //        CancellationToken>; //cancel
-
+    using BodyFunc = Func< // CopyTo
+        Stream, // Body
+        CancellationToken, // CopyToCancelled
+        Task>; // Done
 
     public static class Adapters
     {
-        //public static AppAction ToAction(AppDelegate app)
-        //{
-        //    return
-        //        (env, result, fault) =>
-        //        {
-        //            var revert = Replace<BodyAction, BodyDelegate>(env, ToDelegate);
-        //            app(
-        //                env,
-        //                (status, headers, body) =>
-        //                {
-        //                    revert();
-        //                    result(status, headers, ToAction(body));
-        //                },
-        //                ex =>
-        //                {
-        //                    revert();
-        //                    fault(ex);
-        //                });
-        //        };
-        //}
-
-        //public static AppDelegate ToDelegate(AppAction app)
-        //{
-        //    return
-        //        (env, result, fault) =>
-        //        {
-        //            var revert = Replace<BodyDelegate, BodyAction>(env, ToAction);
-        //            app(
-        //                env,
-        //                (status, headers, body) =>
-        //                {
-        //                    revert();
-        //                    result(status, headers, ToDelegate(body));
-        //                },
-        //                ex =>
-        //                {
-        //                    revert();
-        //                    fault(ex);
-        //                });
-        //        };
-        //}
-
-        //static Action Replace<TFrom, TTo>(IDictionary<string, object> env, Func<TFrom, TTo> adapt)
-        //{
-        //    object body;
-        //    if (env.TryGetValue(OwinConstants.RequestBody, out body) && body is TFrom)
-        //    {
-        //        env[OwinConstants.RequestBody] = adapt((TFrom)body);
-        //        return () => env[OwinConstants.RequestBody] = body;
-        //    }
-        //    return () => { };
-        //}
-
-        //public static BodyAction ToAction(BodyDelegate body)
-        //{
-        //    return (write, end, cancel) => body(write, end, cancel);
-        //}
-
-        //public static BodyDelegate ToDelegate(BodyAction body)
-        //{
-        //    return (write, end, cancel) => body(write, end, cancel);
-        //}
-
-
-        public static AppTaskDelegate ToTaskDelegate(AppDelegate app)
+        public static AppFunc ToFunc(AppDelegate app)
         {
-            return
-                call =>
+            return (env, headers, body, cancel) =>
+            {
+                var task = app(new CallParameters
                 {
-                    var tcs = new TaskCompletionSource<ResultParameters>();
-                    app(
-                        call,
-                        (result, exception) =>
-                        {
-                            if (exception == null)
-                            {
-                                tcs.SetResult(result);
-                            }
-                            else
-                            {
-                                tcs.SetException(exception);
-                            }
-                        });
-                    return tcs.Task;
-                };
+                    Environment = env,
+                    Headers = headers,
+                    Body = body
+                }, cancel);
+
+                return task.Then(result => Tuple.Create(
+                    result.Properties,
+                    result.Status,
+                    result.Headers,
+                    ToFunc(result.Body)));
+            };
         }
 
-        public static AppDelegate ToDelegate(AppTaskDelegate app)
+        public static BodyFunc ToFunc(BodyDelegate body)
         {
-            return
-                (call, callback) =>
-                    app(call)
-                        .Then(result => callback(result, null))
-                        .Catch(caught =>
-                        {
-                            callback(default(ResultParameters), caught.Exception);
-                            return caught.Handled();
-                        });
+            return (stream, cancel) => body(stream, cancel);
+        }
+
+        public static AppDelegate ToDelegate(AppFunc app)
+        {
+            return (call, cancel) =>
+            {
+                var task = app(
+                    call.Environment,
+                    call.Headers,
+                    call.Body,
+                    cancel);
+
+                return task.Then(result => new ResultParameters
+                {
+                    Properties = result.Item1,
+                    Status = result.Item2,
+                    Headers = result.Item3,
+                    Body = ToDelegate(result.Item4)
+                });
+            };
+        }
+
+        public static BodyDelegate ToDelegate(BodyFunc body)
+        {
+            return (stream, cancel) => body(stream, cancel);
         }
     }
 }

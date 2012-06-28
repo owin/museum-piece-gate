@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Owin;
 
 namespace Gate.Builder
@@ -22,21 +24,21 @@ namespace Gate.Builder
             return Call;
         }
 
-        public static void Call(CallParameters call, Action<ResultParameters, Exception> callback)
+        public static Task<ResultParameters> Call(CallParameters call, CancellationToken cancel)
         {
-            callback(new ResultParameters
+            return TaskHelpers.FromResult(new ResultParameters
             {
                 Status = 404,
                 Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
                 {
                     {"Content-Type", new[] {"text/html"}}
                 },
-                Body = (write, end, cancel) =>
-                    {
-                        write(Body, null);
-                        end(null);
-                    }
-            }, null);
+                Body = (output, _) =>
+                {
+                    output.Write(Body.Array, Body.Offset, Body.Count);
+                    return TaskHelpers.Completed();
+                }
+            });
         }
     }
 }

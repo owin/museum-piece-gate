@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Gate.Builder.Loader;
 using Owin;
 using System.Linq;
@@ -8,20 +10,19 @@ using System.Linq;
 namespace Gate.Builder
 {
 #pragma warning disable 811
-    using AppAction = Action< // app
-       IDictionary<string, object>, // env
-       Action< // result
-           string, // status
-           IDictionary<string, string[]>, // headers
-           Action< // body
-               Func< // write
-                   ArraySegment<byte>, // data                     
-                   Action, // continuation
-                   bool>, // buffering
-               Action< // end
-                   Exception>, // error
-               CancellationToken>>, // cancel
-       Action<Exception>>; // error
+    using AppFunc = Func< // Call
+        IDictionary<string, object>, // Environment
+        IDictionary<string, string[]>, // Headers
+        Stream, // Body
+        CancellationToken, // CallCancelled
+        Task<Tuple< //Result
+            IDictionary<string, object>, // Properties
+            int, // Status
+            IDictionary<string, string[]>, // Headers
+            Func< // CopyTo
+                Stream, // Body
+                CancellationToken, // CopyToCancelled
+                Task>>>>; // Done
 
     public class AppBuilder : IAppBuilder
     {
@@ -77,22 +78,14 @@ namespace Gate.Builder
         {
             var builder = new AppBuilder(fallthrough, new Dictionary<string, object>(), new Dictionary<Tuple<Type, Type>, Func<object, object>>());
 
-            //AddAdapters<AppDelegate, AppAction>(
-            //    Adapters.ToAction,
-            //    Adapters.ToDelegate);
             AddStandardAdapters(builder);
-            //AddAdapters<AppAction, AppTaskDelegate>(
-            //    app => Adapters.ToTaskDelegate(Adapters.ToDelegate(app)),
-            //    app => Adapters.ToAction(Adapters.ToDelegate(app)));
 
             return builder;
         }
 
         static void AddStandardAdapters(AppBuilder builder)
         {
-            builder.AddAdapters<AppDelegate, AppTaskDelegate>(
-                Adapters.ToTaskDelegate,
-                Adapters.ToDelegate);
+            builder.AddAdapters<AppDelegate, AppFunc>(Adapters.ToFunc, Adapters.ToDelegate);
         }
 
         public IDictionary<string, object> Properties
