@@ -24,7 +24,7 @@ namespace Gate.Builder
             return Call;
         }
 
-        public static Task<ResultParameters> Call(CallParameters call, CancellationToken cancel)
+        public static Task<ResultParameters> Call(CallParameters call)
         {
             return TaskHelpers.FromResult(new ResultParameters
             {
@@ -37,7 +37,8 @@ namespace Gate.Builder
                 {
                     output.Write(Body.Array, Body.Offset, Body.Count);
                     return TaskHelpers.Completed();
-                }
+                },
+                Properties = new Dictionary<string, object>()
             });
         }
     }

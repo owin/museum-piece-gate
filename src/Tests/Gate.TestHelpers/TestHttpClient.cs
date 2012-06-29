@@ -86,8 +86,8 @@ namespace Gate.TestHelpers
                         {OwinConstants.RequestMethod, request.Method.ToString()},
                         {OwinConstants.RequestScheme, request.RequestUri.Scheme},
                         {OwinConstants.RequestPathBase, ""},
-                        {OwinConstants.RequestPath, request.RequestUri.GetComponents(UriComponents.Path, UriFormat.Unescaped)},
-                        {OwinConstants.RequestQueryString, request.RequestUri.GetComponents(UriComponents.Path, UriFormat.UriEscaped)},
+                        {OwinConstants.RequestPath, "/" + request.RequestUri.GetComponents(UriComponents.Path, UriFormat.Unescaped)},
+                        {OwinConstants.RequestQueryString, request.RequestUri.GetComponents(UriComponents.Query, UriFormat.UriEscaped)},
                         //{OwinConstants.RequestHeaders, RequestHeaders(request)},
                         //{OwinConstants.RequestBody, MakeRequestBody(request)},
                         {"System.Net.Http.HttpRequestMessage", request},
@@ -102,13 +102,14 @@ namespace Gate.TestHelpers
                         Environment = call.Environment,
                         Headers = GetRequestHeaders(request),
                         Body = body,
-                    }, cancel))
+                        Completed = cancel
+                    }))
                     .Then(result =>
                     {
                         call.ResponseStatus = result.Status;
                         call.ResponseHeaders = result.Headers;
                         call.ResponseBody = result.Body;
-                        return MakeResponseMessage(result.Status, result.Headers, result.Body, cancel);
+                        return MakeResponseMessage(result.Status, result.Headers, result.Body, result.Properties, cancel);
                     });
             }
 
@@ -127,7 +128,7 @@ namespace Gate.TestHelpers
                 return requestHeaders;
             }
 
-            static HttpResponseMessage MakeResponseMessage(int status, IDictionary<string, string[]> headers, BodyDelegate body, CancellationToken cancel)
+            static HttpResponseMessage MakeResponseMessage(int status, IDictionary<string, string[]> headers, BodyDelegate body, IDictionary<string, object> properties, CancellationToken cancel)
             {
                 var response = new HttpResponseMessage((HttpStatusCode)status);
 
@@ -136,15 +137,27 @@ namespace Gate.TestHelpers
                     response.Content = new BodyDelegateHttpContent(body, cancel);
                 }
 
-                foreach (var header in headers)
+                if (properties != null)
                 {
-                    if (!response.Headers.TryAddWithoutValidation(header.Key, header.Value))
+                    object value;
+                    if (properties.TryGetValue("owin.ReasonPhrase", out value))
                     {
-                        if (response.Content == null)
+                        response.ReasonPhrase = Convert.ToString(value);
+                    }
+                }
+
+                if (headers != null)
+                {
+                    foreach (var header in headers)
+                    {
+                        if (!response.Headers.TryAddWithoutValidation(header.Key, header.Value))
                         {
-                            response.Content = new ByteArrayContent(new byte[0]);
+                            if (response.Content == null)
+                            {
+                                response.Content = new ByteArrayContent(new byte[0]);
+                            }
+                            response.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
                         }
-                        response.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
                     }
                 }
 

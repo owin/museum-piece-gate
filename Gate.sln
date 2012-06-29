@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.Builder.Tests", "src\T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate.TestHelpers", "src\Tests\Gate.TestHelpers\Gate.TestHelpers.csproj", "{E4256EDF-0B54-4715-8E66-8D4D4887E15F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gate", "src\Main\Gate\Gate.csproj", "{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +66,16 @@ Global
 		{E4256EDF-0B54-4715-8E66-8D4D4887E15F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{E4256EDF-0B54-4715-8E66-8D4D4887E15F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E4256EDF-0B54-4715-8E66-8D4D4887E15F}.Release|x86.ActiveCfg = Release|Any CPU
+		{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

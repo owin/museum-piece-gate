@@ -1,7 +1,7 @@
 
 var PROJECT='Gate'
-var VERSION='0.7'
-var FULL_VERSION='${VERSION}-ctp2'
+var VERSION='0.9'
+var FULL_VERSION='${VERSION}-ctp3'
 var AUTHORS='${PROJECT} contributors'
 
 var BASE_DIR='${Directory.GetCurrentDirectory()}'
@@ -10,8 +10,8 @@ var BUILD_DIR='${Path.Combine(TARGET_DIR, "build")}'
 var TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 
 var SRC='src'
-var BUILD_PROJECTS='${Files.Include("src/Main/Gate/Gate.csproj","src/Main/Gate.Builder/Gate.Builder.csproj")}'
-var TEST_PROJECTS='${Files.Include(SRC+"/**/*.Tests.csproj-")}'
+var BUILD_PROJECTS='${Files.Include(SRC + "/**/Gate.Builder.csproj")}'
+var TEST_PROJECTS='${Files.Include(SRC + "/**/Gate.Builder.Tests.csproj")}'
 
 var TEST_ASSEMBLIES='${Files.Include("target/test/**/*.Tests.dll").Exclude("target/test/**/HttpListener.Tests.dll")}'
 
@@ -29,7 +29,7 @@ set FULL_VERSION='${FULL_VERSION}-build${BUILD_NUMBER.PadLeft(4, (char)'0')}' if
 use-standard-lifecycle
 
 -// include sets of standard work targets. features include 'nuget,xunit,nunit'
-use-standard-goals features='nuget,nunit'
+use-standard-goals features='nuget,xunit'
 
 -// additional work targets are defined below
 
@@ -50,12 +50,17 @@ use-standard-goals features='nuget,nunit'
   for each='var file in Files.Include("src/**/*.Sources.nuspec")'
     var projectDir='${Path.GetDirectoryName(file)}'
     var projectName='${Path.GetFileName(projectDir)}'
-    copy sourceDir='${projectDir}' include='**\*.cs' exclude='**\AssemblyInfo.cs' outputDir='${BUILD_DIR}\${projectName}' overwrite='${true}'
+    
+    copy sourceDir='${projectDir}' include='**/*.cs' exclude='**/App_Packages/**/*' outputDir='${BUILD_DIR}\${projectName}' overwrite='${true}'
+    
+    for each='var deleteFile in Files.Include(BUILD_DIR + "/" + projectName + "/**/AssemblyInfo.cs")' -File.Delete(deleteFile);
+
     update-file each='var updateFile in Files.Include(BUILD_DIR + "/" + projectName + "/**/*.cs")'
       @{
         updateText = updateText
           .Replace("public static partial class", "internal static partial class")
           .Replace("public static class", "internal static class")
           .Replace("public class", "internal class")
-          .Replace("public enum", "internal enum");
+          .Replace("public enum", "internal enum")
+          .Replace("public interface", "internal interface");
       }

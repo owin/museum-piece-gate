@@ -30,14 +30,15 @@ namespace Gate.Builder
     {
         public static AppFunc ToFunc(AppDelegate app)
         {
-            return (env, headers, body, cancel) =>
+            return (env, headers, body, completed) =>
             {
                 var task = app(new CallParameters
                 {
                     Environment = env,
                     Headers = headers,
-                    Body = body
-                }, cancel);
+                    Body = body,
+                    Completed = completed
+                });
 
                 return task.Then(result => Tuple.Create(
                     result.Properties,
@@ -47,20 +48,20 @@ namespace Gate.Builder
             };
         }
 
-        public static BodyFunc ToFunc(BodyDelegate body)
+        static BodyFunc ToFunc(BodyDelegate body)
         {
             return (stream, cancel) => body(stream, cancel);
         }
 
         public static AppDelegate ToDelegate(AppFunc app)
         {
-            return (call, cancel) =>
+            return call =>
             {
                 var task = app(
                     call.Environment,
                     call.Headers,
                     call.Body,
-                    cancel);
+                    call.Completed);
 
                 return task.Then(result => new ResultParameters
                 {
@@ -72,7 +73,7 @@ namespace Gate.Builder
             };
         }
 
-        public static BodyDelegate ToDelegate(BodyFunc body)
+        static BodyDelegate ToDelegate(BodyFunc body)
         {
             return (stream, cancel) => body(stream, cancel);
         }
