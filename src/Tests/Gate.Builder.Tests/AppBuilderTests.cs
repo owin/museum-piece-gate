@@ -118,7 +118,7 @@ namespace Gate.Builder.Tests
         }
 
         [Fact]
-        public Task Calling_BiuldPipeline_passes_control_to_a_builder_configuration_method()
+        public Task Calling_BuildPipeline_passes_control_to_a_builder_configuration_method()
         {
             var app = AppBuilder.BuildPipeline<AppDelegate>(MyConfig);
 
