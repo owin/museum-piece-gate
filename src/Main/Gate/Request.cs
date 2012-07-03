@@ -31,15 +31,15 @@ namespace Gate
             get { return _call.Headers; }
             set { _call.Headers = value; }
         }
-        public BodyDelegate Body
+        public Stream Body
         {
             get { return _call.Body; }
             set { _call.Body = value; }
         }
-        public CancellationToken CallDisposed
+        public CancellationToken Completed
         {
-            get { return _call.CallDisposed; }
-            set { _call.CallDisposed = value; }
+            get { return _call.Completed; }
+            set { _call.Completed = value; }
         }
 
         private T Get<T>(string name)
@@ -195,101 +195,36 @@ namespace Gate
             }
         }
 
-        public Stream OpenInputStream()
-        {
-            var inputStream = new RequestStream();
-            inputStream.Start(Body, CallDisposed);
-            return inputStream;
-        }
-
         public Task CopyToStreamAsync(Stream stream, CancellationToken cancel)
         {
-            var tcs = new TaskCompletionSource<object>();
-            Body.Invoke(
-                (data, callback) =>
-                {
-                        if (data.Array == null)
-                        {
-                            stream.Flush();
-                            return OwinConstants.CompletedSynchronously;
-                        }
-                        if (callback == null)
-                        {
-                            stream.Write(data.Array, data.Offset, data.Count);
-                            return OwinConstants.CompletedSynchronously;
-                        }
-                        var sr = stream.BeginWrite(
-                            data.Array,
-                            data.Offset,
-                            data.Count,
-                            ar =>
-                            {
-                                if (ar.CompletedSynchronously)
-                                {
-                                    return;
-                                }
-                                try
-                                {
-                                    stream.EndWrite(ar);
-                                }
-                                catch (Exception ex)
-                                {
-                                    callback(ex);
-                                }
-                                finally
-                                {
-                                    try
-                                    {
-                                        callback(null);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        tcs.TrySetException(ex);
-                                    }
-                                }
-                            },
-                            null);
-
-                        if (!sr.CompletedSynchronously)
-                        {
-                            return OwinConstants.CompletingAsynchronously;
-                        }
-
-                        stream.EndWrite(sr);
-                        return OwinConstants.CompletedSynchronously;
-                },
-                ex =>
-                {
-                    if (ex == null)
-                    {
-                        tcs.TrySetResult(null);
-                    }
-                    else
-                    {
-                        tcs.TrySetException(ex);
-                    }
-                },
-                cancel);
-            return tcs.Task;
+            // TODO: async read/write loop
+            stream.CopyTo(stream);
+            return TaskHelpers.Completed();
         }
 
         public Task<string> ReadTextAsync()
         {
             var text = Get<string>("Gate.Request.Text");
+
             var thisInput = Body;
             var lastInput = Get<object>("Gate.Request.Text#input");
-            var tcs = new TaskCompletionSource<string>();
+
             if (text != null && ReferenceEquals(thisInput, lastInput))
             {
-                tcs.SetResult(text);
-                return tcs.Task;
+                return TaskHelpers.FromResult(text);
             }
 
             var buffer = new MemoryStream();
 
             //TODO: determine encoding from request content type
-            return CopyToStreamAsync(buffer, CallDisposed)
-                .Then(() => new StreamReader(buffer).ReadToEnd());
+            return CopyToStreamAsync(buffer, Completed)
+                .Then(() =>
+                {
+                    text = new StreamReader(buffer).ReadToEnd();
+                    Environment["Gate.Request.Text#input"] = thisInput;
+                    Environment["Gate.Request.Text"] = text;
+                    return text;
+                });
         }
 
         public string ReadText()
@@ -301,19 +236,15 @@ namespace Gate
         {
             if (!HasFormData && !HasParseableData)
             {
-                var tcs = new TaskCompletionSource<IDictionary<string, string>>();
-                tcs.SetResult(ParamDictionary.Parse(""));
-                return tcs.Task;
+                return TaskHelpers.FromResult(ParamDictionary.Parse(""));
             }
 
             var form = Get<IDictionary<string, string>>("Gate.Request.Form");
-            var thisInput = Get<object>(OwinConstants.RequestBody);
+            var thisInput = Body;
             var lastInput = Get<object>("Gate.Request.Form#input");
             if (form != null && ReferenceEquals(thisInput, lastInput))
             {
-                var tcs = new TaskCompletionSource<IDictionary<string, string>>();
-                tcs.SetResult(form);
-                return tcs.Task;
+                return TaskHelpers.FromResult(form);
             }
 
             return ReadTextAsync().Then(text =>

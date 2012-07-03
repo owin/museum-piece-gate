@@ -46,21 +46,20 @@
     <None Include="AppBuilderInlineExtensions.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1-ctp1\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1-ctp1\TaskHelpersExtensions.cs" />
-    <None Include="Headers.cs" />
+    <Compile Include="Headers.cs" />
     <Compile Include="Mapping\MapBuilder.cs" />
     <Compile Include="Mapping\UrlMapper.cs" />
-    <None Include="NotFound.cs" />
     <Compile Include="AppBuilderMapExtensions.cs" />
     <Compile Include="AppBuilderRunExtensions.cs" />
     <Compile Include="AppBuilderUseExtensions.cs" />
     <Compile Include="OwinConstants.cs" />
     <None Include="RequestStream.cs" />
     <None Include="ResponseStream.cs" />
-    <None Include="Utils\ParamDictionary.cs" />
+    <Compile Include="Utils\ParamDictionary.cs" />
     <None Include="Utils\ReasonPhrases.cs" />
     <None Include="Utils\Spool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <None Include="Request.cs" />
+    <Compile Include="Request.cs" />
     <None Include="Response.cs" />
   </ItemGroup>
   <ItemGroup>
