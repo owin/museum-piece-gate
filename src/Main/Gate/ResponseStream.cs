@@ -39,7 +39,7 @@ namespace Gate
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            return _response.BeginWrite(ToArraySegment(buffer, offset, count), callback, state);
+            return _response.BeginWrite(buffer, offset, count, callback, state);
         }
 
         public override void EndWrite(IAsyncResult asyncResult)

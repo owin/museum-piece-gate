@@ -10,7 +10,7 @@ var BUILD_DIR='${Path.Combine(TARGET_DIR, "build")}'
 var TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 
 var SRC='src'
-var BUILD_PROJECTS='${Files.Include(SRC + "/**/Gate.Builder.csproj")}'
+var BUILD_PROJECTS='${Files.Include(SRC + "/**/Gate.Builder.csproj", SRC + "/**/Gate.csproj")}'
 var TEST_PROJECTS='${Files.Include(SRC + "/**/Gate.Builder.Tests.csproj")}'
 
 var TEST_ASSEMBLIES='${Files.Include("target/test/**/*.Tests.dll").Exclude("target/test/**/HttpListener.Tests.dll")}'

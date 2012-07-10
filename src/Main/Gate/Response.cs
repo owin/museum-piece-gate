@@ -13,48 +13,65 @@ namespace Gate
 {
     public class Response
     {
-        Action<ResultParameters, Exception> _callback;
+        Action<ResultParameters, Exception> _startCalled;
         ResultParameters _result;
 
         int _autostart;
         readonly Object _onStartSync = new object();
         Action _onStart = () => { };
 
-        Func<ArraySegment<byte>, Action<Exception>, Owin.TempEnum> _responseWrite;
-        Action<Exception> _responseEnd;
+        TaskCompletionSource<ResultParameters> _callCompletionSource = new TaskCompletionSource<ResultParameters>();
+
         CancellationToken _responseCancellationToken = CancellationToken.None;
+        TaskCompletionSource<object> _responseCompletionSource = new TaskCompletionSource<object>();
+
         Stream _outputStream;
 
-        public Response(Action<ResultParameters, Exception> callback)
-            : this(callback, 200)
+
+        public Response()
+            : this(200)
         {
         }
 
-        public Response(Action<ResultParameters, Exception> callback, int statusCode)
-            : this(callback, statusCode, new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase))
+        public Response(int statusCode)
+            : this(statusCode, new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase))
         {
         }
 
-        public Response(Action<ResultParameters, Exception> callback, int statusCode, IDictionary<string, string[]> headers)
-            : this(callback, statusCode, headers, new Dictionary<string, object>())
+        public Response(int statusCode, IDictionary<string, string[]> headers)
+            : this(statusCode, headers, new Dictionary<string, object>())
         {
         }
 
-        public Response(Action<ResultParameters, Exception> callback, int statusCode, IDictionary<string, string[]> headers, IDictionary<string, object> properties)
+        public Response(int statusCode, IDictionary<string, string[]> headers, IDictionary<string, object> properties)
         {
-            _callback = callback;
+            _startCalled = StartCalled;
             _result = new ResultParameters
             {
                 Status = statusCode,
                 Headers = headers,
-                Body = ResponseBody,
+                Body = ResponseBodyAsync,
                 Properties = properties
             };
 
             _responseWrite = EarlyResponseWrite;
-            _responseEnd = EarlyResponseEnd;
+            _responseWriteAsync = EarlyResponseWriteAsync;
+            _responseFlush = EarlyResponseFlush;
+            _responseFlushAsync = EarlyResponseFlushAsync;
 
             Encoding = Encoding.UTF8;
+        }
+
+        internal Func<Task<ResultParameters>> Next { get; set; }
+
+        public void Skip()
+        {
+            Next.Invoke().CopyResultToCompletionSource(_callCompletionSource);
+        }
+
+        public Task<ResultParameters> GetResultAsync()
+        {
+            return _callCompletionSource.Task;
         }
 
         public IDictionary<string, string[]> Headers
@@ -262,50 +279,20 @@ namespace Gate
         }
 
 
-        public Response Start()
+        public void Start()
         {
             _autostart = 1;
-            Interlocked.Exchange(ref _callback, ResultCalledAlready).Invoke(_result, null);
-            return this;
+            Interlocked.Exchange(ref _startCalled, StartCalledAlready).Invoke(_result, null);
         }
 
-        public Response Start(string status)
+        public Task StartAsync()
         {
-            if (!string.IsNullOrWhiteSpace(status))
-                Status = status;
-
-            return Start();
-        }
-
-        public Response Start(string status, IEnumerable<KeyValuePair<string, string[]>> headers)
-        {
-            if (headers != null)
-            {
-                foreach (var header in headers)
-                {
-                    Headers[header.Key] = header.Value;
-                }
-            }
-            return Start(status);
-        }
-
-        public void Start(string status, IEnumerable<KeyValuePair<string, string>> headers)
-        {
-            var actualHeaders = headers.Select(kv => new KeyValuePair<string, string[]>(kv.Key, new[] { kv.Value }));
-            Start(status, actualHeaders);
-        }
-
-        public void Start(Action continuation)
-        {
-            OnStart(continuation);
+            var tcs = new TaskCompletionSource<object>();
+            OnStart(() => tcs.SetResult(null));
             Start();
+            return tcs.Task;
         }
 
-        public void Start(string status, Action continuation)
-        {
-            OnStart(continuation);
-            Start(status);
-        }
 
         public Stream OutputStream
         {
@@ -319,55 +306,48 @@ namespace Gate
             }
         }
 
-        public Owin.TempEnum Write(string text)
+        public void Write(string text)
         {
             // this could be more efficient if it spooled the immutable strings instead...
             var data = Encoding.GetBytes(text);
-            return Write(new ArraySegment<byte>(data));
+            Write(data);
         }
 
-        public Owin.TempEnum Write(string format, params object[] args)
+        public void Write(string format, params object[] args)
         {
-            return Write(string.Format(format, args));
+            Write(string.Format(format, args));
         }
 
-        public Owin.TempEnum Write(ArraySegment<byte> data)
+
+        public void Write(byte[] buffer)
         {
-            return _responseWrite(data, null);
+            _responseWrite(buffer, 0, buffer.Length);
         }
 
-        public Owin.TempEnum Write(ArraySegment<byte> data, Action<Exception> callback)
+        public void Write(byte[] buffer, int offset, int count)
         {
-            return _responseWrite(data, callback);
+            _responseWrite(buffer, offset, count);
+        }
+
+        public void Write(ArraySegment<byte> data)
+        {
+            _responseWrite(data.Array, data.Offset, data.Count);
+        }
+
+        public Task WriteAsync(byte[] buffer, int offset, int count)
+        {
+            return _responseWriteAsync(buffer, offset, count);
         }
 
         public Task WriteAsync(ArraySegment<byte> data)
         {
-            return (Task)BeginWrite(data, null, null);
+            return _responseWriteAsync(data.Array, data.Offset, data.Count);
         }
 
-        public IAsyncResult BeginWrite(ArraySegment<byte> data, AsyncCallback callback, object state)
+        public IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            var tcs = new TaskCompletionSource<object>();
-            Action<Exception> continuation = error =>
-            {
-                if (error != null)
-                {
-                    tcs.SetException(error);
-                }
-                else
-                {
-                    tcs.SetResult(null);
-                }
-            };
-            if (_responseWrite.Invoke(data, continuation) == OwinConstants.CompletedSynchronously)
-            {
-                tcs.SetResult(null);
-            }
-            if (callback != null)
-            {
-                tcs.Task.Finally(() => callback(tcs.Task));
-            }
+            var tcs = new TaskCompletionSource<object>(state);
+            _responseWriteAsync(buffer, offset, count).CopyResultToCompletionSource(tcs, null);
             return tcs.Task;
         }
 
@@ -377,45 +357,30 @@ namespace Gate
         }
 
 
-        public Owin.TempEnum Flush()
+        public void Flush()
         {
-            return Write(default(ArraySegment<byte>));
-        }
-
-        public Owin.TempEnum Flush(Action<Exception> callback)
-        {
-            return Write(default(ArraySegment<byte>), callback);
+            _responseFlush();
         }
 
         public Task FlushAsync()
         {
-            return WriteAsync(default(ArraySegment<byte>));
+            return _responseFlushAsync();
         }
 
         public IAsyncResult BeginFlush(AsyncCallback callback, object state)
         {
-            return BeginWrite(default(ArraySegment<byte>), callback, state);
+            var tcs = new TaskCompletionSource<object>(state);
+            _responseFlushAsync().CopyResultToCompletionSource(tcs, null);
+            return tcs.Task;
         }
 
         public void EndFlush(IAsyncResult result)
         {
-            EndWrite(result);
+            ((Task)result).Wait();
         }
 
         public void End()
         {
-            OnEnd(null);
-        }
-
-        public void End(string text)
-        {
-            Write(text);
-            OnEnd(null);
-        }
-
-        public void End(ArraySegment<byte> data)
-        {
-            Write(data);
             OnEnd(null);
         }
 
@@ -424,22 +389,39 @@ namespace Gate
             OnEnd(error);
         }
 
-        void ResponseBody(
-            Func<ArraySegment<byte>, Action<Exception>, Owin.TempEnum> write,
-            Action<Exception> end,
+        Task ResponseBodyAsync(
+            Stream output,
             CancellationToken cancellationToken)
         {
-            _responseWrite = write;
-            _responseEnd = end;
             _responseCancellationToken = cancellationToken;
+
+            _responseWrite = output.Write;
+            _responseWriteAsync = output.WriteAsync;
+            _responseFlush = output.Flush;
+            _responseFlushAsync = output.FlushAsync;
+
             lock (_onStartSync)
             {
                 Interlocked.Exchange(ref _onStart, null).Invoke();
             }
+
+            return _responseCompletionSource.Task;
         }
 
 
-        static readonly Action<ResultParameters, Exception> ResultCalledAlready =
+        void StartCalled(ResultParameters result, Exception ex)
+        {
+            if (ex != null)
+            {
+                _callCompletionSource.SetException(ex);
+            }
+            else
+            {
+                _callCompletionSource.SetResult(result);
+            }
+        }
+
+        static readonly Action<ResultParameters, Exception> StartCalledAlready =
             (result, error) =>
             {
                 throw new InvalidOperationException("Start must only be called once on a Response and it must be called before Write or End");
@@ -448,7 +430,7 @@ namespace Gate
 
         void Autostart()
         {
-            if (Interlocked.Increment(ref _autostart) == 1)
+            if (Buffer == false && Interlocked.Increment(ref _autostart) == 1)
             {
                 Start();
             }
@@ -475,7 +457,14 @@ namespace Gate
 
         void OnEnd(Exception error)
         {
-            Interlocked.Exchange(ref _responseEnd, _ => { }).Invoke(error);
+            if (error != null)
+            {
+                _responseCompletionSource.SetException(error);
+            }
+            else
+            {
+                _responseCompletionSource.SetResult(null);
+            }
         }
 
         void CallNotify(Action notify)
@@ -490,35 +479,43 @@ namespace Gate
             }
         }
 
-        Owin.TempEnum EarlyResponseWrite(ArraySegment<byte> data, Action<Exception> callback)
+
+        Action<byte[], int, int> _responseWrite;
+        void EarlyResponseWrite(byte[] buffer, int offset, int count)
         {
-            var copy = data;
-            if (copy.Count != 0)
+            var copy = buffer;
+            if (count != 0)
             {
-                copy = new ArraySegment<byte>(new byte[data.Count], 0, data.Count);
-                Array.Copy(data.Array, data.Offset, copy.Array, 0, data.Count);
+                copy = new byte[count];
+                Array.Copy(buffer, offset, copy, 0, count);
             }
-            OnStart(
-                () =>
-                {
-                    var willCallback = _responseWrite(copy, callback);
-                    if (callback != null && willCallback == OwinConstants.CompletingAsynchronously)
-                    {
-                        callback.Invoke(null);
-                    }
-                });
-            if (!Buffer || data.Array == null)
-            {
-                Autostart();
-            }
-            return OwinConstants.CompletingAsynchronously;
+            OnStart(() => _responseWrite(copy, 0, count));
+            Autostart();
         }
 
-
-        void EarlyResponseEnd(Exception ex)
+        Func<byte[], int, int, Task> _responseWriteAsync;
+        Task EarlyResponseWriteAsync(byte[] buffer, int offset, int count)
         {
-            OnStart(() => OnEnd(ex));
+            var tcs = new TaskCompletionSource<object>();
+            OnStart(() => _responseWriteAsync(buffer, offset, count).CopyResultToCompletionSource(tcs, null));
             Autostart();
+            return tcs.Task;
+        }
+
+        Action _responseFlush;
+        void EarlyResponseFlush()
+        {
+            OnStart(() => _responseFlush());
+            Autostart();
+        }
+
+        Func<Task> _responseFlushAsync;
+        Task EarlyResponseFlushAsync()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            OnStart(() => _responseFlushAsync().CopyResultToCompletionSource(tcs, null));
+            Autostart();
+            return tcs.Task;
         }
     }
 }

@@ -7,6 +7,7 @@ using Owin;
 
 namespace Gate.Builder
 {
+#pragma warning disable 811
     using AppFunc = Func< // Call
         IDictionary<string, object>, // Environment
         IDictionary<string, string[]>, // Headers
