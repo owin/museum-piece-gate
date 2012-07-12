@@ -1,5 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Gate.Middleware.Utils;
 using Owin;
 using System.Text;
 
@@ -18,42 +22,40 @@ namespace Gate.Middleware
 
         public static AppDelegate Middleware(AppDelegate app)
         {
-            return
-                (call, callback) => app(call, (result, error) =>
+            return call => app(call).Then(result =>
+            {
+                if (!IsStatusWithNoNoEntityBody(result.Status) &&
+                    !result.Headers.ContainsKey("Content-Length") &&
+                    !result.Headers.ContainsKey("Transfer-Encoding"))
                 {
-                    if (IsStatusWithNoNoEntityBody(result.Status) ||
-                        result.Headers.ContainsKey("Content-Length") ||
-                            result.Headers.ContainsKey("Transfer-Encoding"))
-                    {
-                        callback(result, error);
-                    }
-                    else
-                    {
-                        result.Headers.AddHeader("Transfer-Encoding", "chunked");
-                        var body = result.Body;
-                        result.Body =
-                            (write, end, cancel) => body((data, continuation) =>
-                            {
-                                if (data.Count == 0)
-                                {
-                                    return write(data, continuation);
-                                }
+                    result.Headers.AddHeader("Transfer-Encoding", "chunked");
+                    result.Body = WrapOutputStream(result.Body);
+                }
+                return result;
+            });
+        }
 
-                                write(ChunkPrefix((uint) data.Count), null);
-                                write(data, null);
-                                return write(EndOfChunk, continuation);
-                            },
-                                ex =>
-                                {
-                                    if (ex == null)
-                                    {
-                                        write(FinalChunk, null);
-                                    }
-                                    end(ex);
-                                },
-                                cancel);
-                    }
-                });
+        public static BodyDelegate WrapOutputStream(BodyDelegate body)
+        {
+            return (output, cancel) =>
+                body(new StreamWrapper(output, OnWriteFilter), cancel)
+                    .Finally(() =>
+                        output.Write(FinalChunk.Array, FinalChunk.Offset, FinalChunk.Count));
+        }
+
+        public static ArraySegment<byte>[] OnWriteFilter(ArraySegment<byte> data)
+        {
+            return data.Count == 0
+                ? new[]
+                {
+                    data
+                }
+                : new[]
+                {
+                    ChunkPrefix((uint) data.Count), 
+                    data, 
+                    EndOfChunk,
+                };
         }
 
         public static ArraySegment<byte> ChunkPrefix(uint dataCount)

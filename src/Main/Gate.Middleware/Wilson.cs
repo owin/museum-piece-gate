@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Owin;
 using Timer = System.Timers.Timer;
 
@@ -15,10 +16,10 @@ namespace Gate.Middleware
 
         public static AppDelegate App()
         {
-            return (call, callback) =>
+            return call =>
             {
                 var request = new Request(call);
-                var response = new Response(callback) { Buffer = true, ContentType = "text/html" };
+                var response = new Response { Buffer = true, ContentType = "text/html" };
                 var wilson = "left - right\r\n123456789012\r\nhello world!\r\n";
 
                 var href = "?flip=left";
@@ -40,19 +41,29 @@ namespace Gate.Middleware
                 response.Write("<p><a href='" + href + "'>flip!</a></p>");
                 response.Write("<p><a href='?flip=crash'>crash!</a></p>");
                 response.End();
+
+                return response.GetResultAsync();
             };
         }
 
         public static AppDelegate AsyncApp()
         {
-            return (call, callback) =>
+            return call =>
             {
                 var request = new Request(call);
-                var response = new Response(callback)
+                var response = new Response
                 {
                     ContentType = "text/html",
                 };
                 var wilson = "left - right\r\n123456789012\r\nhello world!\r\n";
+
+                response.StartAsync()
+                    .Then(()=>
+                    {
+                        Delay
+                    });
+
+                return response.GetResultAsync();
 
                 ThreadPool.QueueUserWorkItem(_ =>
                 {

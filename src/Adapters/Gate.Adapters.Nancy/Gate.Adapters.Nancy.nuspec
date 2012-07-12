@@ -5,16 +5,17 @@
     <version>$version$</version>
     <authors>$authors$</authors>
     <owners></owners>
-    <description>Gate is a utility library for locating, manufacturing, and hosting OWIN applications.</description>
+    <description>Gate.Adapters.Nancy provides OWIN adapter support for Nancy.</description>
     <language>en-US</language>
     <projectUrl>https://github.com/owin/gate</projectUrl>
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
     <tags></tags>
     <dependencies>
-      <dependency id="Gate.Sources" version="[$version$]"/>
+      <dependency id="Owin" version="[0.11-ctp3]"/>
+      <dependency id="Nancy" version="0.11.0"/>
     </dependencies>
   </metadata>
   <files>
-    <file src="**\*.cs" target="content\App_Packages\$id$.$version$" />
+    <file src="Gate.Adapters.Nancy.dll" target="lib\net40" />
   </files>
 </package>

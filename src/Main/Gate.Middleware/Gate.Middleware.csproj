@@ -32,9 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Owin, Version=0.9.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
+    <Reference Include="Owin, Version=0.11.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Owin.0.9-ctp2\lib\net40\Owin.dll</HintPath>
+      <HintPath>..\..\..\packages\Owin.0.11-ctp3\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -45,6 +45,9 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.1-ctp1\TaskHelpers.cs" />
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.1-ctp1\TaskHelpersExtensions.cs" />
+    <Compile Include="NotFound.cs" />
     <Compile Include="OwinConstants.cs" />
     <Compile Include="StaticFiles\BodyStream.cs" />
     <Compile Include="StaticFiles\FileBody.cs" />
@@ -57,7 +60,7 @@
     <Compile Include="StaticFiles\TextBody.cs" />
     <Compile Include="ContentLength.cs" />
     <Compile Include="Chunked.cs" />
-    <Compile Include="Cascade.cs" />
+    <None Include="Cascade.cs" />
     <Compile Include="ContentType.cs" />
     <Compile Include="ShowExceptions.cs" />
     <Compile Include="ShowExceptions.View.cs">
@@ -67,6 +70,7 @@
     </Compile>
     <Compile Include="Utils\HttpFormatExtensions.cs" />
     <Compile Include="Utils\RangeHeader.cs" />
+    <Compile Include="Utils\StreamWrapper.cs" />
     <Compile Include="Wilson.cs" />
   </ItemGroup>
   <ItemGroup>
