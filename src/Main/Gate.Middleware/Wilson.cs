@@ -56,15 +56,7 @@ namespace Gate.Middleware
                     ContentType = "text/html",
                 };
                 var wilson = "left - right\r\n123456789012\r\nhello world!\r\n";
-
-                response.StartAsync()
-                    .Then(()=>
-                    {
-                        Delay
-                    });
-
-                return response.GetResultAsync();
-
+                
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
                     try
@@ -78,7 +70,7 @@ namespace Gate.Middleware
                             href = "?flip=right";
                         }
 
-                        response.Start(() => TimerLoop(350, response.Error,
+                        TimerLoop(350, response.Error,
                             () => response.Write("<title>Hutchtastic</title>"),
                             () => response.Write("<pre>"),
                             () => response.Write(wilson),
@@ -92,13 +84,14 @@ namespace Gate.Middleware
                             },
                             () => response.Write("<p><a href='" + href + "'>flip!</a></p>"),
                             () => response.Write("<p><a href='?flip=crash'>crash!</a></p>"),
-                            response.End));
+                            response.End);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        callback(default(ResultParameters), ex);
                     }
                 });
+
+                return response.GetResultAsync();
             };
         }
 

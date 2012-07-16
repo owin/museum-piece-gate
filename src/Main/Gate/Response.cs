@@ -13,20 +13,11 @@ namespace Gate
 {
     public class Response
     {
-        Action<ResultParameters, Exception> _startCalled;
         ResultParameters _result;
-
-        int _autostart;
-        readonly Object _onStartSync = new object();
-        Action _onStart = () => { };
-
         TaskCompletionSource<ResultParameters> _callCompletionSource = new TaskCompletionSource<ResultParameters>();
-
         CancellationToken _responseCancellationToken = CancellationToken.None;
-        TaskCompletionSource<object> _responseCompletionSource = new TaskCompletionSource<object>();
-
-        Stream _outputStream;
-
+        Stream _bufferedStream;
+        Stream _userStream;
 
         public Response()
             : this(200)
@@ -39,29 +30,32 @@ namespace Gate
         }
 
         public Response(int statusCode, IDictionary<string, string[]> headers)
-            : this(statusCode, headers, new Dictionary<string, object>())
+            : this(statusCode, headers, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase))
         {
         }
 
         public Response(int statusCode, IDictionary<string, string[]> headers, IDictionary<string, object> properties)
-        {
-            _startCalled = StartCalled;
-            _result = new ResultParameters
-            {
-                Status = statusCode,
-                Headers = headers,
-                Body = ResponseBodyAsync,
-                Properties = properties
-            };
+            : this (
+                new ResultParameters()
+                {
+                    Status = statusCode,
+                    Headers = headers,
+                    Body = null,
+                    Properties = properties
+                })
+        {        
+        }
 
-            _responseWrite = EarlyResponseWrite;
-            _responseWriteAsync = EarlyResponseWriteAsync;
-            _responseFlush = EarlyResponseFlush;
-            _responseFlushAsync = EarlyResponseFlushAsync;
+        public Response(ResultParameters result)
+        {
+            _result = result;
+            _result.Headers = _result.Headers ?? new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+            _result.Properties = _result.Properties ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
             Encoding = Encoding.UTF8;
         }
 
+        // TODO: What are Skip and Next for? Nobody uses Skip, and Next is only assigned.
         internal Func<Task<ResultParameters>> Next { get; set; }
 
         public void Skip()
@@ -69,16 +63,12 @@ namespace Gate
             Next.Invoke().CopyResultToCompletionSource(_callCompletionSource);
         }
 
-        public Task<ResultParameters> GetResultAsync()
-        {
-            return _callCompletionSource.Task;
-        }
-
         public IDictionary<string, string[]> Headers
         {
             get { return _result.Headers; }
             set { _result.Headers = value; }
         }
+
         public IDictionary<string, object> Properties
         {
             get { return _result.Properties; }
@@ -278,32 +268,48 @@ namespace Gate
             set { SetHeader("Content-Type", value); }
         }
 
-
-        public void Start()
+        public void SetBody(BodyDelegate body)
         {
-            _autostart = 1;
-            Interlocked.Exchange(ref _startCalled, StartCalledAlready).Invoke(_result, null);
+            _result.Body = body;
         }
 
-        public Task StartAsync()
+        public void SetBody(Stream stream)
         {
-            var tcs = new TaskCompletionSource<object>();
-            OnStart(() => tcs.SetResult(null));
-            Start();
-            return tcs.Task;
+            _userStream = stream;
+            _result.Body = CopyUserStream;
         }
 
+        // CopyToAsync from the given user stream to the output stream.
+        private Task CopyUserStream(Stream output, CancellationToken cancel)
+        {
+            if (_userStream == null)
+            {
+                return TaskHelpers.Completed();
+            }
+            return _userStream.CopyToAsync(output, cancel);
+        }
 
-        public Stream OutputStream
+        public Stream BufferedStream
         {
             get
             {
-                if (_outputStream == null)
+                if (_bufferedStream == null)
                 {
-                    Interlocked.Exchange(ref _outputStream, new ResponseStream(this));
+                    _bufferedStream = new MemoryStream();
+                    _result.Body = CopyBufferdBody;
                 }
-                return _outputStream;
+                return _bufferedStream;
             }
+        }
+
+        private Task CopyBufferdBody(Stream output, CancellationToken cancel)
+        {
+            if (_bufferedStream == null)
+            {
+                return TaskHelpers.Completed();
+            }
+            _bufferedStream.Seek(0, SeekOrigin.Begin);
+            return _bufferedStream.CopyToAsync(output, cancel);
         }
 
         public void Write(string text)
@@ -321,33 +327,33 @@ namespace Gate
 
         public void Write(byte[] buffer)
         {
-            _responseWrite(buffer, 0, buffer.Length);
+            BufferedStream.Write(buffer, 0, buffer.Length);
         }
 
         public void Write(byte[] buffer, int offset, int count)
         {
-            _responseWrite(buffer, offset, count);
+            BufferedStream.Write(buffer, offset, count);
         }
 
         public void Write(ArraySegment<byte> data)
         {
-            _responseWrite(data.Array, data.Offset, data.Count);
+            BufferedStream.Write(data.Array, data.Offset, data.Count);
         }
 
         public Task WriteAsync(byte[] buffer, int offset, int count)
         {
-            return _responseWriteAsync(buffer, offset, count);
+            return BufferedStream.WriteAsync(buffer, offset, count);
         }
 
         public Task WriteAsync(ArraySegment<byte> data)
         {
-            return _responseWriteAsync(data.Array, data.Offset, data.Count);
+            return BufferedStream.WriteAsync(data.Array, data.Offset, data.Count);
         }
 
         public IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             var tcs = new TaskCompletionSource<object>(state);
-            _responseWriteAsync(buffer, offset, count).CopyResultToCompletionSource(tcs, null);
+            BufferedStream.WriteAsync(buffer, offset, count).CopyResultToCompletionSource(tcs, null);
             return tcs.Task;
         }
 
@@ -356,27 +362,14 @@ namespace Gate
             ((Task)result).Wait();
         }
 
-
-        public void Flush()
+        public ResultParameters GetResult()
         {
-            _responseFlush();
+            return _result;
         }
 
-        public Task FlushAsync()
+        public Task<ResultParameters> GetResultAsync()
         {
-            return _responseFlushAsync();
-        }
-
-        public IAsyncResult BeginFlush(AsyncCallback callback, object state)
-        {
-            var tcs = new TaskCompletionSource<object>(state);
-            _responseFlushAsync().CopyResultToCompletionSource(tcs, null);
-            return tcs.Task;
-        }
-
-        public void EndFlush(IAsyncResult result)
-        {
-            ((Task)result).Wait();
+            return _callCompletionSource.Task;
         }
 
         public void End()
@@ -384,138 +377,27 @@ namespace Gate
             OnEnd(null);
         }
 
+        public Task<ResultParameters> EndAsync()
+        {
+            OnEnd(null);
+            return _callCompletionSource.Task;
+        }
+
         public void Error(Exception error)
         {
             OnEnd(error);
-        }
-
-        Task ResponseBodyAsync(
-            Stream output,
-            CancellationToken cancellationToken)
-        {
-            _responseCancellationToken = cancellationToken;
-
-            _responseWrite = output.Write;
-            _responseWriteAsync = output.WriteAsync;
-            _responseFlush = output.Flush;
-            _responseFlushAsync = output.FlushAsync;
-
-            lock (_onStartSync)
-            {
-                Interlocked.Exchange(ref _onStart, null).Invoke();
-            }
-
-            return _responseCompletionSource.Task;
-        }
-
-
-        void StartCalled(ResultParameters result, Exception ex)
-        {
-            if (ex != null)
-            {
-                _callCompletionSource.SetException(ex);
-            }
-            else
-            {
-                _callCompletionSource.SetResult(result);
-            }
-        }
-
-        static readonly Action<ResultParameters, Exception> StartCalledAlready =
-            (result, error) =>
-            {
-                throw new InvalidOperationException("Start must only be called once on a Response and it must be called before Write or End");
-            };
-
-
-        void Autostart()
-        {
-            if (Buffer == false && Interlocked.Increment(ref _autostart) == 1)
-            {
-                Start();
-            }
-        }
-
-
-        void OnStart(Action notify)
-        {
-            lock (_onStartSync)
-            {
-                if (_onStart != null)
-                {
-                    var prior = _onStart;
-                    _onStart = () =>
-                    {
-                        prior.Invoke();
-                        CallNotify(notify);
-                    };
-                    return;
-                }
-            }
-            CallNotify(notify);
         }
 
         void OnEnd(Exception error)
         {
             if (error != null)
             {
-                _responseCompletionSource.SetException(error);
+                _callCompletionSource.TrySetException(error);
             }
             else
             {
-                _responseCompletionSource.SetResult(null);
+                _callCompletionSource.TrySetResult(_result);
             }
-        }
-
-        void CallNotify(Action notify)
-        {
-            try
-            {
-                notify.Invoke();
-            }
-            catch (Exception ex)
-            {
-                Error(ex);
-            }
-        }
-
-
-        Action<byte[], int, int> _responseWrite;
-        void EarlyResponseWrite(byte[] buffer, int offset, int count)
-        {
-            var copy = buffer;
-            if (count != 0)
-            {
-                copy = new byte[count];
-                Array.Copy(buffer, offset, copy, 0, count);
-            }
-            OnStart(() => _responseWrite(copy, 0, count));
-            Autostart();
-        }
-
-        Func<byte[], int, int, Task> _responseWriteAsync;
-        Task EarlyResponseWriteAsync(byte[] buffer, int offset, int count)
-        {
-            var tcs = new TaskCompletionSource<object>();
-            OnStart(() => _responseWriteAsync(buffer, offset, count).CopyResultToCompletionSource(tcs, null));
-            Autostart();
-            return tcs.Task;
-        }
-
-        Action _responseFlush;
-        void EarlyResponseFlush()
-        {
-            OnStart(() => _responseFlush());
-            Autostart();
-        }
-
-        Func<Task> _responseFlushAsync;
-        Task EarlyResponseFlushAsync()
-        {
-            var tcs = new TaskCompletionSource<object>();
-            OnStart(() => _responseFlushAsync().CopyResultToCompletionSource(tcs, null));
-            Autostart();
-            return tcs.Task;
         }
     }
 }

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Owin;
+using System.Threading.Tasks;
 
 namespace Gate.Middleware
 {
@@ -17,7 +18,7 @@ namespace Gate.Middleware
 
         public static AppDelegate Middleware(AppDelegate app)
         {
-            return (call, callback) =>
+            return call =>
             {
                 Action<Exception, Action<ArraySegment<byte>>> showErrorMessage =
                     (ex, write) =>
@@ -27,46 +28,46 @@ namespace Gate.Middleware
                             write(new ArraySegment<byte>(data));
                         });
 
-                Action<Exception> showErrorPage = ex =>
+                Func<Exception, Task<ResultParameters>> showErrorPage = ex =>
                 {
-                    var response = new Response(callback) { Status = "500 Internal Server Error", ContentType = "text/html" };
-                    response.Start(() =>
-                    {
-                        showErrorMessage(ex, data => response.Write(data));
-                        response.End();
-                    });
+                    var response = new Response() { Status = "500 Internal Server Error", ContentType = "text/html" };
+                    showErrorMessage(ex, data => response.Write(data));
+                    return response.EndAsync();
                 };
 
                 try
                 {
-                    app(call, (result, error) =>
-                    {
-                        if (error != null)
+                    return app(call).ContinueWith<ResultParameters>(
+                        appTask =>
                         {
-                            showErrorPage(error);
-                        }
-                        else
-                        {
-                            var body = result.Body;
-                            result.Body = (write, end, cancel) =>
+                            if (!appTask.IsFaulted && !appTask.IsCanceled)
                             {
-                                showErrorPage = ex =>
+                                ResultParameters result = appTask.Result;
+                                if (result.Body != null)
                                 {
-                                    if (ex != null)
-                                    {
-                                        showErrorMessage(ex, data => write(data, null));
-                                    }
-                                    end(null);
-                                };
-                                body.Invoke(write, showErrorPage, cancel);
-                            };
-                            callback(result, null);
-                        }
-                    });
+                                    BodyDelegate nestedBody = result.Body;
+                                    result.Body = (stream, cancel) =>
+                                        {
+                                            // TODO: Handle sync and async errors from the nested body.
+                                            return nestedBody(stream, cancel);
+                                        };
+                                }
+                                return result;
+                            }
+
+                            if (appTask.Exception != null)
+                            {
+                                return showErrorPage(appTask.Exception).Result;
+                            }
+                            else
+                            {
+                                return showErrorPage(new TaskCanceledException()).Result;
+                            }
+                        });
                 }
                 catch (Exception exception)
                 {
-                    showErrorPage(exception);
+                    return showErrorPage(exception);
                 }
             };
         }

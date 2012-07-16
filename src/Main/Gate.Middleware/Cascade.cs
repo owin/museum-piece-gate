@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Owin;
+using System.Threading.Tasks;
 
 namespace Gate.Middleware
 {
@@ -67,10 +68,12 @@ namespace Gate.Middleware
 
             // the first non-404 result will the the one to take effect
             // any subsequent apps are not called
-            return (call, callback) =>
+            return call =>
             {
                 var iter = apps.GetEnumerator();
                 iter.MoveNext();
+
+                TaskCompletionSource<ResultParameters> tcs = new TaskCompletionSource<ResultParameters>();
 
                 Action loop = () => { };
                 loop = () =>
@@ -79,10 +82,16 @@ namespace Gate.Middleware
                     for (var hot = true; hot; )
                     {
                         hot = false;
-                        iter.Current.Invoke(
-                            call,
-                            (result, error) =>
+                        iter.Current.Invoke(call).ContinueWith(
+                            task =>
                             {
+                                if (tcs.SetIfTaskFailed(task))
+                                {
+                                    return;
+                                }
+
+                                ResultParameters result = task.Result;
+
                                 try
                                 {
                                     if (result.Status == 404 && iter.MoveNext())
@@ -100,12 +109,12 @@ namespace Gate.Middleware
                                     }
                                     else
                                     {
-                                        callback(result, error);
+                                        tcs.TrySetResult(result);
                                     }
                                 }
                                 catch (Exception ex)
                                 {
-                                    callback(default(ResultParameters), ex);
+                                    tcs.TrySetException(ex);
                                 }
                             });
                     }
@@ -113,6 +122,8 @@ namespace Gate.Middleware
                 };
 
                 loop();
+
+                return tcs.Task;
             };
         }
     }

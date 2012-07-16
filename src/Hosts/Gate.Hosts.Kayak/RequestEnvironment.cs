@@ -11,8 +11,6 @@ namespace Gate.Hosts.Kayak
         public const string RequestPathBaseKey = OwinConstants.RequestPathBase;
         public const string RequestPathKey = OwinConstants.RequestPath;
         public const string RequestQueryStringKey = OwinConstants.RequestQueryString;
-        public const string RequestBodyKey = OwinConstants.RequestBody;
-        public const string RequestHeadersKey = OwinConstants.RequestHeaders;
         public const string RequestSchemeKey = OwinConstants.RequestScheme;
         public const string VersionKey = OwinConstants.Version;
         public const string SchedulerKey = "kayak.Scheduler";

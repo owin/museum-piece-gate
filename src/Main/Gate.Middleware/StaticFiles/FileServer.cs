@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Gate.Middleware.Utils;
 using Owin;
+using System.Threading.Tasks;
 
 namespace Gate.Middleware.StaticFiles
 {
@@ -28,7 +29,7 @@ namespace Gate.Middleware.StaticFiles
             this.root = root;
         }
 
-        public void Invoke(CallParameters call, Action<ResultParameters, Exception> callback)
+        public Task<ResultParameters> Invoke(CallParameters call)
         {
             pathInfo = call.Environment[OwinConstants.RequestPath].ToString();
 
@@ -39,43 +40,43 @@ namespace Gate.Middleware.StaticFiles
 
             if (pathInfo.Contains(".."))
             {
-                Fail(Forbidden, "Forbidden").Invoke(call, callback);
-                return;
+                return Fail(Forbidden, "Forbidden").Invoke(call);
             }
 
             path = Path.Combine(root ?? string.Empty, pathInfo);
 
             if (!File.Exists(path))
             {
-                Fail(NotFound, "File not found: " + pathInfo).Invoke(call, callback);
-                return;
+                return Fail(NotFound, "File not found: " + pathInfo).Invoke(call);
             }
 
             try
             {
-                Serve(call, callback);
+                return Serve(call);
             }
             catch (UnauthorizedAccessException)
             {
-                Fail(Forbidden, "Forbidden").Invoke(call, callback);
+                return Fail(Forbidden, "Forbidden").Invoke(call);
             }
         }
 
         private static AppDelegate Fail(int status, string body, IDictionary<string, string[]> headers = null)
         {
-            return (call, callback) =>
-                callback(new ResultParameters
-                {
-                    Status = status,
-                    Headers = Headers.New(headers)
-                        .SetHeader("Content-Type", "text/plain")
-                        .SetHeader("Content-Length", body.Length.ToString())
-                        .SetHeader("X-Cascade", "pass"),
-                    Body = TextBody.Create(body, Encoding.UTF8)
-                }, null);
+            return call =>
+                TaskHelpers.FromResult(
+                    new ResultParameters
+                    {
+                        Status = status,
+                        Headers = Headers.New(headers)
+                            .SetHeader("Content-Type", "text/plain")
+                            .SetHeader("Content-Length", body.Length.ToString())
+                            .SetHeader("X-Cascade", "pass"),
+                        Body = TextBody.Create(body, Encoding.UTF8),
+                        Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                    });
         }
 
-        private void Serve(CallParameters call, Action<ResultParameters, Exception> callback)
+        private Task<ResultParameters> Serve(CallParameters call)
         {
             var fileInfo = new FileInfo(path);
             var size = fileInfo.Length;
@@ -97,11 +98,11 @@ namespace Gate.Middleware.StaticFiles
                 if (ranges == null)
                 {
                     // Unsatisfiable.  Return error and file size.
-                    Fail(
+                    return Fail(
                         RequestedRangeNotSatisfiable,
                         "Byte range unsatisfiable",
                         Headers.New().SetHeader("Content-Range", "bytes */" + size))
-                        .Invoke(call, callback);
+                        .Invoke(call);
                 }
 
                 if (ranges.Count() > 1)
@@ -122,19 +123,13 @@ namespace Gate.Middleware.StaticFiles
 
             headers.SetHeader("Content-Length", size.ToString());
 
-            try
-            {
-                callback(new ResultParameters
+            return TaskHelpers.FromResult(new ResultParameters
                 {
                     Status = status,
                     Headers = headers,
-                    Body = FileBody.Create(path, range)
-                }, null);
-            }
-            catch (Exception ex)
-            {
-                callback(default(ResultParameters), ex);
-            }
+                    Body = FileBody.Create(path, range),
+                    Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                });
         }
     }
 }

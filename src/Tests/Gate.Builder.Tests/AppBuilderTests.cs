@@ -134,14 +134,6 @@ namespace Gate.Builder.Tests
                 });
         }
 
-
-        //static string Execute(AppDelegate app)
-        //{
-        //    var stat = "";
-        //    app(null, (status, headers, body) => stat = status, null);
-        //    return stat;
-        //}
-
         static AppDelegate ReturnStatus(int status, string reasonPhrase)
         {
             return call => TaskHelpers.FromResult(new ResultParameters

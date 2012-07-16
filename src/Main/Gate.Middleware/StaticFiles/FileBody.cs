@@ -2,15 +2,16 @@ using System;
 using System.IO;
 using System.Threading;
 using Owin;
+using System.Threading.Tasks;
+using Gate.Utils;
 
 namespace Gate.Middleware.StaticFiles
 {
     public class FileBody
     {
-        private FileStream fileStream;
+        private Stream fileStream;
         private readonly Tuple<long, long> range;
         private readonly string path;
-        private BodyStream bodyStream;
 
         public FileBody(string path, Tuple<long, long> range)
         {
@@ -20,88 +21,26 @@ namespace Gate.Middleware.StaticFiles
 
         public static BodyDelegate Create(string path, Tuple<long, long> range)
         {
-            return (write, end, cancel) =>
+            return (stream, cancel) =>
             {
                 var fileBody = new FileBody(path, range);
-                fileBody.Start(write, end, cancel);
+                return fileBody.Start(stream, cancel);
             };
         }
 
-        void Start(Func<ArraySegment<byte>, Action<Exception>, TempEnum> write, Action<Exception> end, CancellationToken cancellationToken)
+        private Task Start(Stream stream, CancellationToken cancellationToken)
         {
-            bodyStream = new BodyStream(write, end, cancellationToken);
-
-            Action start = () =>
-            {
-                try
-                {
-                    var rangeLength = range.Item2 - range.Item1 + 1;
-                    SendFile(rangeLength);
-                }
-                catch (Exception ex)
-                {
-                    bodyStream.End(ex);
-                }
-            };
-
-            Action dispose = () =>
-            {
-                if (fileStream != null)
-                {
-                    fileStream.Close();
-                    fileStream.Dispose();
-                    fileStream = null;
-                }
-            };
-
-            bodyStream.Start(start, dispose);
+            this.OpenFileStream();
+            return this.fileStream.CopyToAsync(stream, (int)(range.Item2 - range.Item1 + 1), cancellationToken);
         }
 
-        private void SendFile(long length)
+        private void OpenFileStream()
         {
-            if (bodyStream.CanSend())
+            if (this.fileStream == null || !this.fileStream.CanRead)
             {
-                EnsureOpenFileStream();
-                SendBuffer(length);
+                this.fileStream = File.OpenRead(path);
+                this.fileStream.Seek(range.Item1, SeekOrigin.Begin);
             }
-        }
-
-        private void EnsureOpenFileStream()
-        {
-            if (fileStream == null || !fileStream.CanRead)
-            {
-                fileStream = File.OpenRead(path);
-                fileStream.Seek(range.Item1, SeekOrigin.Begin);
-            }
-        }
-
-        private void SendBuffer(long length)
-        {
-            var segmentInfo = ReadNextBuffer(length);
-            var buffer = segmentInfo.Item1;
-            var bytesRead = segmentInfo.Item2;
-
-            if (bytesRead == 0)
-            {
-                bodyStream.Finish();
-                return;
-            }
-
-            length -= bytesRead;
-
-            Action nextCall = () => SendFile(length);
-
-            bodyStream.SendBytes(buffer, nextCall, nextCall);
-        }
-
-        private Tuple<ArraySegment<byte>, long> ReadNextBuffer(long remainingLength)
-        {
-            const long maxBufferSize = 64 * 1024;
-            var bufferSize = remainingLength < maxBufferSize ? remainingLength : maxBufferSize;
-            var part = new byte[bufferSize];
-            var bytesRead = fileStream.Read(part, 0, (int)bufferSize);
-
-            return new Tuple<ArraySegment<byte>, long>(new ArraySegment<byte>(part), bytesRead);
         }
     }
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Gate.Middleware.StaticFiles;
 using Owin;
+using System.Threading.Tasks;
 
 namespace Gate.Middleware
 {
@@ -87,17 +88,17 @@ namespace Gate.Middleware
             return new Static(app).Invoke;
         }
 
-        public void Invoke(CallParameters call, Action<ResultParameters, Exception> callback)
+        public Task<ResultParameters> Invoke(CallParameters call)
         {
             var path = call.Environment[OwinConstants.RequestPath].ToString();
 
             if (urls.Any(path.StartsWith))
             {
-                fileServer.Invoke(call, callback);
+                return fileServer.Invoke(call);
             }
             else
             {
-                app.Invoke(call, callback);
+                return app.Invoke(call);
             }
         }
     }

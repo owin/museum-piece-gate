@@ -45,7 +45,7 @@ namespace Gate.Hosts
                 null);
         }
 
-        static Func<ArraySegment<byte>, Action<Exception>, TempEnum> WrapWriteDelegate(ExecutionContext context, Func<ArraySegment<byte>, Action<Exception>, TempEnum> write)
+        static Func<ArraySegment<byte>, Action<Exception>, bool> WrapWriteDelegate(ExecutionContext context, Func<ArraySegment<byte>, Action<Exception>, bool> write)
         {
             return (data, callback) =>
             {
