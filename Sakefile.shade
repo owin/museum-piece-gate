@@ -15,7 +15,11 @@ var BUILD_PROJECTS='${Files.Include(
     SRC + "/**/Gate.csproj",
     SRC + "/**/Gate.Adapters.Nancy.csproj")}'
 
-var TEST_PROJECTS='${Files.Include(SRC + "/**/Gate.Builder.Tests.csproj")}'
+var TEST_PROJECTS='${Files.Include(
+    SRC + "/**/Gate.Tests.csproj",
+    SRC + "/**/Gate.Builder.Tests.csproj",
+    SRC + "/**/Gate.Helpers.Tests.csproj",
+    SRC + "/**/Gate.Hosts.HttpListener.Tests.csproj")}'
 
 var TEST_ASSEMBLIES='${Files.Include("target/test/**/*.Tests.dll").Exclude("target/test/**/HttpListener.Tests.dll")}'
 
@@ -33,7 +37,7 @@ set FULL_VERSION='${FULL_VERSION}-build${BUILD_NUMBER.PadLeft(4, (char)'0')}' if
 use-standard-lifecycle
 
 -// include sets of standard work targets. features include 'nuget,xunit,nunit'
-use-standard-goals features='nuget,xunit'
+use-standard-goals features='nuget,xunit,nunit'
 
 -// additional work targets are defined below
 

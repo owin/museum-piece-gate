@@ -9,21 +9,21 @@ namespace Gate.Mapping
 {
     public class UrlMapper
     {
-        readonly AppDelegate _app;
+        readonly AppDelegate _defaultApp;
         IEnumerable<Tuple<string, AppDelegate>> _map = Enumerable.Empty<Tuple<string, AppDelegate>>();
 
         UrlMapper(AppDelegate app)
         {
-            _app = app;
+            _defaultApp = app;
         }
 
 
-        public static AppDelegate Create(AppDelegate app, IDictionary<string, AppDelegate> map)
+        public static AppDelegate Create(AppDelegate defaultApp, IDictionary<string, AppDelegate> map)
         {
-            if (app == null)
-                throw new ArgumentNullException("app");
+            if (defaultApp == null)
+                throw new ArgumentNullException("defaultApp");
 
-            var mapper = new UrlMapper(app);
+            var mapper = new UrlMapper(defaultApp);
             mapper.Remap(map);
             return mapper.Call;
         }
@@ -46,7 +46,7 @@ namespace Gate.Mapping
             if (match == null)
             {
                 // fall-through to default
-                return _app(call);
+                return _defaultApp(call);
             }
 
             // Map moves the matched portion of Path into PathBase
@@ -71,6 +71,10 @@ namespace Gate.Mapping
 
             public Paths(IDictionary<string, object> env)
             {
+                if (env == null)
+                {
+                    throw new ArgumentNullException("env");
+                }
                 _env = env;
             }
 

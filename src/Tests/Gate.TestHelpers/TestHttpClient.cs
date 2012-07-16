@@ -88,8 +88,6 @@ namespace Gate.TestHelpers
                         {OwinConstants.RequestPathBase, ""},
                         {OwinConstants.RequestPath, "/" + request.RequestUri.GetComponents(UriComponents.Path, UriFormat.Unescaped)},
                         {OwinConstants.RequestQueryString, request.RequestUri.GetComponents(UriComponents.Query, UriFormat.UriEscaped)},
-                        //{OwinConstants.RequestHeaders, RequestHeaders(request)},
-                        //{OwinConstants.RequestBody, MakeRequestBody(request)},
                         {"System.Net.Http.HttpRequestMessage", request},
                     }
                 };
@@ -109,7 +107,9 @@ namespace Gate.TestHelpers
                         call.ResponseStatus = result.Status;
                         call.ResponseHeaders = result.Headers;
                         call.ResponseBody = result.Body;
-                        return MakeResponseMessage(result.Status, result.Headers, result.Body, result.Properties, cancel);
+                        call.HttpResponseMessage = MakeResponseMessage(result.Status, result.Headers, result.Body, result.Properties, cancel);
+                        call.HttpResponseMessage.RequestMessage = request;
+                        return call.HttpResponseMessage;
                     });
             }
 

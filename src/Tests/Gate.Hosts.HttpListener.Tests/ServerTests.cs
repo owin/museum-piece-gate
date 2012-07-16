@@ -18,7 +18,7 @@ namespace Gate.Hosts.HttpListener.Tests
         [Test]
         public void ServerCanBeCreatedAndDisposed()
         {
-            var server = ServerFactory.Create((env, result, fault) => { throw new NotImplementedException(); }, 8090, "");
+            var server = ServerFactory.Create(call => { throw new NotImplementedException(); }, 8090, "");
             server.Dispose();
         }
 
@@ -63,17 +63,10 @@ namespace Gate.Hosts.HttpListener.Tests
         public void RequestsMayHavePostBody()
         {
             var requestData = new MemoryStream();
-            AppDelegate app = (env, result, fault) =>
+            AppDelegate app = call =>
             {
-                var body = (BodyDelegate)env[OwinConstants.RequestBody];
-
-                body((data,callback) =>
-                {
-                    requestData.Write(data.Array, data.Offset, data.Count);
-                    return false;
-                },                
-                _ => Wilson.App().Invoke(env, result, fault),
-                CancellationToken.None);
+                call.Body.CopyTo(requestData);
+                return Wilson.App().Invoke(call);
             };
 
             using (ServerFactory.Create(app, 8090, null))
@@ -96,12 +89,12 @@ namespace Gate.Hosts.HttpListener.Tests
         [Test]
         public void ResponseMayHaveContentLength()
         {
-            AppDelegate app = (env, result, fault) =>
+            AppDelegate app = call =>
             {
-                var response = new Response(result);
+                var response = new Response();
                 response.Headers.SetHeader("Content-Length", "12");
                 response.Write("Hello world.");
-                response.End();
+                return response.EndAsync();
             };
             using (ServerFactory.Create(app, 8090, null))
             {

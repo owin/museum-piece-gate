@@ -45,8 +45,6 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AsyncResult.cs" />
-    <Compile Include="InputStream.cs" />
-    <Compile Include="OutputStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
