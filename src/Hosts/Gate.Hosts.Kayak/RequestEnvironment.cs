@@ -41,12 +41,6 @@ namespace Gate.Hosts.Kayak
             set { _env[RequestMethodKey] = value; }
         }
 
-        public IDictionary<string, string[]> Headers
-        {
-            get { return Get<IDictionary<string, string[]>>(RequestHeadersKey); }
-            set { _env[RequestHeadersKey] = value; }
-        }
-
         public string PathBase
         {
             get { return Get<string>(RequestPathBaseKey); }
@@ -69,12 +63,6 @@ namespace Gate.Hosts.Kayak
         {
             get { return Get<string>(RequestQueryStringKey); }
             set { _env[RequestQueryStringKey] = value; }
-        }
-
-        public BodyDelegate BodyDelegate
-        {
-            get { return Get<BodyDelegate>(RequestBodyKey); }
-            set { _env[RequestBodyKey] = value; }
         }
 
         public IScheduler Scheduler

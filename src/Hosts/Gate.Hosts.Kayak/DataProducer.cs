@@ -16,6 +16,8 @@ namespace Gate.Hosts.Kayak
 
         public IDisposable Connect(IDataConsumer channel)
         {
+            throw new NotImplementedException();
+            /*
             var cts = new CancellationTokenSource();
             del(
                 (data, continuation)=>
@@ -34,7 +36,7 @@ namespace Gate.Hosts.Kayak
                         channel.OnError(error);
                 },
                 cts.Token);
-            return new Disposable(cts.Cancel);
+            return new Disposable(cts.Cancel);*/
         }
     }
 }

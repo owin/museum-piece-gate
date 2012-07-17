@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Owin;
+using System.Threading.Tasks;
 
 namespace Gate.Hosts
 {
@@ -9,53 +10,48 @@ namespace Gate.Hosts
         public static AppDelegate Middleware(AppDelegate app)
         {
             return
-                (call, callback) =>
+                call =>
                 {
+                    TaskCompletionSource<ResultParameters> tcs = new TaskCompletionSource<ResultParameters>();
                     ExecutionContext.SuppressFlow();
                     ThreadPool.QueueUserWorkItem(
                         _ =>
                         {
-                            var context = ExecutionContext.Capture();
-                            app(call, WrapCallbackDelegate(context, callback));
+                            app(call).Then(result => WrapBodyDelegate(result)).CopyResultToCompletionSource(tcs);
                         },
                         null);
                     ExecutionContext.RestoreFlow();
+                    return tcs.Task;
                 };
         }
 
-        static Action<ResultParameters, Exception> WrapCallbackDelegate(ExecutionContext context, Action<ResultParameters, Exception> callback)
+        static ResultParameters WrapBodyDelegate(ResultParameters result)
         {
-            return (result, error) =>
+            if (result.Body != null)
             {
-                result.Body = WrapBodyDelegate(context, result.Body);
-                callback(result, error);
-            };
-        }
-
-        static BodyDelegate WrapBodyDelegate(ExecutionContext context, BodyDelegate body)
-        {
-            if (body == null)
-            {
-                return null;
+                BodyDelegate nestedBody = result.Body;
+                result.Body = (stream, cancel) =>
+                {
+                    TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+                    ExecutionContext.SuppressFlow();
+                    ThreadPool.QueueUserWorkItem(
+                        _ =>
+                        {
+                            nestedBody(stream, cancel)
+                                .Then(() => { bool ignored = tcs.TrySetResult(null); })
+                                .Catch(errorInfo => 
+                                { 
+                                    bool ignored = tcs.TrySetException(errorInfo.Exception); 
+                                    return errorInfo.Handled(); 
+                                });
+                        },
+                        null);
+                    ExecutionContext.RestoreFlow();
+                    return tcs.Task;
+                };
             }
 
-            return (write, end, cancellationToken) => ExecutionContext.Run(
-                context.CreateCopy(),
-                _ => body(WrapWriteDelegate(context, write), end, cancellationToken),
-                null);
-        }
-
-        static Func<ArraySegment<byte>, Action<Exception>, bool> WrapWriteDelegate(ExecutionContext context, Func<ArraySegment<byte>, Action<Exception>, bool> write)
-        {
-            return (data, callback) =>
-            {
-                if (callback == null)
-                {
-                    return write(data, null);
-                }
-
-                return write(data, ex => ExecutionContext.Run(context.CreateCopy(), state => callback((Exception)state), ex));
-            };
+            return result;
         }
     }
 }
