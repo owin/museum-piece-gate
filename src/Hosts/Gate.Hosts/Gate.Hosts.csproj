@@ -36,6 +36,8 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
     <Compile Include="ErrorPage.cs" />
     <Compile Include="ExecutionContextPerRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -16,6 +16,8 @@ namespace Gate.Hosts.HttpListener
     {
         public static IDisposable Create(AppDelegate app, int port, string path)
         {
+            app = ErrorPage.Middleware(app);
+
             var effectivePath = path ?? "";
             if (!effectivePath.EndsWith("/"))
                 effectivePath += "/";

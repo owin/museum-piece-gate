@@ -37,44 +37,35 @@ namespace Gate.Middleware
 
                 try
                 {
-                    return app(call).ContinueWith<ResultParameters>(
-                        appTask =>
+                    return app(call)
+                        .Then(result =>
                         {
-                            if (!appTask.IsFaulted && !appTask.IsCanceled)
+                            if (result.Body != null)
                             {
-                                ResultParameters result = appTask.Result;
-                                if (result.Body != null)
+                                BodyDelegate nestedBody = result.Body;
+                                result.Body = (stream, cancel) =>
                                 {
-                                    BodyDelegate nestedBody = result.Body;
-                                    result.Body = (stream, cancel) =>
-                                        {
-                                            try
+                                    try
+                                    {
+                                        return nestedBody(stream, cancel).Catch(
+                                            errorInfo =>
                                             {
-                                                return nestedBody(stream, cancel).Catch(
-                                                    errorInfo =>
-                                                    {
-                                                        showErrorMessage(errorInfo.Exception, data => stream.Write(data, 0, data.Length));
-                                                        return errorInfo.Handled();
-                                                    });
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                showErrorMessage(ex, data => stream.Write(data, 0, data.Length));
-                                                return TaskHelpers.Completed();
-                                            }
-                                        };
-                                }
-                                return result;
+                                                showErrorMessage(errorInfo.Exception, data => stream.Write(data, 0, data.Length));
+                                                return errorInfo.Handled();
+                                            });
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        showErrorMessage(ex, data => stream.Write(data, 0, data.Length));
+                                        return TaskHelpers.Completed();
+                                    }
+                                };
                             }
-
-                            if (appTask.Exception != null)
-                            {
-                                return showErrorPage(appTask.Exception).Result;
-                            }
-                            else
-                            {
-                                return showErrorPage(new TaskCanceledException()).Result;
-                            }
+                            return result;
+                        })
+                        .Catch(errorInfo =>
+                        {
+                            return errorInfo.Handled(showErrorPage(errorInfo.Exception).Result);
                         });
                 }
                 catch (Exception exception)
