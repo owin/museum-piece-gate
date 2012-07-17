@@ -1,15 +1,32 @@
 using System;
-using System.Collections.Generic;
-using Gate.Builder;
-using Gate.TestHelpers;
-using NUnit.Framework;
+using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Gate.Builder;
+using NUnit.Framework;
+using Owin;
 
 namespace Gate.Middleware.Tests
 {
     [TestFixture]
     public class ChunkedTests
     {
+        private ResultParameters Call(Action<IAppBuilder> pipe)
+        {
+            AppDelegate app = AppBuilder.BuildPipeline<AppDelegate>(pipe);
+            return app(new Request().Call).Result;
+        }
+
+        private string ReadBody(BodyDelegate body)
+        {
+            using (MemoryStream buffer = new MemoryStream())
+            {
+                body(buffer, CancellationToken.None).Wait();
+                return Encoding.ASCII.GetString(buffer.ToArray());
+            }
+        }
+
         [Test]
         public void ChunkPrefixHasCorrectResults()
         {
@@ -37,66 +54,79 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Does_not_encode_if_content_length_present()
         {
-            var app = AppUtils.Simple(
-                "200 OK",
-                h => h
-                    .SetHeader("Content-Length", "12")
-                    .SetHeader("Content-Type", "text/plain"),
-                write =>
-                {
-                    write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("hello ")));
-                    write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("world.")));
-                });
-
-            var response = AppUtils.Call(AppBuilder.BuildPipeline(b => b
+            var response = Call(b => b
                 .UseChunked()
-                .Run(app)));
+                .UseDirect((req, resp) =>
+                {
+                    resp.SetHeader("Content-Length", "12");
+                    resp.SetHeader("Content-Type", "text/plain");
+                    resp.SetBody(
+                        (stream, cancel) =>
+                        {
+                            StreamWriter writer = new StreamWriter(stream);
+                            writer.Write("hello ");
+                            writer.Flush();
+                            writer.Write("world.");
+                            writer.Flush();
+                            return TaskHelpers.Completed();
+                        });
+                    return resp.EndAsync();
+                }));
 
             Assert.That(response.Headers.ContainsKey("transfer-encoding"), Is.False);
-            Assert.That(response.BodyText, Is.EqualTo("hello world."));
+            Assert.That(ReadBody(response.Body), Is.EqualTo("hello world."));
         }
 
         [Test]
         public void Does_not_encode_if_transfer_encoding_is_present()
         {
-            var app = AppUtils.Simple(
-                "200 OK",
-                h => h
-                    .SetHeader("transfer-encoding", "girl")
-                    .SetHeader("Content-Type", "text/plain"),
-                write =>
-                {
-                    write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("hello ")));
-                    write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("world.")));
-                });
-
-            var response = AppUtils.Call(AppBuilder.BuildPipeline(b => b
+            var response = Call(b => b
                 .UseChunked()
-                .Run(app)));
+                .UseDirect((req, resp) =>
+                {
+                    resp.SetHeader("transfer-encoding", "girl");
+                    resp.SetHeader("Content-Type", "text/plain");
+                    resp.SetBody(
+                        (stream, cancel) =>
+                        {
+                            StreamWriter writer = new StreamWriter(stream);
+                            writer.Write("hello ");
+                            writer.Flush();
+                            writer.Write("world.");
+                            writer.Flush();
+                            return TaskHelpers.Completed();
+                        });
+                    return resp.EndAsync();
+                }));
 
             Assert.That(response.Headers.GetHeader("Transfer-Encoding"), Is.EqualTo("girl"));
-            Assert.That(response.BodyText, Is.EqualTo("hello world."));
+            Assert.That(ReadBody(response.Body), Is.EqualTo("hello world."));            
         }
 
         [Test]
         public void Encodes_if_content_length_is_not_present()
         {
-            var app = AppUtils.Simple(
-                "200 OK",
-                h => h
-                    .SetHeader("Content-Type", "text/plain"),
-                write =>
-                {
-                    write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("hello ")));
-                    write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("world.")));
-                });
-
-            var response = AppUtils.Call(AppBuilder.BuildPipeline(b => b
+            var response = Call(b => b
                 .UseChunked()
-                .Run(app)));
+                .UseDirect((req, resp) =>
+                {
+                    resp.SetHeader("Content-Type", "text/plain");
+                    resp.SetBody(
+                        (stream, cancel) =>
+                        {
+                            StreamWriter writer = new StreamWriter(stream);
+                            writer.Write("hello ");
+                            writer.Flush();
+                            writer.Write("world.");
+                            writer.Flush();
+                            return TaskHelpers.Completed();
+                        });
 
-            Assert.That(response.BodyText, Is.EqualTo("6\r\nhello \r\n6\r\nworld.\r\n0\r\n\r\n"));
+                    return resp.EndAsync();
+                }));
+
             Assert.That(response.Headers.GetHeader("Transfer-Encoding"), Is.EqualTo("chunked"));
+            Assert.That(ReadBody(response.Body), Is.EqualTo("6\r\nhello \r\n6\r\nworld.\r\n0\r\n\r\n"));
         }
     }
 }

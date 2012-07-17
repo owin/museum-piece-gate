@@ -362,14 +362,14 @@ namespace Gate
             ((Task)result).Wait();
         }
 
-        public ResultParameters GetResult()
+        public ResultParameters Result
         {
-            return _result;
+            get { return _result; }
         }
 
-        public Task<ResultParameters> GetResultAsync()
+        public Task<ResultParameters> AsyncResult
         {
-            return _callCompletionSource.Task;
+            get { return _callCompletionSource.Task; }
         }
 
         public void End()

@@ -1,74 +1,69 @@
 using System;
 using System.IO;
 using Gate.Builder;
-using Gate.TestHelpers;
 using NUnit.Framework;
+using Owin;
 
 namespace Gate.Middleware.Tests
 {
     [TestFixture]
     public class StaticTests
     {
+        private ResultParameters Call(Action<IAppBuilder> pipe, string path)
+        {
+            AppDelegate app = AppBuilder.BuildPipeline<AppDelegate>(pipe);
+            return app(new Request() { Path = path }.Call).Result;
+        }
+
         [Test]
         public void Static_serves_files_from_default_location()
         {
-            var result = AppUtils.CallPipe(b =>
-                b.UseStatic(), FakeHostRequest.GetRequest("/kayak.png"));
+            var result = Call(b => b.UseStatic(), "/kayak.png");
 
-            Assert.That(result.Status, Is.EqualTo("200 OK"));
+            Assert.That(result.Status, Is.EqualTo(200));
         }
 
         [Test]
         public void Static_serves_files_from_provided_location()
         {
             var root = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "public");
-            var result = AppUtils.CallPipe(b =>
-                b.UseStatic(root), FakeHostRequest.GetRequest("/kayak.png"));
+            var result = Call(b => b.UseStatic(root), "/kayak.png");
 
-            Assert.That(result.Status, Is.EqualTo("200 OK"));
+            Assert.That(result.Status, Is.EqualTo(200));
         }
 
         [Test]
         public void Static_serves_files_from_provided_whitelist()
         {
             var root = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "public");
-            var result = AppUtils.CallPipe(b =>
-                b.UseStatic(root, new[] {"/scripts/lib.js"}), FakeHostRequest.GetRequest("/scripts/lib.js"));
+            var result = Call(b => b.UseStatic(root, new[] { "/scripts/lib.js" }), "/scripts/lib.js");
 
-            Assert.That(result.Status, Is.EqualTo("200 OK"));
+            Assert.That(result.Status, Is.EqualTo(200));
         }
 
         [Test]
         public void Static_returns_404_for_request_to_file_not_in_provided_whitelist()
         {
             var root = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "public");
-            var result = AppUtils.CallPipe(b =>
-                b.UseStatic(root, new[] { "/scripts/lib.js" }), FakeHostRequest.GetRequest("/kayak.png"));
+            var result = Call(b => b.UseStatic(root, new[] { "/scripts/lib.js" }), "/kayak.png");
 
-            Assert.That(result.Status, Is.EqualTo("404 Not Found"));
+            Assert.That(result.Status, Is.EqualTo(404));
         }
 
         [Test]
         public void Static_calls_down_the_chain_if_URL_root_is_unknown()
         {
-            var app = new FakeApp("200 OK", "Hello World");
-            app.Headers.SetHeader("Content-Type", "text/plain");
-            var config = AppBuilder.BuildPipeline(b => b.UseStatic().Run(app.AppDelegate));
-            var host = new FakeHost(config);
-            var response = host.GET("/johnson/and/johnson");
+            var result = Call(b => b.UseStatic().Run(call => new Response(301).EndAsync()), "/johnson/and/johnson");
 
-            Assert.That(response.Status, Is.EqualTo("200 OK"));
-            Assert.That(response.BodyText, Is.EqualTo("Hello World"));
-            Assert.That(app.AppDelegateInvoked, Is.True);
+            Assert.That(result.Status, Is.EqualTo(301));
         }
 
         [Test]
         public void Static_returns_404_on_missing_file()
         {
-            var result = AppUtils.CallPipe(b =>
-                b.UseStatic(), FakeHostRequest.GetRequest("/scripts/penicillin.js"));
+            var result = Call(b => b.UseStatic(), "/scripts/penicillin.js");
 
-            Assert.That(result.Status, Is.EqualTo("404 Not Found"));
+            Assert.That(result.Status, Is.EqualTo(404));
         }
     }
 }

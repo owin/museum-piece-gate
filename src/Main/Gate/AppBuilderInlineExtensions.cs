@@ -28,7 +28,7 @@ namespace Gate
                         resp.Error(caught.Exception);
                         return caught.Handled();
                     });
-                return resp.GetResultAsync();
+                return resp.AsyncResult;
             });
         }
     }

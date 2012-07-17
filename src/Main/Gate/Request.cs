@@ -9,12 +9,21 @@ using Owin;
 
 namespace Gate
 {
-    using BodyAction = Action<Func<ArraySegment<byte>, Action, bool>, Action<Exception>, Action, CancellationToken>;
-
     public class Request
     {
         CallParameters _call;
         static readonly char[] CommaSemicolon = new[] { ',', ';' };
+
+        public Request()
+        {
+            _call = new CallParameters()
+            {
+                Body = null,
+                Completed = CancellationToken.None,
+                Environment = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
+                Headers = Gate.Headers.New()
+            };
+        }
 
         public Request(CallParameters call)
         {
@@ -197,9 +206,11 @@ namespace Gate
 
         public Task CopyToStreamAsync(Stream stream, CancellationToken cancel)
         {
-            // TODO: async read/write loop
-            stream.CopyTo(stream);
-            return TaskHelpers.Completed();
+            if (_call.Body == null)
+            {
+                return TaskHelpers.Completed();
+            }
+            return _call.Body.CopyToAsync(stream, cancel);
         }
 
         public Task<string> ReadTextAsync()

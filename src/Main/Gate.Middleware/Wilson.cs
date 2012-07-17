@@ -40,9 +40,8 @@ namespace Gate.Middleware
                 }
                 response.Write("<p><a href='" + href + "'>flip!</a></p>");
                 response.Write("<p><a href='?flip=crash'>crash!</a></p>");
-                response.End();
 
-                return response.GetResultAsync();
+                return response.EndAsync();
             };
         }
 
@@ -51,7 +50,7 @@ namespace Gate.Middleware
             return call =>
             {
                 var request = new Request(call);
-                var response = new Response
+                var response = new Response()
                 {
                     ContentType = "text/html",
                 };
@@ -91,7 +90,7 @@ namespace Gate.Middleware
                     }
                 });
 
-                return response.GetResultAsync();
+                return response.AsyncResult;
             };
         }
 

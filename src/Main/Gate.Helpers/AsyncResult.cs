@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading;
 
+// TODO: Is this class referenced anywhere?
+
 namespace Gate.Helpers
 {
     // shamelessly lifted from http://msdn.microsoft.com/en-us/magazine/cc163467.aspx

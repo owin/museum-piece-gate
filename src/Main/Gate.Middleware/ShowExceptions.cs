@@ -20,12 +20,12 @@ namespace Gate.Middleware
         {
             return call =>
             {
-                Action<Exception, Action<ArraySegment<byte>>> showErrorMessage =
+                Action<Exception, Action<byte[]>> showErrorMessage =
                     (ex, write) =>
                         ErrorPage(call, ex, text =>
                         {
                             var data = Encoding.ASCII.GetBytes(text);
-                            write(new ArraySegment<byte>(data));
+                            write(data);
                         });
 
                 Func<Exception, Task<ResultParameters>> showErrorPage = ex =>
@@ -48,8 +48,20 @@ namespace Gate.Middleware
                                     BodyDelegate nestedBody = result.Body;
                                     result.Body = (stream, cancel) =>
                                         {
-                                            // TODO: Handle sync and async errors from the nested body.
-                                            return nestedBody(stream, cancel);
+                                            try
+                                            {
+                                                return nestedBody(stream, cancel).Catch(
+                                                    errorInfo =>
+                                                    {
+                                                        showErrorMessage(errorInfo.Exception, data => stream.Write(data, 0, data.Length));
+                                                        return errorInfo.Handled();
+                                                    });
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                showErrorMessage(ex, data => stream.Write(data, 0, data.Length));
+                                                return TaskHelpers.Completed();
+                                            }
                                         };
                                 }
                                 return result;

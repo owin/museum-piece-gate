@@ -5,37 +5,67 @@ using System.Text;
 using NUnit.Framework;
 using Gate.TestHelpers;
 using Gate.Builder;
+using Owin;
+using System.IO;
+using System.Threading;
 
 namespace Gate.Middleware.Tests
 {
     [TestFixture]
     class MethodOverrideTests
     {
+        private ResultParameters Call(Action<IAppBuilder> pipe, Request request)
+        {
+            AppDelegate app = AppBuilder.BuildPipeline<AppDelegate>(pipe);
+            return app(request.Call).Result;
+        }
+
+        private string ReadBody(BodyDelegate body)
+        {
+            using (MemoryStream buffer = new MemoryStream())
+            {
+                body(buffer, CancellationToken.None).Wait();
+                return Encoding.ASCII.GetString(buffer.ToArray());
+            }
+        }
+
         [Test]
         public void Method_is_overridden_if_override_present()
         {
-            var result = new FakeHost(AppBuilder.BuildPipeline(b => b
-                .UseMethodOverride()
-                .Run(AppUtils.ShowEnvironment))).Invoke(r => {
-                    r.Method = "POST";
-                    r.Headers = Headers.New().SetHeader("x-http-method-override", "DELETE");
-                });
+            Request request = new Request();
+            request.Method = "POST";
+            request.Headers.SetHeader("x-http-method-override", "DELETE");
 
-            Assert.That(result.BodyXml.Element(Environment.RequestMethodKey).Value, Is.EqualTo("DELETE"));
+            var result = Call(b => b
+                .UseMethodOverride()
+                .UseDirect(
+                    (appRequest, response) => 
+                    {
+                        response.Write(appRequest.Method);
+                        return response.EndAsync();
+                    }),
+                request);
+
+            Assert.That(ReadBody(result.Body), Is.EqualTo("DELETE"));
         }
 
         [Test]
         public void Method_is_unchanged_if_override_not_present()
         {
-            var result = new FakeHost(AppBuilder.BuildPipeline(b => b
-                .UseMethodOverride()
-                .Run(AppUtils.ShowEnvironment))).Invoke(r =>
-                {
-                    r.Method = "POST";
-                    r.Headers = Headers.New();
-                });
+            Request request = new Request();
+            request.Method = "POST";
 
-            Assert.That(result.BodyXml.Element(Environment.RequestMethodKey).Value, Is.EqualTo("POST"));
+            var result = Call(b => b
+                .UseMethodOverride()
+                .UseDirect(
+                    (appRequest, appResponse) =>
+                    {
+                        appResponse.Write(appRequest.Method);
+                        return appResponse.EndAsync();
+                    }),
+                request);
+
+            Assert.That(ReadBody(result.Body), Is.EqualTo("POST"));
         }
     }
 }

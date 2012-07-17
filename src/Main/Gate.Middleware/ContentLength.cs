@@ -6,7 +6,6 @@ using Owin;
 
 namespace Gate.Middleware
 {
-    using Response = Tuple<string, IDictionary<string, string[]>, BodyDelegate>;
     using System.IO;
     using System.Threading.Tasks;
 
@@ -16,8 +15,7 @@ namespace Gate.Middleware
         {
             return builder.Use<AppDelegate>(Middleware);
         }
-
-
+        
         public static AppDelegate Middleware(AppDelegate app)
         {
             return call =>
@@ -33,11 +31,19 @@ namespace Gate.Middleware
 
                         ResultParameters result = appTask.Result;
 
-                        if (result.Body == null
+                        if (IsStatusWithNoNoEntityBody(result.Status)
                             || result.Headers.ContainsKey("Content-Length") 
                             || result.Headers.ContainsKey("Transfer-Encoding"))
                         {
                             tcs.TrySetResult(result);
+                            return;
+                        }
+
+                        if (result.Body == null)
+                        {
+                            result.Headers.SetHeader("Content-Length", "0");
+                            tcs.TrySetResult(result);
+                            return;
                         }
 
                         // Buffer the body
@@ -64,6 +70,14 @@ namespace Gate.Middleware
                     }, call.Completed);
                 return tcs.Task;
             };
+        }
+
+        private static bool IsStatusWithNoNoEntityBody(int status)
+        {
+            return (status >= 100 && status < 200) ||
+                status == 204 ||
+                status == 205 ||
+                status == 304;
         }
     }
 }

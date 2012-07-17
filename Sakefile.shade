@@ -11,14 +11,17 @@ var TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 
 var SRC='src'
 var BUILD_PROJECTS='${Files.Include(
-    SRC + "/**/Gate.Builder.csproj", 
     SRC + "/**/Gate.csproj",
+    SRC + "/**/Gate.Builder.csproj", 
+    SRC + "/**/Gate.Middleware.csproj",
+    SRC + "/**/Gate.Hosts.HttpListener.csproj",
     SRC + "/**/Gate.Adapters.Nancy.csproj")}'
 
 var TEST_PROJECTS='${Files.Include(
     SRC + "/**/Gate.Tests.csproj",
     SRC + "/**/Gate.Builder.Tests.csproj",
     SRC + "/**/Gate.Helpers.Tests.csproj",
+    SRC + "/**/Gate.Middleware.Tests.csproj",
     SRC + "/**/Gate.Hosts.HttpListener.Tests.csproj")}'
 
 var TEST_ASSEMBLIES='${Files.Include("target/test/**/*.Tests.dll").Exclude("target/test/**/HttpListener.Tests.dll")}'
