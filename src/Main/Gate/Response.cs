@@ -367,7 +367,7 @@ namespace Gate
             get { return _result; }
         }
 
-        public Task<ResultParameters> AsyncResult
+        public Task<ResultParameters> ResultTask
         {
             get { return _callCompletionSource.Task; }
         }

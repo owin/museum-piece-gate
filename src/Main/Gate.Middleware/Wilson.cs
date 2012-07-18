@@ -90,7 +90,7 @@ namespace Gate.Middleware
                     }
                 });
 
-                return response.AsyncResult;
+                return response.ResultTask;
             };
         }
 
