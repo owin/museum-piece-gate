@@ -16,6 +16,7 @@ var BUILD_PROJECTS='${Files.Include(
     SRC + "/**/Gate.Middleware.csproj",
     SRC + "/**/Gate.Hosts.Kayak.csproj",
     SRC + "/**/Gate.Hosts.Firefly.csproj",
+    SRC + "/**/Gate.Hosts.AspNet.csproj",
     SRC + "/**/Gate.Hosts.HttpListener.csproj",
     SRC + "/**/Gate.Adapters.Nancy.csproj")}'
 
@@ -25,6 +26,7 @@ var TEST_PROJECTS='${Files.Include(
     SRC + "/**/Gate.Helpers.Tests.csproj",
     SRC + "/**/Gate.Middleware.Tests.csproj",
     SRC + "/**/Gate.Hosts.Kayak.Tests.csproj",
+    SRC + "/**/Gate.Hosts.AspNet.Tests.csproj",
     SRC + "/**/Gate.Hosts.HttpListener.Tests.csproj")}'
 
 var TEST_ASSEMBLIES='${Files.Include("target/test/**/*.Tests.dll").Exclude("target/test/**/HttpListener.Tests.dll")}'

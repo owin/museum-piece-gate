@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Owin;
+using System.Diagnostics;
 
 namespace Gate.Hosts.AspNet
 {
@@ -26,6 +27,8 @@ namespace Gate.Hosts.AspNet
             if (callback != null)
                 taskCompletionSource.Task.ContinueWith(task => callback(task), TaskContinuationOptions.ExecuteSynchronously);
 
+            var call = new CallParameters();
+
             var httpRequest = httpContext.Request;
             var serverVariables = new ServerVariables(httpRequest.ServerVariables);
 
@@ -37,10 +40,14 @@ namespace Gate.Hosts.AspNet
             if (path.StartsWith(pathBase))
                 path = path.Substring(pathBase.Length);
 
-            var requestHeaders = httpRequest.Headers.AllKeys
+            call.Headers = httpRequest.Headers.AllKeys
                 .ToDictionary(x => x, x => httpRequest.Headers.GetValues(x), StringComparer.OrdinalIgnoreCase);
 
-            var env = new Dictionary<string, object>
+            call.Body = httpRequest.InputStream;
+
+            call.Completed = cancellationTokenSource.Token;
+
+            call.Environment = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
             { 
                 {OwinConstants.Version, "1.0"},
                 {OwinConstants.RequestMethod, httpRequest.HttpMethod},
@@ -48,28 +55,25 @@ namespace Gate.Hosts.AspNet
                 {OwinConstants.RequestPathBase, pathBase},
                 {OwinConstants.RequestPath, path},
                 {OwinConstants.RequestQueryString, serverVariables.QueryString},
-                {OwinConstants.RequestHeaders, requestHeaders},
-                {OwinConstants.RequestBody, RequestBody(httpRequest.InputStream)},
-                {"host.CallDisposed", cancellationTokenSource.Token},
                 {"aspnet.HttpContextBase", httpContext},
             };
             foreach (var kv in serverVariables.AddToEnvironment())
             {
-                env["server." + kv.Key] = kv.Value;
+                call.Environment["server." + kv.Key] = kv.Value;
             }
 
             try
             {
-                _app.Invoke(
-                    env,
-                    (status, headers, body) =>
+                _app.Invoke(call)
+                    .Then(result =>
                     {
                         try
                         {
                             httpContext.Response.BufferOutput = false;
 
-                            httpContext.Response.Status = status;
-                            foreach (var header in headers)
+                            httpContext.Response.StatusCode = result.Status;
+                            // TODO: Reason phrase
+                            foreach (var header in result.Headers)
                             {
                                 foreach (var value in header.Value)
                                 {
@@ -77,18 +81,31 @@ namespace Gate.Hosts.AspNet
                                 }
                             }
 
-                            ResponseBody(
-                                body,
-                                httpContext.Response.OutputStream,
-                                ex => taskCompletionSource.TrySetException(ex),
-                                () => taskCompletionSource.TrySetResult(() => { }));
+                            if (result.Body != null)
+                            {
+                                // TODO: Cancellation?
+                                result.Body(httpContext.Response.OutputStream, cancellationTokenSource.Token)
+                                    .Then(() =>
+                                    {
+                                        taskCompletionSource.TrySetResult(() => { });
+                                    })
+                                    .Catch(errorInfo =>
+                                    {
+                                        taskCompletionSource.TrySetException(errorInfo.Exception);
+                                        return errorInfo.Handled();
+                                    });
+                            }
                         }
                         catch (Exception ex)
                         {
                             taskCompletionSource.TrySetException(ex);
                         }
-                    },
-                    ex => taskCompletionSource.TrySetException(ex));
+                    })
+                    .Catch(errorInfo =>
+                    {
+                        taskCompletionSource.TrySetException(errorInfo.Exception);
+                        return errorInfo.Handled();
+                    });
             }
             catch (Exception ex)
             {
@@ -152,17 +169,6 @@ namespace Gate.Hosts.AspNet
                     .Where(key => !key.StartsWith("HTTP_") && !string.Equals(key, "ALL_HTTP") && !string.Equals(key, "ALL_RAW"))
                     .Select(key => new KeyValuePair<string, object>(key, _serverVariables.Get(key)));
             }
-        }
-
-
-        static BodyDelegate RequestBody(Stream stream)
-        {
-            return (write, end, cancellationToken) => new PipeRequest(stream, write, end, cancellationToken).Go();
-        }
-
-        static void ResponseBody(BodyDelegate body, Stream stream, Action<Exception> error, Action complete)
-        {
-            new PipeResponse(stream, error, complete).Go(body);
         }
     }
 }
