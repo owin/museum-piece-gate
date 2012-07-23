@@ -18,6 +18,7 @@ var BUILD_PROJECTS='${Files.Include(
     SRC + "/**/Gate.Hosts.Firefly.csproj",
     SRC + "/**/Gate.Hosts.AspNet.csproj",
     SRC + "/**/Gate.Hosts.HttpListener.csproj",
+    SRC + "/**/Gate.Adapters.AspNetWebApi.csproj",
     SRC + "/**/Gate.Adapters.Nancy.csproj")}'
 
 var TEST_PROJECTS='${Files.Include(

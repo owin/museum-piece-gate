@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Dispatcher;
 using Owin;
+using System.IO;
 
 namespace Gate.Adapters.AspNetWebApi
 {
@@ -57,16 +58,17 @@ namespace Gate.Adapters.AspNetWebApi
         public static AppDelegate App(HttpServer server)
         {
             var invoker = new HttpMessageInvoker(server);
-            return (env, result, fault) =>
+            return call =>
             {
-                var owinRequestMethod = Get<string>(env, "owin.RequestMethod");
-                var owinRequestPath = Get<string>(env, "owin.RequestPath");
-                var owinRequestPathBase = Get<string>(env, "owin.RequestPathBase");
-                var owinRequestQueryString = Get<string>(env, "owin.RequestQueryString");
-                var owinRequestHeaders = Get<IDictionary<string, IEnumerable<string>>>(env, "owin.RequestHeaders");
-                var owinRequestBody = Get<BodyDelegate>(env, "owin.RequestBody");
-                var owinRequestScheme = Get<string>(env, "owin.RequestScheme");
-                var cancellationToken = Get<CancellationToken>(env, "System.Threading.CancellationToken");
+                var owinRequestMethod = Get<string>(call.Environment, "owin.RequestMethod");
+                var owinRequestScheme = Get<string>(call.Environment, "owin.RequestScheme");
+                var owinRequestPath = Get<string>(call.Environment, "owin.RequestPath");
+                var owinRequestPathBase = Get<string>(call.Environment, "owin.RequestPathBase");
+                var owinRequestQueryString = Get<string>(call.Environment, "owin.RequestQueryString");
+                var owinRequestProtocol = Get<string>(call.Environment, "owin.RequestProtocol");
+                var owinRequestHeaders = call.Headers;
+                var owinRequestBody = call.Body;
+                var cancellationToken = call.Completed;
 
                 var uriBuilder =
                     new UriBuilder(owinRequestScheme, "localhost")
@@ -77,8 +79,9 @@ namespace Gate.Adapters.AspNetWebApi
 
                 var request = new HttpRequestMessage(new HttpMethod(owinRequestMethod), uriBuilder.Uri)
                 {
-                    Content = new RequestHttpContent(owinRequestBody, cancellationToken)
+                    Content = new StreamContent(owinRequestBody ?? Stream.Null)
                 };
+                request.Version = Version.Parse(owinRequestProtocol.Substring(5)); // HTTP/1.1
 
                 if (owinRequestHeaders != null)
                 {
@@ -86,35 +89,38 @@ namespace Gate.Adapters.AspNetWebApi
                     {
                         foreach (var value in kv.Value)
                         {
-                            if (kv.Key.StartsWith("content", StringComparison.InvariantCultureIgnoreCase))
+                            if (!request.Headers.TryAddWithoutValidation(kv.Key, kv.Value))
                             {
-                                request.Content.Headers.Add(kv.Key, value);
-                            }
-                            else
-                            {
-                                request.Headers.Add(kv.Key, value);
+                                if (!request.Content.Headers.TryAddWithoutValidation(kv.Key, kv.Value))
+                                {
+                                    // TODO: Bad header name; Drop it (default), log it, or throw.
+                                }
                             }
                         }
                     }
                 }
                 
-                invoker.SendAsync(request, cancellationToken)
+                return invoker.SendAsync(request, cancellationToken)
                     .Then(response =>
                     {
-                        var status = (int)response.StatusCode + " " + response.ReasonPhrase;
+                        ResultParameters result = new ResultParameters();
+                        result.Status = (int)response.StatusCode;
+                        result.Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                        result.Properties.Add("owin.ReasonPhrase", response.ReasonPhrase);
+                        result.Properties.Add("owin.ResponseProtocol", "HTTP/" + response.Version.ToString(2));
 
                         IEnumerable<KeyValuePair<string, IEnumerable<string>>> headersEnumerable = response.Headers;
                         if (response.Content != null)
                             headersEnumerable = headersEnumerable.Concat(response.Content.Headers);
 
-                        var headers = headersEnumerable.ToDictionary(
+                        result.Headers = headersEnumerable.ToDictionary(
                             kv => kv.Key,
                             kv => kv.Value.ToArray(),
                             StringComparer.InvariantCultureIgnoreCase);
 
-                        result(status, headers, ResponseBody(response.Content));
-                    })
-                    .Catch(fault);
+                        result.Body = GetResponseBody(response.Content);
+                        return result;
+                    });
             };
         }
 
@@ -125,34 +131,17 @@ namespace Gate.Adapters.AspNetWebApi
         }
 
 
-        private static BodyDelegate ResponseBody(HttpContent content)
+        private static BodyDelegate GetResponseBody(HttpContent content)
         {
             if (content == null)
             {
-                return (write, end, cancel) => end(null);
+                return null;
             }
 
-            return (write, end, cancel) =>
+            return (output, cancel) =>
             {
-                try
-                {
-                    var stream = new ResponseHttpStream(write, end);
-                    content.CopyToAsync(stream)
-                        .Then(() =>
-                        {
-                            stream.Close();
-                            end(null);
-                        })
-                        .Catch(ex =>
-                        {
-                            stream.Close();
-                            end(ex);
-                        });
-                }
-                catch (Exception ex)
-                {
-                    end(ex);
-                }
+                cancel.ThrowIfCancellationRequested();
+                return content.CopyToAsync(output);
             };
         }
     }
