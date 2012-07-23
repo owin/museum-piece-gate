@@ -37,7 +37,7 @@ namespace Gate.Middleware.Tests
                     Response appResult = new Response(200);
                     appResult.Headers.SetHeader("Content-Type", "text/plain");
                     appResult.Headers.SetHeader("Content-Length", "5");
-                    appResult.Write("Hello");
+                    appResult.Body.Write("Hello");
                     return appResult.EndAsync();
                 }));
 
@@ -71,13 +71,13 @@ namespace Gate.Middleware.Tests
                 .Run(appCall =>
                 {
                     Response appResult = new Response(200);
-                    appResult.Headers.SetHeader("Content-Type", "text/html");
-                    appResult.SetBody ((stream, cancel) =>
-                    {
-                        byte[] body = Encoding.UTF8.GetBytes("<p>so far so good</p>");
-                        stream.Write(body, 0, body.Length);
-                        throw new ApplicationException("failed sending body sync");
-                    });
+                    appResult.Headers.SetHeader("Content-Type", "text/html"); 
+                    appResult.Body = new ResponseBody(
+                         body =>
+                         {
+                             body.Write("<p>so far so good</p>");
+                             throw new ApplicationException("failed sending body sync");
+                         });
                     return appResult.EndAsync();
                 }));
 
@@ -99,13 +99,11 @@ namespace Gate.Middleware.Tests
                 {
                     Response appResult = new Response(200);
                     appResult.Headers.SetHeader("Content-Type", "text/html");
-                    appResult.SetBody((stream, cancel) =>
+                    appResult.Body = new ResponseBody(
+                        body =>
                         {
-                            byte[] body = Encoding.UTF8.GetBytes("<p>so far so good</p>");
-                            stream.Write(body, 0, body.Length);
-                            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
-                            tcs.TrySetException(new ApplicationException("failed sending body async"));
-                            return tcs.Task;
+                            body.Write("<p>so far so good</p>");
+                            return body.FailBodyAsync(new ApplicationException("failed sending body async"));
                         });
                     return appResult.EndAsync();
                 }));

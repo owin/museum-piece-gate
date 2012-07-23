@@ -31,7 +31,7 @@ namespace Gate.Middleware
                 Func<Exception, Task<ResultParameters>> showErrorPage = ex =>
                 {
                     var response = new Response() { Status = "500 Internal Server Error", ContentType = "text/html" };
-                    showErrorMessage(ex, data => response.Write(data));
+                    showErrorMessage(ex, data => response.Body.Write(data));
                     return response.EndAsync();
                 };
 

@@ -11,8 +11,10 @@ namespace Gate.Utils
     // #if NET40
     public static class Net40Extensions
     {
-        public static Task WriteAsync(this Stream stream, byte[] buffer, int offset, int count)
+        public static Task WriteAsync(this Stream stream, byte[] buffer, int offset, int count, 
+            CancellationToken cancel = default(CancellationToken))
         {
+            cancel.ThrowIfCancellationRequested();
             var tcs = new TaskCompletionSource<object>();
             var sr = stream.BeginWrite(buffer, offset, count, ar =>
             {
@@ -27,6 +29,12 @@ namespace Gate.Utils
                 }
                 catch (Exception ex)
                 {
+                    // Assume errors were caused by cancelation.
+                    if (cancel.IsCancellationRequested)
+                    {
+                        tcs.TrySetCanceled();
+                    }
+
                     tcs.SetException(ex);
                 }
             }, null);
@@ -40,6 +48,12 @@ namespace Gate.Utils
                 }
                 catch (Exception ex)
                 {
+                    // Assume errors were caused by cancelation.
+                    if (cancel.IsCancellationRequested)
+                    {
+                        tcs.TrySetCanceled();
+                    }
+
                     tcs.SetException(ex);
                 }
             }
@@ -54,12 +68,12 @@ namespace Gate.Utils
 
         // Copy the source stream to the destination.  The source is always disposed at the end, regardless of success or failure.
         // It is the consumers responsiblity to dispose of the destination.
-        public static Task CopyToAsync(this Stream source, Stream destination, CancellationToken cancel)
+        public static Task CopyToAsync(this Stream source, Stream destination, CancellationToken cancel = default(CancellationToken))
         {
             return CopyToAsync(source, destination, null, cancel);
         }
 
-        public static Task CopyToAsync(this Stream source, Stream destination, int? bytesRemaining, CancellationToken cancel)
+        public static Task CopyToAsync(this Stream source, Stream destination, int? bytesRemaining, CancellationToken cancel = default(CancellationToken))
         {
             if (source == null)
             {

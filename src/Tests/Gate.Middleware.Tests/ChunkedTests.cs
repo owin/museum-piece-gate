@@ -60,16 +60,16 @@ namespace Gate.Middleware.Tests
                 {
                     resp.SetHeader("Content-Length", "12");
                     resp.SetHeader("Content-Type", "text/plain");
-                    resp.SetBody(
-                        (stream, cancel) =>
+                    resp.Body = new ResponseBody(
+                        body =>
                         {
-                            StreamWriter writer = new StreamWriter(stream);
-                            writer.Write("hello ");
-                            writer.Flush();
-                            writer.Write("world.");
-                            writer.Flush();
-                            return TaskHelpers.Completed();
+                            body.Write("hello ");
+                            body.Flush();
+                            body.Write("world.");
+                            body.Flush();
+                            return body.EndBodyAsync();
                         });
+
                     return resp.EndAsync();
                 }));
 
@@ -86,16 +86,16 @@ namespace Gate.Middleware.Tests
                 {
                     resp.SetHeader("transfer-encoding", "girl");
                     resp.SetHeader("Content-Type", "text/plain");
-                    resp.SetBody(
-                        (stream, cancel) =>
+                    resp.Body = new ResponseBody(
+                        body =>
                         {
-                            StreamWriter writer = new StreamWriter(stream);
-                            writer.Write("hello ");
-                            writer.Flush();
-                            writer.Write("world.");
-                            writer.Flush();
-                            return TaskHelpers.Completed();
+                            body.Write("hello ");
+                            body.Flush();
+                            body.Write("world.");
+                            body.Flush();
+                            return body.EndBodyAsync();
                         });
+
                     return resp.EndAsync();
                 }));
 
@@ -111,15 +111,14 @@ namespace Gate.Middleware.Tests
                 .UseDirect((req, resp) =>
                 {
                     resp.SetHeader("Content-Type", "text/plain");
-                    resp.SetBody(
-                        (stream, cancel) =>
+                    resp.Body = new ResponseBody(
+                        body =>                        
                         {
-                            StreamWriter writer = new StreamWriter(stream);
-                            writer.Write("hello ");
-                            writer.Flush();
-                            writer.Write("world.");
-                            writer.Flush();
-                            return TaskHelpers.Completed();
+                            body.Write("hello ");
+                            body.Flush();
+                            body.Write("world.");
+                            body.Flush();
+                            return body.EndBodyAsync();
                         });
 
                     return resp.EndAsync();

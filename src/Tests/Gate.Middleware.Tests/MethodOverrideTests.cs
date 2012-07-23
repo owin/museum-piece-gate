@@ -41,7 +41,7 @@ namespace Gate.Middleware.Tests
                 .UseDirect(
                     (appRequest, response) => 
                     {
-                        response.Write(appRequest.Method);
+                        response.Body.Write(appRequest.Method);
                         return response.EndAsync();
                     }),
                 request);
@@ -60,7 +60,7 @@ namespace Gate.Middleware.Tests
                 .UseDirect(
                     (appRequest, appResponse) =>
                     {
-                        appResponse.Write(appRequest.Method);
+                        appResponse.Body.Write(appRequest.Method);
                         return appResponse.EndAsync();
                     }),
                 request);

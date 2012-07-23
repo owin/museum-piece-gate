@@ -1,23 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Owin;
 using Gate.Utils;
+using Owin;
 
 namespace Gate
 {
     public class Response
     {
-        ResultParameters _result;
-        TaskCompletionSource<ResultParameters> _callCompletionSource = new TaskCompletionSource<ResultParameters>();
-        CancellationToken _responseCancellationToken = CancellationToken.None;
-        Stream _bufferedStream;
-        Stream _userStream;
+        private ResultParameters result;
+        private TaskCompletionSource<ResultParameters> callCompletionSource;
+        private ResponseBody responseBody;
 
         public Response()
             : this(200)
@@ -25,12 +20,12 @@ namespace Gate
         }
 
         public Response(int statusCode)
-            : this(statusCode, new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase))
+            : this(statusCode, null)
         {
         }
 
         public Response(int statusCode, IDictionary<string, string[]> headers)
-            : this(statusCode, headers, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase))
+            : this(statusCode, headers, null)
         {
         }
 
@@ -48,36 +43,30 @@ namespace Gate
 
         public Response(ResultParameters result)
         {
-            _result = result;
-            _result.Headers = _result.Headers ?? new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-            _result.Properties = _result.Properties ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-            Encoding = Encoding.UTF8;
+            this.result = result;
+            this.result.Headers = result.Headers ?? new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+            this.result.Properties = result.Properties ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            this.callCompletionSource = new TaskCompletionSource<ResultParameters>();
         }
 
-        // TODO: What are Skip and Next for? Nobody uses Skip, and Next is only assigned.
         internal Func<Task<ResultParameters>> Next { get; set; }
 
         public void Skip()
         {
-            Next.Invoke().CopyResultToCompletionSource(_callCompletionSource);
+            Next.Invoke().CopyResultToCompletionSource(callCompletionSource);
         }
 
         public IDictionary<string, string[]> Headers
         {
-            get { return _result.Headers; }
-            set { _result.Headers = value; }
+            get { return result.Headers; }
+            set { result.Headers = value; }
         }
 
         public IDictionary<string, object> Properties
         {
-            get { return _result.Properties; }
-            set { _result.Properties = value; }
+            get { return result.Properties; }
+            set { result.Properties = value; }
         }
-
-        public Encoding Encoding { get; set; }
-        public bool Buffer { get; set; }
-
 
         public string Status
         {
@@ -94,7 +83,7 @@ namespace Gate
                 {
                     throw new ArgumentException("Status must be a string with 3 digit statuscode, a space, and a reason phrase");
                 }
-                _result.Status = int.Parse(value.Substring(0, 3));
+                result.Status = int.Parse(value.Substring(0, 3));
                 ReasonPhrase = value.Length < 4 ? null : value.Substring(4);
             }
         }
@@ -103,13 +92,13 @@ namespace Gate
         {
             get
             {
-                return _result.Status;
+                return result.Status;
             }
             set
             {
-                if (_result.Status != value)
+                if (result.Status != value)
                 {
-                    _result.Status = value;
+                    result.Status = value;
                     ReasonPhrase = null;
                 }
             }
@@ -268,108 +257,58 @@ namespace Gate
             set { SetHeader("Content-Type", value); }
         }
 
-        public void SetBody(BodyDelegate body)
+        public long ContentLength
         {
-            _result.Body = body;
+            get { return long.Parse(GetHeader("Content-Length"), CultureInfo.InvariantCulture); }
+            set { SetHeader("Content-Length", value.ToString(CultureInfo.InvariantCulture)); }
         }
 
-        public void SetBody(Stream stream)
-        {
-            _userStream = stream;
-            _result.Body = CopyUserStream;
-        }
-
-        // CopyToAsync from the given user stream to the output stream.
-        private Task CopyUserStream(Stream output, CancellationToken cancel)
-        {
-            if (_userStream == null)
-            {
-                return TaskHelpers.Completed();
-            }
-            return _userStream.CopyToAsync(output, cancel);
-        }
-
-        public Stream BufferedStream
+        public BodyDelegate BodyDelegate
         {
             get
             {
-                if (_bufferedStream == null)
-                {
-                    _bufferedStream = new MemoryStream();
-                    _result.Body = CopyBufferdBody;
-                }
-                return _bufferedStream;
+                return result.Body;
             }
-        }
-
-        private Task CopyBufferdBody(Stream output, CancellationToken cancel)
-        {
-            if (_bufferedStream == null)
+            set
             {
-                return TaskHelpers.Completed();
+                result.Body = value;
+                responseBody = null;
             }
-            _bufferedStream.Seek(0, SeekOrigin.Begin);
-            return _bufferedStream.CopyToAsync(output, cancel);
         }
 
-        public void Write(string text)
+        public ResponseBody Body
         {
-            // this could be more efficient if it spooled the immutable strings instead...
-            var data = Encoding.GetBytes(text);
-            Write(data);
-        }
-
-        public void Write(string format, params object[] args)
-        {
-            Write(string.Format(format, args));
-        }
-
-
-        public void Write(byte[] buffer)
-        {
-            BufferedStream.Write(buffer, 0, buffer.Length);
-        }
-
-        public void Write(byte[] buffer, int offset, int count)
-        {
-            BufferedStream.Write(buffer, offset, count);
-        }
-
-        public void Write(ArraySegment<byte> data)
-        {
-            BufferedStream.Write(data.Array, data.Offset, data.Count);
-        }
-
-        public Task WriteAsync(byte[] buffer, int offset, int count)
-        {
-            return BufferedStream.WriteAsync(buffer, offset, count);
-        }
-
-        public Task WriteAsync(ArraySegment<byte> data)
-        {
-            return BufferedStream.WriteAsync(data.Array, data.Offset, data.Count);
-        }
-
-        public IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            var tcs = new TaskCompletionSource<object>(state);
-            BufferedStream.WriteAsync(buffer, offset, count).CopyResultToCompletionSource(tcs, null);
-            return tcs.Task;
-        }
-
-        public void EndWrite(IAsyncResult result)
-        {
-            ((Task)result).Wait();
+            get
+            {
+                if (responseBody == null)
+                {
+                    responseBody = new ResponseBody();
+                    result.Body = responseBody.Delegate;
+                }
+                return responseBody;
+            }
+            set
+            {
+                responseBody = value;
+                if (responseBody != null)
+                {
+                    result.Body = value.Delegate;
+                }
+                else
+                {
+                    result.Body = null;
+                }
+            }
         }
 
         public ResultParameters Result
         {
-            get { return _result; }
+            get { return result; }
         }
 
         public Task<ResultParameters> ResultTask
         {
-            get { return _callCompletionSource.Task; }
+            get { return callCompletionSource.Task; }
         }
 
         public void End()
@@ -380,7 +319,7 @@ namespace Gate
         public Task<ResultParameters> EndAsync()
         {
             OnEnd(null);
-            return _callCompletionSource.Task;
+            return callCompletionSource.Task;
         }
 
         public void Error(Exception error)
@@ -392,11 +331,11 @@ namespace Gate
         {
             if (error != null)
             {
-                _callCompletionSource.TrySetException(error);
+                callCompletionSource.TrySetException(error);
             }
             else
             {
-                _callCompletionSource.TrySetResult(_result);
+                callCompletionSource.TrySetResult(result);
             }
         }
     }

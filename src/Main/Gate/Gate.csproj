@@ -52,6 +52,7 @@
     <Compile Include="AppBuilderRunExtensions.cs" />
     <Compile Include="AppBuilderUseExtensions.cs" />
     <Compile Include="OwinConstants.cs" />
+    <Compile Include="ResponseBody.cs" />
     <Compile Include="Utils\Net40Extensions.cs" />
     <Compile Include="Utils\ParamDictionary.cs" />
     <Compile Include="Utils\ReasonPhrases.cs" />

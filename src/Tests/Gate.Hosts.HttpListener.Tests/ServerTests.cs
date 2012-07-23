@@ -93,7 +93,7 @@ namespace Gate.Hosts.HttpListener.Tests
             {
                 var response = new Response();
                 response.Headers.SetHeader("Content-Length", "12");
-                response.Write("Hello world.");
+                response.Body.Write("Hello world.");
                 return response.EndAsync();
             };
             using (ServerFactory.Create(app, 8090, null))

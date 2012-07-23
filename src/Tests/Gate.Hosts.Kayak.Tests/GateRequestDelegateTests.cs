@@ -157,8 +157,8 @@ namespace Gate.Hosts.Kayak.Tests
         public void Adds_connection_close_response_header_if_no_length_or_encoding()
         {
             Response expectedResponse = new Response(200);
-            expectedResponse.Write("12345");
-            expectedResponse.Write("67890");
+            expectedResponse.Body.Write("12345");
+            expectedResponse.Body.Write("67890");
             var app = new StaticApp(expectedResponse);
 
             var requestDelegate = new GateRequestDelegate(app.Invoke, new Dictionary<string, object>());
@@ -181,8 +181,8 @@ namespace Gate.Hosts.Kayak.Tests
         {
             Response expectedResponse = new Response(200);
             expectedResponse.Headers.SetHeader("Transfer-Encoding", "chunked");
-            expectedResponse.Write("12345");
-            expectedResponse.Write("67890");
+            expectedResponse.Body.Write("12345");
+            expectedResponse.Body.Write("67890");
             var app = new StaticApp(expectedResponse);
 
             var requestDelegate = new GateRequestDelegate(app.Invoke, new Dictionary<string, object>());
