@@ -55,6 +55,7 @@ namespace Gate.Hosts.AspNet
                 {OwinConstants.RequestPathBase, pathBase},
                 {OwinConstants.RequestPath, path},
                 {OwinConstants.RequestQueryString, serverVariables.QueryString},
+                {OwinConstants.RequestProtocol, serverVariables.ProtocolVersion},
                 {"aspnet.HttpContextBase", httpContext},
             };
             foreach (var kv in serverVariables.AddToEnvironment())
@@ -160,6 +161,11 @@ namespace Gate.Hosts.AspNet
             public string ServerPort
             {
                 get { return _serverVariables.Get("SERVER_PORT"); }
+            }
+
+            public string ProtocolVersion
+            {
+                get { return _serverVariables.Get("SERVER_PROTOCOL"); }
             }
 
             public IEnumerable<KeyValuePair<string, object>> AddToEnvironment()

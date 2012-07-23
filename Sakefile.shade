@@ -19,7 +19,11 @@ var BUILD_PROJECTS='${Files.Include(
     SRC + "/**/Gate.Hosts.AspNet.csproj",
     SRC + "/**/Gate.Hosts.HttpListener.csproj",
     SRC + "/**/Gate.Adapters.AspNetWebApi.csproj",
-    SRC + "/**/Gate.Adapters.Nancy.csproj")}'
+    SRC + "/**/Gate.Adapters.Nancy.csproj",
+    SRC + "/**/Sample.AspNetWebApi.csproj",
+    SRC + "/**/Sample.HelloWorld.csproj",
+    SRC + "/**/Sample.Nancy.csproj",
+    SRC + "/**/Samples.ViaRouting.csproj")}'
 
 var TEST_PROJECTS='${Files.Include(
     SRC + "/**/Gate.Tests.csproj",

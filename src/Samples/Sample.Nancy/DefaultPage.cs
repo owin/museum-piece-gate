@@ -12,28 +12,30 @@ namespace Sample.Nancy
 
         public static AppDelegate App()
         {
-            return (env, result, fault) =>
+            return call =>
             {
-                var request = new Request(env);
-                var response = new Response(result);
+                var request = new Request(call);
+                var response = new Response();
 
                 if (request.Path == "/")
                 {
                     response.Status = "200 OK";
                     response.ContentType = "text/html";
-                    response.Start(() =>
+                    response.Body = new ResponseBody((body) =>
                     {
-                        response.Write("<h1>Sample.App</h1>");
-                        response.Write("<p><a href='{0}/wilson/'>Wilson</a></p>", request.PathBase);
-                        response.Write("<p><a href='{0}/wilsonasync/'>Wilson (async)</a></p>", request.PathBase);
-                        response.Write("<p><a href='{0}/nancy/'>Nancy</a></p>", request.PathBase);
-                        response.Write("<p><a href='{0}/fileupload'>File Upload</a></p>", request.PathBase);
-                        response.End();
+                        body.Write("<h1>Sample.App</h1>");
+                        body.Write("<p><a href='{0}/wilson/'>Wilson</a></p>", request.PathBase);
+                        body.Write("<p><a href='{0}/wilsonasync/'>Wilson (async)</a></p>", request.PathBase);
+                        body.Write("<p><a href='{0}/nancy/'>Nancy</a></p>", request.PathBase);
+                        body.Write("<p><a href='{0}/fileupload'>File Upload</a></p>", request.PathBase);
+                        return body.EndBodyAsync();
                     });
+                    return response.EndAsync();
                 }
                 else
                 {
-                    NotFound.Call(env, result, fault);
+                    response.StatusCode = 404;
+                    return response.EndAsync();
                 }
             };
         }

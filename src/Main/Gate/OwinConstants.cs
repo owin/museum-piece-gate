@@ -8,6 +8,7 @@
         public const string RequestPathBase = "owin.RequestPathBase";
         public const string RequestPath = "owin.RequestPath";
         public const string RequestQueryString = "owin.RequestQueryString";
+        public const string RequestProtocol = "owin.RequestProtocol";
         public const string ReasonPhrase = "owin.ReasonPhrase";
     }
 }

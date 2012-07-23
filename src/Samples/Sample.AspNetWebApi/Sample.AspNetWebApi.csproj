@@ -38,9 +38,8 @@
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Newtonsoft.Json.4.5.5\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Owin, Version=0.9.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Owin.0.9-ctp2\lib\net40\Owin.dll</HintPath>
+    <Reference Include="Owin, Version=0.11.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Owin.0.11\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Net.Http, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -74,6 +73,10 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Adapters\Gate.Adapters.AspNetWebApi\Gate.Adapters.AspNetWebApi.csproj">
+      <Project>{4E5EE713-0BC1-4641-989B-7DEF9E16979C}</Project>
+      <Name>Gate.Adapters.AspNetWebApi</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Hosts\Gate.Hosts.AspNet\Gate.Hosts.AspNet.csproj">
       <Project>{F32E456A-F26E-4C5D-93B8-311941A714E4}</Project>
       <Name>Gate.Hosts.AspNet</Name>

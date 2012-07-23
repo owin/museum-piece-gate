@@ -6,6 +6,7 @@ using Gate;
 using Gate.Hosts.AspNet;
 using Gate.Middleware;
 using Owin;
+using System.Threading.Tasks;
 
 namespace Samples.ViaRouting
 {
@@ -13,9 +14,6 @@ namespace Samples.ViaRouting
     {
         public void Configuration(IAppBuilder builder)
         {
-            var xx = default(ArraySegment<byte>);
-
-
             // routes can be added for each path prefix that should be
             // mapped to owin
             RouteTable.Routes.AddOwinRoute("hello");
@@ -23,10 +21,11 @@ namespace Samples.ViaRouting
 
             // the routes above will be map onto whatever is added to
             // the IAppBuilder builder that was passed into this method
-            builder.RunDirect((req, res) =>
+            builder.UseDirect((req, res) =>
             {
                 res.ContentType = "text/plain";
-                res.End("Hello from " + req.PathBase + req.Path);
+                res.Body.Write("Hello from " + req.PathBase + req.Path);
+                return res.EndAsync();
             });
 
 
@@ -48,16 +47,19 @@ namespace Samples.ViaRouting
             builder.UseShowExceptions().Run(Wilson.App());
         }
 
-        void Raw(IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault)
+        Task<ResultParameters> Raw(CallParameters call)
         {
-            result(
-                "200 OK",
-                new Dictionary<string, string[]> { { "Content-Type", new[] { "text/plain" } } },
-                (write, end, cancel) =>
+            ResultParameters result = new ResultParameters();
+            result.Status = 200;
+            result.Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase) { { "Content-Type", new[] { "text/plain" } } };
+            result.Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            result.Body = (stream, cancel) =>
                 {
-                    write(new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello from lowest-level code")), null);
-                    end(null);
-                });
+                    byte[] body = Encoding.UTF8.GetBytes("Hello from lowest-level code");
+                    stream.Write(body, 0, body.Length);
+                    return TaskHelpers.Completed();
+                };
+            return TaskHelpers.FromResult(result);
         }
     }
 }
