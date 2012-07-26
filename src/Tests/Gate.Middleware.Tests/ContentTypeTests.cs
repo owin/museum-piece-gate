@@ -1,50 +1,62 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Gate.TestHelpers;
-using NUnit.Framework;
-using Gate.Middleware;
 using Gate.Builder;
+using NUnit.Framework;
+using Owin;
 
 namespace Gate.Middleware.Tests
 {
     [TestFixture]
     public class ContentTypeTests
     {
+        private ResultParameters Call(Action<IAppBuilder> pipe)
+        {
+            AppDelegate app = AppBuilder.BuildPipeline<AppDelegate>(pipe);
+            return app(new Request().Call).Result;
+        }
+
         [Test]
         public void Should_set_Content_Type_to_default_text_html_if_none_is_set()
         {
-            var callResult = AppUtils.CallPipe(b => b
+            var callResult = Call(b => b
                 .UseContentType()
-                .Simple("200 OK", Headers.New(), "Hello World!"));
+                .UseDirect((request, response) => response.EndAsync()));
             Assert.That(callResult.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
         }
 
         [Test]
         public void Should_set_Content_Type_to_chosen_default_if_none_is_set()
         {
-            var callResult = AppUtils.CallPipe(b => b
+            var callResult = Call(b => b
                 .UseContentType("application/octet-stream")
-                .Simple("200 OK", Headers.New(), "Hello World!"));
+                .UseDirect((request, response) => response.EndAsync()));
+
             Assert.That(callResult.Headers.GetHeader("Content-Type"), Is.EqualTo("application/octet-stream"));
         }
 
         [Test]
         public void Should_not_change_Content_Type_if_it_is_already_set()
         {
-            var callResult = AppUtils.CallPipe(b => b
+            var callResult = Call(b => b
                 .UseContentType()
-                .Simple("200 OK", Headers.New().SetHeader("CONTENT-Type", "foo/bar"), "Hello World!"));
+                .UseDirect((request, response) =>
+                {
+                    response.SetHeader("CONTENT-Type", "foo/bar");
+                    return response.EndAsync();
+                }));
+
             Assert.That(callResult.Headers.GetHeader("Content-Type"), Is.EqualTo("foo/bar"));
         }
 
         [Test]
         public void Should_detect_Content_Type_case_insensitive()
         {
-            var callResult = AppUtils.CallPipe(b => b
+            var callResult = Call(b => b
                 .UseContentType()
-                .Simple("200 OK", Headers.New().SetHeader("CONTENT-Type", "foo/bar"), "Hello World!"));
+                .UseDirect((request, response) =>
+                {
+                    response.SetHeader("CONTENT-Type", "foo/bar");
+                    return response.EndAsync();
+                }));
 
             Assert.That(callResult.Headers.GetHeader("CONTENT-Type"), Is.EqualTo("foo/bar"));
         }

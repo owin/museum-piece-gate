@@ -36,9 +36,10 @@ namespace Gate.TestHelpers
             public HttpResponseMessage HttpResponseMessage { get; set; }
 
             public IDictionary<string, object> Environment { get; set; }
-            public string ResponseStatus { get; set; }
+            public int ResponseStatus { get; set; }
             public IDictionary<string, string[]> ResponseHeaders { get; set; }
             public BodyDelegate ResponseBody { get; set; }
+            public IDictionary<string, object> ResponseProperties { get; set; }
 
             public Exception Exception { get; set; }
         }
@@ -50,7 +51,7 @@ namespace Gate.TestHelpers
         /// <returns></returns>
         public static TestHttpClient ForConfiguration(Action<IAppBuilder> configuration)
         {
-            return ForAppDelegate(AppBuilder.BuildConfiguration(configuration));
+            return ForAppDelegate(AppBuilder.BuildPipeline<AppDelegate>(configuration));
         }
 
         /// <summary>
@@ -74,7 +75,7 @@ namespace Gate.TestHelpers
             public IList<Call> Calls { get; private set; }
             public AppDelegate App { get; private set; }
 
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancel)
             {
                 var call = new Call
                 {
@@ -85,40 +86,39 @@ namespace Gate.TestHelpers
                         {OwinConstants.RequestMethod, request.Method.ToString()},
                         {OwinConstants.RequestScheme, request.RequestUri.Scheme},
                         {OwinConstants.RequestPathBase, ""},
-                        {OwinConstants.RequestPath, request.RequestUri.GetComponents(UriComponents.Path, UriFormat.Unescaped)},
-                        {OwinConstants.RequestQueryString, request.RequestUri.GetComponents(UriComponents.Path, UriFormat.UriEscaped)},
-                        {OwinConstants.RequestHeaders, RequestHeaders(request)},
-                        {OwinConstants.RequestBody, MakeRequestBody(request)},
-                        {"host.CallDisposed", cancellationToken},
+                        {OwinConstants.RequestPath, "/" + request.RequestUri.GetComponents(UriComponents.Path, UriFormat.Unescaped)},
+                        {OwinConstants.RequestQueryString, request.RequestUri.GetComponents(UriComponents.Query, UriFormat.UriEscaped)},
                         {"System.Net.Http.HttpRequestMessage", request},
                     }
                 };
 
                 Calls.Add(call);
 
-                var tcs = new TaskCompletionSource<HttpResponseMessage>();
-                App(
-                    call.Environment,
-                    (status, headers, body) =>
+                return GetRequestBody(request)
+                    .Then(body => App(new CallParameters
                     {
-                        call.ResponseStatus = status;
-                        call.ResponseHeaders = headers;
-                        call.ResponseBody = body;
-
-                        var response = MakeResponseMessage(status, headers, body);
-                        response.RequestMessage = request;
-                        call.HttpResponseMessage = response;
-                        tcs.TrySetResult(response);
-                    },
-                    ex =>
+                        Environment = call.Environment,
+                        Headers = GetRequestHeaders(request),
+                        Body = body,
+                        Completed = cancel
+                    }))
+                    .Then(result =>
                     {
-                        call.Exception = ex;
-                        tcs.TrySetException(ex);
+                        call.ResponseStatus = result.Status;
+                        call.ResponseHeaders = result.Headers;
+                        call.ResponseBody = result.Body;
+                        call.HttpResponseMessage = MakeResponseMessage(result.Status, result.Headers, result.Body, result.Properties, cancel);
+                        call.HttpResponseMessage.RequestMessage = request;
+                        return call.HttpResponseMessage;
                     });
-                return tcs.Task;
             }
 
-            static IDictionary<string, string[]> RequestHeaders(HttpRequestMessage request)
+            static Task<Stream> GetRequestBody(HttpRequestMessage request)
+            {
+                return request.Content == null ? TaskHelpers.FromResult(default(Stream)) : request.Content.ReadAsStreamAsync();
+            }
+
+            static IDictionary<string, string[]> GetRequestHeaders(HttpRequestMessage request)
             {
                 IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers = request.Headers;
                 if (request.Content != null)
@@ -128,100 +128,56 @@ namespace Gate.TestHelpers
                 return requestHeaders;
             }
 
-            static BodyDelegate MakeRequestBody(HttpRequestMessage request)
+            static HttpResponseMessage MakeResponseMessage(int status, IDictionary<string, string[]> headers, BodyDelegate body, IDictionary<string, object> properties, CancellationToken cancel)
             {
-                if (request.Content == null)
-                {
-                    return (write, end, cancel) => end(null);
-                }
+                var response = new HttpResponseMessage((HttpStatusCode)status);
 
-                return (write, end, cancel) =>
-                {
-                    var task = request.Content.CopyToAsync(new BodyDelegateStream(write, cancel));
-                    if (task.IsFaulted)
-                    {
-                        end(task.Exception);
-                    }
-                    else if (task.IsCompleted)
-                    {
-                        end(null);
-                    }
-                    else
-                    {
-                        task.ContinueWith(t => { end(t.IsFaulted ? t.Exception : null); }, cancel);
-                    }
-                };
-            }
-
-
-            static HttpResponseMessage MakeResponseMessage(string status, IDictionary<string, string[]> headers, BodyDelegate body)
-            {
-                var httpStatusCode = (HttpStatusCode)int.Parse(status.Substring(0, 3));
-                var response = new HttpResponseMessage(httpStatusCode);
-                //response.
                 if (body != null)
                 {
-                    response.Content = MakeResponseContent(body);
+                    response.Content = new BodyDelegateHttpContent(body, cancel);
                 }
 
-                foreach (var header in headers)
+                if (properties != null)
                 {
-                    if (!response.Headers.TryAddWithoutValidation(header.Key, header.Value))
+                    object value;
+                    if (properties.TryGetValue("owin.ReasonPhrase", out value))
                     {
-                        if (response.Content == null)
+                        response.ReasonPhrase = Convert.ToString(value);
+                    }
+                }
+
+                if (headers != null)
+                {
+                    foreach (var header in headers)
+                    {
+                        if (!response.Headers.TryAddWithoutValidation(header.Key, header.Value))
                         {
-                            response.Content = MakeResponseContent((write, end, cancel) => end(null));
+                            if (response.Content == null)
+                            {
+                                response.Content = new ByteArrayContent(new byte[0]);
+                            }
+                            response.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
                         }
-                        response.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
                     }
                 }
 
                 return response;
             }
 
-            static HttpContent MakeResponseContent(BodyDelegate body)
-            {
-                return new BodyDelegateHttpContent(body);
-            }
-
             class BodyDelegateHttpContent : HttpContent
             {
                 readonly BodyDelegate _body;
+                readonly CancellationToken _cancel;
 
-                public BodyDelegateHttpContent(BodyDelegate body)
+                public BodyDelegateHttpContent(BodyDelegate body, CancellationToken cancel)
                 {
                     _body = body;
+                    _cancel = cancel;
                 }
 
                 protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
                 {
-                    var tcs = new TaskCompletionSource<object>();
-                    _body.Invoke(
-                        (data, callback) =>
-                        {
-                            if (data == default(ArraySegment<byte>))
-                            {
-                                stream.Flush();
-                            }
-                            else
-                            {
-                                stream.Write(data.Array, data.Offset, data.Count);
-                            }
-                            return false;
-                        },                       
-                        ex =>
-                        {
-                            if (ex == null)
-                            {
-                                tcs.TrySetResult(null);
-                            }
-                            else
-                            {
-                                tcs.TrySetException(ex);
-                            }
-                        },
-                        CancellationToken.None);
-                    return tcs.Task;
+                    return _body(stream, _cancel);
                 }
 
                 protected override bool TryComputeLength(out long length)
@@ -230,70 +186,6 @@ namespace Gate.TestHelpers
                     return false;
                 }
             }
-
-            class BodyDelegateStream : Stream
-            {
-                readonly Func<ArraySegment<byte>, Action, bool> _write;
-                readonly CancellationToken _cancellationToken;
-
-                public BodyDelegateStream(Func<ArraySegment<byte>, Action, bool> write, CancellationToken cancellationToken)
-                {
-                    _write = write;
-                    _cancellationToken = cancellationToken;
-                }
-
-                public override void Flush()
-                {
-                    _write(new ArraySegment<byte>(), null);
-                }
-
-                public override long Seek(long offset, SeekOrigin origin)
-                {
-                    throw new NotImplementedException();
-                }
-
-                public override void SetLength(long value)
-                {
-                    throw new NotImplementedException();
-                }
-
-                public override int Read(byte[] buffer, int offset, int count)
-                {
-                    throw new NotImplementedException();
-                }
-
-                public override void Write(byte[] buffer, int offset, int count)
-                {
-                    _write(new ArraySegment<byte>(buffer, offset, count), null);
-                }
-
-                public override bool CanRead
-                {
-                    get { return false; }
-                }
-
-                public override bool CanSeek
-                {
-                    get { return false; }
-                }
-
-                public override bool CanWrite
-                {
-                    get { return true; }
-                }
-
-                public override long Length
-                {
-                    get { throw new NotImplementedException(); }
-                }
-
-                public override long Position
-                {
-                    get { throw new NotImplementedException(); }
-                    set { throw new NotImplementedException(); }
-                }
-            }
-
         }
     }
 }

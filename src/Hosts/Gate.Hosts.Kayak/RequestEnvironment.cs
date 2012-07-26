@@ -11,8 +11,6 @@ namespace Gate.Hosts.Kayak
         public const string RequestPathBaseKey = OwinConstants.RequestPathBase;
         public const string RequestPathKey = OwinConstants.RequestPath;
         public const string RequestQueryStringKey = OwinConstants.RequestQueryString;
-        public const string RequestBodyKey = OwinConstants.RequestBody;
-        public const string RequestHeadersKey = OwinConstants.RequestHeaders;
         public const string RequestSchemeKey = OwinConstants.RequestScheme;
         public const string VersionKey = OwinConstants.Version;
         public const string SchedulerKey = "kayak.Scheduler";
@@ -43,12 +41,6 @@ namespace Gate.Hosts.Kayak
             set { _env[RequestMethodKey] = value; }
         }
 
-        public IDictionary<string, string[]> Headers
-        {
-            get { return Get<IDictionary<string, string[]>>(RequestHeadersKey); }
-            set { _env[RequestHeadersKey] = value; }
-        }
-
         public string PathBase
         {
             get { return Get<string>(RequestPathBaseKey); }
@@ -71,12 +63,6 @@ namespace Gate.Hosts.Kayak
         {
             get { return Get<string>(RequestQueryStringKey); }
             set { _env[RequestQueryStringKey] = value; }
-        }
-
-        public BodyDelegate BodyDelegate
-        {
-            get { return Get<BodyDelegate>(RequestBodyKey); }
-            set { _env[RequestBodyKey] = value; }
         }
 
         public IScheduler Scheduler

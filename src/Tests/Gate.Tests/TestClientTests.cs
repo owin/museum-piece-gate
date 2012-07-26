@@ -8,12 +8,16 @@ using System.Threading;
 using Gate.TestHelpers;
 using NUnit.Framework;
 using Owin;
+using System.Threading.Tasks;
+using System.IO;
 
 namespace Gate.Tests
 {
     [TestFixture]
     public class TestClientTests
     {
+        AppDelegate NotFound = call => TaskHelpers.FromResult(new ResultParameters() { Status = 404 });
+
         [Test]
         public void ForConfigurationShouldCallWithBuilderAndReturnHttpClient()
         {
@@ -26,13 +30,13 @@ namespace Gate.Tests
         [Test]
         public void RequestPassesThroughToApplication()
         {
-            var client = TestHttpClient.ForAppDelegate(NotFound.Call);
+            var client = TestHttpClient.ForAppDelegate(NotFound);
 
             var result = client.GetAsync("http://localhost/foo?hello=world").Result;
 
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
             Assert.That(client.Calls.Count, Is.EqualTo(1));
-            Assert.That(client.Calls.Single().ResponseStatus, Is.EqualTo("404 Not Found"));
+            Assert.That(client.Calls.Single().ResponseStatus, Is.EqualTo(404));
         }
 
         [Test]
@@ -48,11 +52,23 @@ namespace Gate.Tests
         {
             var client = TestHttpClient.ForAppDelegate(ReturnText("Hello world"));
             client.GetStringAsync("http://localhost/foo?hello=world").Wait();
-            Assert.That(client.Calls.Single().ResponseHeaders["Content-Type"].Single(), Is.EqualTo("text/plain"));
-            Assert.That(client.Calls.Single().HttpResponseMessage.Content.Headers.ContentType.MediaType, Is.EqualTo("text/plain"));
 
-            Assert.That(client.Calls.Single().ResponseHeaders["X-Server"].Single(), Is.EqualTo("inproc"));
-            Assert.That(client.Calls.Single().HttpResponseMessage.Headers.GetValues("X-Server").Single(), Is.EqualTo("inproc"));
+            var call = client.Calls.Single();
+
+            Assert.IsNotNull(call, "Single");
+            Assert.IsNotNull(call.ResponseHeaders, "ResponseHeaders");
+            Assert.IsNotNull(call.ResponseHeaders["Content-Type"].Single(), "Content-Type");
+
+            Assert.That(call.ResponseHeaders["Content-Type"].Single(), Is.EqualTo("text/plain"));
+
+            Assert.IsNotNull(call.HttpResponseMessage, "Response");
+            Assert.IsNotNull(call.HttpResponseMessage.Content, "Response.Content");
+            Assert.IsNotNull(call.HttpResponseMessage.Content.Headers.ContentType, "ContentType");
+
+            Assert.That(call.HttpResponseMessage.Content.Headers.ContentType.MediaType, Is.EqualTo("text/plain"));
+
+            Assert.That(call.ResponseHeaders["X-Server"].Single(), Is.EqualTo("inproc"));
+            Assert.That(call.HttpResponseMessage.Headers.GetValues("X-Server").Single(), Is.EqualTo("inproc"));
         }
 
         [Test]
@@ -77,68 +93,51 @@ namespace Gate.Tests
 
         AppDelegate EchoRequestBody()
         {
-            return (env, result, fault) =>
+            return call =>
             {
-                var callDisposed = (CancellationToken)env["host.CallDisposed"];
-                var requestHeaders = (IDictionary<string, string[]>)env["owin.RequestHeaders"];
-                var requestBody = (BodyDelegate)env["owin.RequestBody"];
-
-                var responseHeaders = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+                ResultParameters result = new ResultParameters();
+                result.Status = 200;
+                result.Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
                 {
-                    {"Content-Type", requestHeaders["Content-Type"].ToArray()}
+                    {"Content-Type", call.Headers["Content-Type"].ToArray()}
+                };
+                
+                MemoryStream buffer = new MemoryStream();
+                call.Body.CopyTo(buffer);
+                buffer.Seek(0, SeekOrigin.Begin);
+                 
+                result.Body = (stream, cancel) =>
+                {
+                    buffer.CopyTo(stream);                    
+                    return TaskHelpers.Completed();
                 };
 
-                Action<Func<ArraySegment<byte>, Action, bool>> repeatAllData = write => { };
-
-                requestBody.Invoke(
-                    (data, callback) =>
-                    {
-                        var copy = new byte[data.Count];
-                        Array.Copy(data.Array, data.Offset, copy, 0, data.Count);
-                        var priorDelegate = repeatAllData;
-                        repeatAllData = write =>
-                        {
-                            priorDelegate(write);
-                            write(new ArraySegment<byte>(copy), null);
-                        };
-                        return false;
-                    },
-                    ex =>
-                    {
-                        if (ex != null)
-                        {
-                            fault(ex);
-                        }
-                        else
-                        {
-                            result.Invoke(
-                                "200 OK",
-                                responseHeaders,
-                                (write, end, cancel) =>
-                                {
-                                    repeatAllData(write);
-                                    end(null);
-                                });
-                        }
-                    },
-                    callDisposed);
+                return TaskHelpers.FromResult(result);
             };
         }
 
         AppDelegate ReturnText(string text)
         {
-            return (env, result, fault) => result(
-                "200 OK",
-                new Dictionary<string, string[]>
+            return call =>
+            {
+                ResultParameters result = new ResultParameters();
+                result.Status = 200;
+                result.Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                result.Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
                 {
                     {"Content-Type", new[] {"text/plain"}},
                     {"X-Server", new[] {"inproc"}}
-                },
-                (write, end, cancel) =>
+                };
+
+                result.Body = (stream, cancel) =>
                 {
-                    write(new ArraySegment<byte>(Encoding.ASCII.GetBytes(text)), null);
-                    end(null);
-                });
+                    byte[] body = Encoding.ASCII.GetBytes(text);
+                    stream.Write(body, 0, body.Length);
+                    return TaskHelpers.Completed();
+                };
+
+                return TaskHelpers.FromResult(result);
+            };
         }
     }
 }

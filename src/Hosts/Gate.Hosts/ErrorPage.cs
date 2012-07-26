@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 using Owin;
+using System.Threading.Tasks;
 
 namespace Gate.Hosts
 {
     static class ErrorPage
     {
-        static readonly ArraySegment<byte> Body = new ArraySegment<byte>(Encoding.UTF8.GetBytes(@"
+        static readonly ArraySegment<byte> Body = new ArraySegment<byte>(Encoding.UTF8.GetBytes(
+@"
 <!DOCTYPE HTML PUBLIC ""-//IETF//DTD HTML 2.0//EN"">
 <html><head>
 <title>500 Internal Server Error</title>
@@ -16,7 +18,6 @@ namespace Gate.Hosts
 <p>The requested URL was not found on this server.</p>
 </body></html>
 "));
-        static readonly Dictionary<string, string[]> ResponseHeaders = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase) { { "Content-Type", new[] { "text/html" } } };
 
         public static AppDelegate Middleware(AppDelegate app)
         {
@@ -25,60 +26,68 @@ namespace Gate.Hosts
 
         public static AppDelegate Middleware(AppDelegate app, Action<Exception> logError)
         {
-            return (env, result, fault) =>
+            return call =>
             {
-                Action<Exception> onError = ex =>
-                {
-                    logError(ex);
-                    result(
-                        "500 Internal Server Error",
-                        ResponseHeaders,
-                        (write, end, cancel) =>
-                        {
-                            try
-                            {
-                                write(Body, null);
-                                end(null);
-                            }
-                            catch (Exception error)
-                            {
-                                end(error);
-                            }
-                        });
-                };
-
                 try
                 {
-                    app(
-                        env,
-                        (status, headers, body) =>
+                    return app(call)
+                        .Then(result =>
                         {
-                            // errors send from inside the body are
-                            // logged, but not passed to the host. it's too
-                            // late to change the status or send an error page.
-                            onError = logError;
-                            result(
-                                status,
-                                headers,
-                                (write, end, cancel) =>
-                                    body(
-                                        write,
-                                        ex =>
-                                        {
-                                            if (ex != null)
+                            if (result.Body != null)
+                            {
+                                BodyDelegate nestedBody = result.Body;
+                                result.Body = (stream, cancel) =>
+                                {
+                                    try
+                                    {
+                                        return nestedBody(stream, cancel)
+                                            .Catch(errorInfo =>
                                             {
-                                                logError(ex);
-                                            }
-                                            end(ex);
-                                        },
-                                        cancel));
-                        },
-                        ex => onError(ex));
+                                                logError(errorInfo.Exception);
+                                                return errorInfo.Handled();
+                                            });
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        logError(ex);
+                                        return TaskHelpers.Completed();
+                                    }
+                                };
+                            }
+
+                            return result;
+                        })
+                        .Catch(errorInfo =>
+                        {
+                            return errorInfo.Handled(CreateErrorResponse());
+                        });
                 }
                 catch (Exception ex)
                 {
-                    onError(ex);
+                    logError(ex);
+                    return TaskHelpers.FromResult(CreateErrorResponse());
                 }
+            };
+        }
+
+        private static ResultParameters CreateErrorResponse()
+        {
+            return new ResultParameters()
+            {
+                Status = 500,
+                Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "owin.ReasonPhrase", "Internal Server Error" }
+                },
+                Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+                {
+                     { "Content-Type", new[] { "text/html" } }
+                },
+                Body = (stream, cancel) =>
+                {
+                    stream.Write(Body.Array, Body.Offset, Body.Count);
+                    return TaskHelpers.Completed();
+                },
             };
         }
     }

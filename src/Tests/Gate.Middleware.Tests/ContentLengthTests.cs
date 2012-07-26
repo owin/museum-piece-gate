@@ -1,25 +1,25 @@
 using System;
-using Gate.Middleware;
-using Gate.TestHelpers;
-using Owin;
 using Gate.Builder;
 using NUnit.Framework;
-using System.Text;
+using Owin;
 
 namespace Gate.Middleware.Tests
 {
     [TestFixture]
     public class ContentLengthTests
-    {        
+    {
+        private ResultParameters CallPipe(Action<IAppBuilder> pipe)
+        {
+            AppDelegate app = AppBuilder.BuildPipeline<AppDelegate>(pipe);
+            return app(new Request().Call).Result;
+        }
+
         [Test]
         public void Content_length_is_added_if_body_is_zero_length()
         {
-            var result = AppUtils.CallPipe(b => b
+            var result = CallPipe(b => b
                 .UseContentLength()
-                .Simple(
-                    "200 OK",
-                    headers => { },
-                    write => { }));
+                .UseDirect((request, response) => response.EndAsync()));
 
             Assert.That(result.Headers.GetHeader("content-length"), Is.EqualTo("0"));
         }
@@ -27,15 +27,14 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Content_length_is_added()
         {
-            var result = AppUtils.CallPipe(b => b
+            var result = CallPipe(b => b
                 .UseContentLength()
-                .Simple(
-                    "200 OK",
-                    headers => { },
-                    write =>
+                .UseDirect(
+                    (request, response) => 
                     {
-                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("hello ")));
-                        write(new ArraySegment<byte>(Encoding.ASCII.GetBytes("world.")));
+                        response.Write("hello ");
+                        response.Write("world.");
+                        return response.EndAsync();
                     }));
 
             Assert.That(result.Headers.GetHeader("content-length"), Is.EqualTo("12"));
@@ -44,12 +43,14 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Content_length_is_not_changed()
         {
-            var result = AppUtils.CallPipe(b => b
+            var result = CallPipe(b => b
                 .UseContentLength()
-                .Simple(
-                    "200 OK",
-                    headers => headers.SetHeader("content-length", "69"),
-                    write => { }));
+                .UseDirect(
+                    (request, response) => 
+                    {
+                        response.Headers.SetHeader("content-length", "69");
+                        return response.EndAsync();
+                    }));
 
             Assert.That(result.Headers.GetHeader("content-length"), Is.EqualTo("69"));
         }
@@ -57,12 +58,14 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Content_length_is_not_added_if_transfer_encoding_is_present()
         {
-            var result = AppUtils.CallPipe(b => b
+            var result = CallPipe(b => b
                 .UseContentLength()
-                .Simple(
-                    "200 OK",
-                    headers => headers.SetHeader("transfer-encoding", "chunked"),
-                    write => { }));
+                .UseDirect(
+                    (request, response) => 
+                    {
+                        response.Headers.SetHeader("transfer-encoding", "chunked");
+                        return response.EndAsync();
+                    }));
 
             Assert.That(result.Headers.ContainsKey("content-length"), Is.False);
         }
@@ -80,9 +83,14 @@ namespace Gate.Middleware.Tests
             // and all other 1xx statuses...
             )] string status)
         {
-            var result = AppUtils.CallPipe(b => b
+            var result = CallPipe(b => b
                 .UseContentLength()
-                .Simple(status, headers => { }, write => { }));
+                .UseDirect(
+                    (request, response) => 
+                    {
+                        response.Status = status;
+                        return response.EndAsync();
+                    }));
 
             Assert.That(result.Headers.ContainsKey("content-length"), Is.False);
         }

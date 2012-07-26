@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Owin;
 
 namespace Gate.Builder
@@ -22,19 +24,22 @@ namespace Gate.Builder
             return Call;
         }
 
-        public static void Call(IDictionary<string, object> env, ResultDelegate result, Action<Exception> fault)
+        public static Task<ResultParameters> Call(CallParameters call)
         {
-            result(
-                "404 Not Found",
-                new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+            return TaskHelpers.FromResult(new ResultParameters
+            {
+                Status = 404,
+                Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
                 {
                     {"Content-Type", new[] {"text/html"}}
                 },
-                (write, end, cancel) =>
+                Body = (output, _) =>
                 {
-                    write(Body, null);
-                    end(null);
-                });
+                    output.Write(Body.Array, Body.Offset, Body.Count);
+                    return TaskHelpers.Completed();
+                },
+                Properties = new Dictionary<string, object>()
+            });
         }
     }
 }

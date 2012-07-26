@@ -11,14 +11,14 @@ namespace Gate.Middleware
 
         public static AppDelegate Middleware(AppDelegate app)
         {
-            return (env, result, fault) =>
+            return call =>
             {
-                var req = new Request(env);
+                var req = new Request(call);
                 var method = req.Headers.GetHeader("x-http-method-override");
                 if (!string.IsNullOrWhiteSpace(method))
                     req.Method = method;
 
-                app(env, result, fault);
+                return app(call);
             };
         }
     }

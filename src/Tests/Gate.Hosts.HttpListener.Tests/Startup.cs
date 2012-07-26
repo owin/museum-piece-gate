@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Owin;
+using System.Threading.Tasks;
 
 namespace Gate.Hosts.HttpListener.Tests
 {
@@ -14,14 +15,28 @@ namespace Gate.Hosts.HttpListener.Tests
 
         static AppDelegate App(AppDelegate arg)
         {
-            return (env, result, fault) => result("200 OK",
-                new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase) { { "Content-Type", new[] { "text/plain" } } },
-                (write,end,cancel) =>
+            return call =>
+            {
+                ResultParameters result = new ResultParameters()
                 {
-                    var bytes = Encoding.Default.GetBytes("This is a custom page");
-                    write(new ArraySegment<byte>(bytes), null);
-                    end(null);
-                });
+                    Status = 200,
+                    Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase) { { "Content-Type", new[] { "text/plain" } } },
+                    Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
+                    Body = (stream, cancel) =>
+                    {
+                        var bytes = Encoding.Default.GetBytes("This is a custom page");
+                        stream.Write(bytes, 0, bytes.Length);
+
+                        TaskCompletionSource<object> bodyTcs = new TaskCompletionSource<object>();
+                        bodyTcs.TrySetResult(null);
+                        return bodyTcs.Task;
+                    }
+                };
+
+                TaskCompletionSource<ResultParameters> requestTcs = new TaskCompletionSource<ResultParameters>();
+                requestTcs.TrySetResult(result);
+                return requestTcs.Task;
+            };
         }
     }
 }

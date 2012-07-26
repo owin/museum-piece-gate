@@ -12,11 +12,11 @@ namespace Gate.Middleware.Tests.StaticFiles
         [Test]
         public void RangeHeader_Reports_Syntactically_Invalid_Byte_Ranges()
         {
-            Assert.IsFalse(RangeHeader.IsValid(CreateEnvironmentWithRange("")));
-            Assert.IsFalse(RangeHeader.IsValid(CreateEnvironmentWithRange("foobar")));
-            Assert.IsFalse(RangeHeader.IsValid(CreateEnvironmentWithRange("furlongs=123-456")));
-            Assert.IsFalse(RangeHeader.IsValid(CreateEnvironmentWithRange("bytes=")));
-            Assert.IsFalse(RangeHeader.IsValid(CreateEnvironmentWithRange("")));
+            Assert.IsFalse(RangeHeader.IsValid(CreateHeadersWithRange("")));
+            Assert.IsFalse(RangeHeader.IsValid(CreateHeadersWithRange("foobar")));
+            Assert.IsFalse(RangeHeader.IsValid(CreateHeadersWithRange("furlongs=123-456")));
+            Assert.IsFalse(RangeHeader.IsValid(CreateHeadersWithRange("bytes=")));
+            Assert.IsFalse(RangeHeader.IsValid(CreateHeadersWithRange("")));
 
             // A range of non-positive length is syntactically invalid and ignored:
             Assert.IsNull(CreateByteRanges("bytes=123,456", 500));
@@ -24,14 +24,11 @@ namespace Gate.Middleware.Tests.StaticFiles
             Assert.IsNull(CreateByteRanges("bytes=456-455", 500));
         }
 
-        private Dictionary<string, object> CreateEnvironmentWithRange(string rangeHeader)
+        private Dictionary<string, string[]> CreateHeadersWithRange(string rangeHeader)
         {
-            return new Dictionary<string, object>
+            return new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
             {
-                {OwinConstants.RequestHeaders, new Dictionary<string, string[]>
-                {
-                    {"Range", new[]{rangeHeader}}
-                }}
+                {"Range", new[]{rangeHeader}}
             };
         }
 
@@ -74,13 +71,10 @@ namespace Gate.Middleware.Tests.StaticFiles
 
         private static IEnumerable<Tuple<long, long>> CreateByteRanges(string rangeString, int size)
         {
-            return RangeHeader.Parse(new Dictionary<string, object>
-            {
-                {OwinConstants.RequestHeaders, new Dictionary<string, string[]>
+            return RangeHeader.Parse(new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
                 {
                     {"Range", new[]{rangeString}}
-                }}
-            }, size);
+                }, size);
         }
     }
 }

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Net;
 using Gate.Hosts.HttpListener;
 using Owin;
+using System.Threading.Tasks;
+using System.Threading;
 
 [assembly: ServerFactory]
 
@@ -40,6 +42,7 @@ namespace Gate.Hosts.HttpListener
                         // ReSharper restore AccessToModifiedClosure
                     }
 
+                    CallParameters call;
 
                     var requestPathBase = effectivePath;
                     if (requestPathBase == "/" || requestPathBase == null)
@@ -53,10 +56,10 @@ namespace Gate.Hosts.HttpListener
 
                     var requestQueryString = context.Request.Url.GetComponents(UriComponents.Query, UriFormat.UriEscaped);
 
-                    var requestHeaders = context.Request.Headers.AllKeys
-                        .ToDictionary(x => x, x => (IEnumerable<string>)context.Request.Headers.GetValues(x), StringComparer.OrdinalIgnoreCase);
+                    call.Headers = context.Request.Headers.AllKeys
+                        .ToDictionary(x => x, x => context.Request.Headers.GetValues(x), StringComparer.OrdinalIgnoreCase);
 
-                    var env = new Dictionary<string, object>
+                    call.Environment = new Dictionary<string, object>
                     { 
                         {OwinConstants.Version, "1.0"},
                         {OwinConstants.RequestMethod, context.Request.HttpMethod},
@@ -64,56 +67,75 @@ namespace Gate.Hosts.HttpListener
                         {OwinConstants.RequestPathBase, requestPathBase},
                         {OwinConstants.RequestPath, requestPath},
                         {OwinConstants.RequestQueryString, requestQueryString},
-                        {OwinConstants.RequestHeaders, requestHeaders},
-                        {OwinConstants.RequestBody, RequestBody(context.Request.InputStream)},
                         {"System.Net.HttpListenerContext", context},
-                        {"server.CLIENT_IP", context.Request.RemoteEndPoint.Address.ToString()},
                     };
 
-                    app(env,
-                        (status, headers, body) =>
-                        {
-                            context.Response.StatusCode = int.Parse(status.Substring(0, 3));
-                            context.Response.StatusDescription = status.Substring(4);
-                            foreach (var kv in headers)
+                    call.Body = context.Request.InputStream;
+
+                    try
+                    {
+                        Task<ResultParameters> appTask = app(call);
+                        
+                        // No real error handling, just close the connection.
+                        appTask.ContinueWith(task => context.Response.Abort(), TaskContinuationOptions.NotOnRanToCompletion);
+
+                        // Success
+                        appTask.Then(
+                            result =>
                             {
-                                // these may not be assigned via header collection
-                                if (string.Equals(kv.Key, "Content-Length", StringComparison.OrdinalIgnoreCase))
+                                context.Response.StatusCode = result.Status;
+                                // context.Response.StatusDescription = ;
+                                foreach (var kv in result.Headers)
                                 {
-                                    context.Response.ContentLength64 = long.Parse(kv.Value.Single());
-                                }
-                                else if (string.Equals(kv.Key, "Keep-Alive", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    context.Response.KeepAlive = true;
-                                }
-                                //else if (string.Equals(kv.Key, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase))
-                                //{
-                                //    // not sure what can be done about this
-                                //}
-                                //else if (string.Equals(kv.Key, "WWW-Authenticate", StringComparison.OrdinalIgnoreCase))
-                                //{
-                                //    // not sure what httplistener properties to assign                                    
-                                //}
-                                else
-                                {
-                                    // all others are
-                                    foreach (var v in kv.Value)
+                                    // these may not be assigned via header collection
+                                    if (string.Equals(kv.Key, "Content-Length", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        context.Response.Headers.Add(kv.Key, v);
+                                        context.Response.ContentLength64 = long.Parse(kv.Value.Single());
+                                    }
+                                    else if (string.Equals(kv.Key, "Keep-Alive", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        context.Response.KeepAlive = true;
+                                    }
+                                    //else if (string.Equals(kv.Key, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase))
+                                    //{
+                                    //    // not sure what can be done about this
+                                    //}
+                                    //else if (string.Equals(kv.Key, "WWW-Authenticate", StringComparison.OrdinalIgnoreCase))
+                                    //{
+                                    //    // not sure what httplistener properties to assign                                    
+                                    //}
+                                    else
+                                    {
+                                        // all others are
+                                        foreach (var v in kv.Value)
+                                        {
+                                            context.Response.Headers.Add(kv.Key, v);
+                                        }
                                     }
                                 }
-                            }
-                            var pipeResponse = new PipeResponse(
-                                context.Response.OutputStream,
-                                ex => context.Response.Close(),
-                                () => context.Response.Close());
-                            pipeResponse.Go(body);
-                        },
-                        ex =>
-                        {
-                            // This should never be called
-                            throw new NotImplementedException();
-                        });
+
+                                if (result.Body != null)
+                                {
+                                    try
+                                    {
+                                        Task bodyTask = result.Body(context.Response.OutputStream, CancellationToken.None);
+
+                                        bodyTask.ContinueWith(task => context.Response.Abort(), TaskContinuationOptions.NotOnRanToCompletion);
+
+                                        bodyTask.Then(() => context.Response.Close());
+                                    }
+                                    catch (Exception)
+                                    {
+                                        context.Response.Abort();
+                                    }
+                                }
+                            });
+
+                    }
+                    catch (Exception)
+                    {
+                        context.Response.Abort();
+                    }
                 },
                 null);
 
@@ -124,12 +146,6 @@ namespace Gate.Hosts.HttpListener
                 go = () => { };
                 listener.Stop();
             });
-        }
-
-
-        static BodyDelegate RequestBody(Stream stream)
-        {
-            return (write, end, cancel) => new PipeRequest(stream, write, end, cancel).Go();
         }
 
         public class Disposable : IDisposable

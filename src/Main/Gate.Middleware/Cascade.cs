@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Owin;
+using System.Threading.Tasks;
 
 namespace Gate.Middleware
 {
@@ -67,10 +68,12 @@ namespace Gate.Middleware
 
             // the first non-404 result will the the one to take effect
             // any subsequent apps are not called
-            return (env, result, fault) =>
+            return call =>
             {
                 var iter = apps.GetEnumerator();
                 iter.MoveNext();
+
+                TaskCompletionSource<ResultParameters> tcs = new TaskCompletionSource<ResultParameters>();
 
                 Action loop = () => { };
                 loop = () =>
@@ -79,41 +82,39 @@ namespace Gate.Middleware
                     for (var hot = true; hot; )
                     {
                         hot = false;
-                        iter.Current.Invoke(
-                            env,
-                            (status, headers, body) =>
+                        iter.Current.Invoke(call)
+                            .Then(result =>
                             {
-                                try
+                                if (result.Status == 404 && iter.MoveNext())
                                 {
-                                    if (status.StartsWith("404") && iter.MoveNext())
+                                    // ReSharper disable AccessToModifiedClosure
+                                    if (threadId == Thread.CurrentThread.ManagedThreadId)
                                     {
-                                        // ReSharper disable AccessToModifiedClosure
-                                        if (threadId == Thread.CurrentThread.ManagedThreadId)
-                                        {
-                                            hot = true;
-                                        }
-                                        else
-                                        {
-                                            loop();
-                                        }
-                                        // ReSharper restore AccessToModifiedClosure
+                                        hot = true;
                                     }
                                     else
                                     {
-                                        result(status, headers, body);
+                                        loop();
                                     }
+                                    // ReSharper restore AccessToModifiedClosure
                                 }
-                                catch (Exception ex)
+                                else
                                 {
-                                    fault(ex);
+                                    tcs.TrySetResult(result);
                                 }
-                            },
-                            fault);
+                            })
+                            .Catch(errorInfo =>
+                            {
+                                tcs.TrySetException(errorInfo.Exception);
+                                return errorInfo.Handled();
+                            });
                     }
                     threadId = 0;
                 };
 
                 loop();
+
+                return tcs.Task;
             };
         }
     }

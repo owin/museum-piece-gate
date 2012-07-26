@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 using Owin;
 using Nancy;
 using Nancy.Bootstrapper;
@@ -32,23 +31,19 @@ namespace Gate.Adapters.Nancy
         {
             bootstrapper.Initialise();
             var engine = bootstrapper.GetEngine();
-            return (env, result, fault) =>
+            return call =>
             {
-                Action<Exception> onError = ex =>
-                {
-                    fault(ex);
-                };
+                var env = call.Environment;
 
                 var owinRequestMethod = Get<string>(env, OwinConstants.RequestMethod);
                 var owinRequestScheme = Get<string>(env, OwinConstants.RequestScheme);
-                var owinRequestHeaders = Get<IDictionary<string, string[]>>(env, OwinConstants.RequestHeaders);
+                var owinRequestHeaders = call.Headers;
                 var owinRequestPathBase = Get<string>(env, OwinConstants.RequestPathBase);
                 var owinRequestPath = Get<string>(env, OwinConstants.RequestPath);
                 var owinRequestQueryString = Get<string>(env, OwinConstants.RequestQueryString);
-                var owinRequestBody = Get<BodyDelegate>(env, OwinConstants.RequestBody, EmptyBody);
-                var cancellationToken = Get(env, typeof(CancellationToken).FullName, CancellationToken.None);
+                var owinRequestBody = call.Body;
                 var serverClientIp = Get<string>(env, "server.CLIENT_IP");
-                var callDisposing = Get<CancellationToken>(env, "host.CallDisposing");
+                var callDisposing = call.Completed;
 
                 var url = new Url
                 {
@@ -60,63 +55,45 @@ namespace Gate.Adapters.Nancy
                     Query = owinRequestQueryString,
                 };
 
-                var body = new RequestStream(ExpectedLength(owinRequestHeaders), false);
+                var body = new RequestStream(owinRequestBody, ExpectedLength(owinRequestHeaders), false);
 
-                owinRequestBody.Invoke(
-                    OnRequestData(body, onError),
-                    readError =>
+                var nancyRequest = new Request(
+                    owinRequestMethod,
+                    url,
+                    body,
+                    owinRequestHeaders.ToDictionary(kv => kv.Key, kv => (IEnumerable<string>)kv.Value, StringComparer.OrdinalIgnoreCase),
+                    serverClientIp);
+
+                var tcs = new TaskCompletionSource<ResultParameters>();
+                engine.HandleRequest(
+                    nancyRequest,
+                    context =>
                     {
-                        if (readError != null)
+                        callDisposing.Register(context.Dispose);
+
+                        var nancyResponse = context.Response;
+                        var headers = nancyResponse.Headers.ToDictionary(kv => kv.Key, kv => new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
+                        if (!string.IsNullOrWhiteSpace(nancyResponse.ContentType))
                         {
-                            onError(readError);
-                            return;
+                            headers["Content-Type"] = new[] { nancyResponse.ContentType };
                         }
-
-                        body.Position = 0;
-                        var nancyRequest = new Request(owinRequestMethod, url, body, owinRequestHeaders.ToDictionary(kv => kv.Key, kv => (IEnumerable<string>)kv.Value, StringComparer.OrdinalIgnoreCase), serverClientIp);
-
-                        engine.HandleRequest(
-                            nancyRequest,
-                            context =>
+                        if (nancyResponse.Cookies != null && nancyResponse.Cookies.Count != 0)
+                        {
+                            headers["Set-Cookie"] = nancyResponse.Cookies.Select(cookie => cookie.ToString()).ToArray();
+                        }
+                        tcs.SetResult(new ResultParameters
+                        {
+                            Status = (int)nancyResponse.StatusCode,
+                            Headers = headers,
+                            Body = (output, cancel) =>
                             {
-                                callDisposing.Register(() =>
-                                {
-                                    context.Dispose();
-                                });
-
-                                var nancyResponse = context.Response;
-                                var status = String.Format("{0} {1}", (int)nancyResponse.StatusCode, nancyResponse.StatusCode);
-                                var headers = nancyResponse.Headers.ToDictionary(kv => kv.Key, kv => new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
-                                if (!string.IsNullOrWhiteSpace(nancyResponse.ContentType))
-                                {
-                                    headers["Content-Type"] = new[] { nancyResponse.ContentType };
-                                }
-                                if (nancyResponse.Cookies != null && nancyResponse.Cookies.Count != 0)
-                                {
-                                    headers["Set-Cookie"] = nancyResponse.Cookies.Select(cookie => cookie.ToString()).ToArray();
-                                }
-
-                                result(
-                                    status,
-                                    headers,
-                                    (write, end, cancel) =>
-                                    {
-                                        using (var stream = new ResponseStream(write, end))
-                                        {
-                                            try
-                                            {
-                                                nancyResponse.Contents(stream);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                stream.End(ex);
-                                            }
-                                        }
-                                    });
-                            },
-                            onError);
+                                nancyResponse.Contents(output);
+                                return TaskHelpers.Completed();
+                            }
+                        });
                     },
-                    cancellationToken);
+                    tcs.SetException);
+                return tcs.Task;
             };
         }
 
@@ -149,29 +126,5 @@ namespace Gate.Adapters.Nancy
             return int.TryParse(header, NumberStyles.Any, CultureInfo.InvariantCulture, out contentLength) ? contentLength : 0;
         }
 
-        static void EmptyBody(Func<ArraySegment<byte>, Action, bool> write, Action<Exception> end, CancellationToken cancellationToken)
-        {
-            end(null);
-        }
-
-        static Func<ArraySegment<byte>, Action, bool> OnRequestData(Stream body, Action<Exception> fault)
-        {
-            return (data, callback) =>
-            {
-                try
-                {
-                    if (data.Count != 0)
-                    {
-                        body.Write(data.Array, data.Offset, data.Count);
-                    }
-                    return false;
-                }
-                catch (Exception ex)
-                {
-                    fault(ex);
-                    return false;
-                }
-            };
-        }
     }
 }
