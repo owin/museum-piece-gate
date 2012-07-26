@@ -44,8 +44,8 @@
     </Compile>
     <Compile Include="AppBuilder.cs" />
     <Compile Include="Adapters.cs" />
-    <Compile Include="App_Packages\TaskHelpers.Sources.0.1-ctp1\TaskHelpers.cs" />
-    <Compile Include="App_Packages\TaskHelpers.Sources.0.1-ctp1\TaskHelpersExtensions.cs" />
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
     <Compile Include="Loader\IStartupLoader.cs" />
     <Compile Include="Loader\StartupLoader.cs" />
     <Compile Include="NotFound.cs" />
