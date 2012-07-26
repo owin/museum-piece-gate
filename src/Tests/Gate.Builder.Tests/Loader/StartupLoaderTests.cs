@@ -167,7 +167,7 @@ namespace Gate.Builder.Tests.Loader
 
             var builder = new AppBuilder();
             configuration(builder);
-            var app = builder.Materialize();
+            var app = builder.Materialize<AppDelegate>();
 
             _alphaCalls = 0;
             app(new Dictionary<string, object>(), null, null);

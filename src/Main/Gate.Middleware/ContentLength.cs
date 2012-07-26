@@ -1,12 +1,9 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading;
-using Owin;
-
 namespace Gate.Middleware
 {
-    using Response = Tuple<string, IDictionary<string, string[]>, BodyDelegate>;
+    using System.IO;
+    using System.Threading.Tasks;
+    using Gate.Utils;
+    using Owin;
 
     public static class ContentLength
     {
@@ -14,112 +11,53 @@ namespace Gate.Middleware
         {
             return builder.Use<AppDelegate>(Middleware);
         }
-
-
+        
         public static AppDelegate Middleware(AppDelegate app)
         {
-            return
-                (env, result, fault) =>
-                    app(
-                        env,
-                        (status, headers, body) =>
+            return call =>
+            {
+                return app(call).Then<ResultParameters, ResultParameters>( 
+                    result =>
+                    {
+                        if (IsStatusWithNoNoEntityBody(result.Status)
+                            || result.Headers.ContainsKey("Content-Length") 
+                            || result.Headers.ContainsKey("Transfer-Encoding"))
                         {
-                            if (IsStatusWithNoNoEntityBody(status) ||
-                                headers.ContainsKey("Content-Length") ||
-                                headers.ContainsKey("Transfer-Encoding"))
+                            return TaskHelpers.FromResult(result);
+                        }
+
+                        if (result.Body == null)
+                        {
+                            result.Headers.SetHeader("Content-Length", "0");
+                            return TaskHelpers.FromResult(result);
+                        }
+
+                        // Buffer the body
+                        MemoryStream buffer = new MemoryStream();
+                        return result.Body(buffer, call.Completed).Then<ResultParameters>(
+                            () =>
                             {
-                                result(status, headers, body);
-                            }
-                            else
-                            {
-                                var token = CancellationToken.None;
-                                object obj;
-                                if (env.TryGetValue(typeof(CancellationToken).FullName, out obj) && obj is CancellationToken)
-                                    token = (CancellationToken)obj;
+                                buffer.Seek(0, SeekOrigin.Begin);
+                                result.Headers.SetHeader("Content-Length", buffer.Length.ToString());
+                                result.Body = (output, cancel) =>
+                                {
+                                    return buffer.CopyToAsync(output, cancel);
+                                };
 
-                                var buffer = new DataBuffer();
-                                body(
-                                    buffer.Add,
-                                    ex =>
-                                    {
-                                        buffer.End(ex);
-                                        headers["Content-Length"] = new[] { buffer.GetCount().ToString() };
-                                        result(status, headers, buffer.Body);
-                                    },
-                                    token);
-                            }
-                        },
-                        fault);
+                                return TaskHelpers.FromResult(result);
+                            }, call.Completed);
+
+                    }, call.Completed);
+            };
         }
 
-
-
-        private static bool IsStatusWithNoNoEntityBody(string status)
+        private static bool IsStatusWithNoNoEntityBody(int status)
         {
-            return status.StartsWith("1") ||
-                status.StartsWith("204") ||
-                status.StartsWith("205") ||
-                status.StartsWith("304");
+            return (status >= 100 && status < 200) ||
+                status == 204 ||
+                status == 205 ||
+                status == 304;
         }
-
-        class DataBuffer
-        {
-            readonly List<ArraySegment<byte>> _buffers = new List<ArraySegment<byte>>();
-            ArraySegment<byte> _tail = new ArraySegment<byte>(new byte[2048], 0, 0);
-            Exception _error;
-
-            public int GetCount()
-            {
-                return _buffers.Aggregate(0, (c, d) => c + d.Count);
-            }
-
-            public bool Add(ArraySegment<byte> data, Action continuation)
-            {
-                var remaining = data;
-                while (remaining.Count != 0)
-                {
-                    if (_tail.Count + _tail.Offset == _tail.Array.Length)
-                    {
-                        _buffers.Add(_tail);
-                        _tail = new ArraySegment<byte>(new byte[4096], 0, 0);
-                    }
-                    var copyCount = Math.Min(remaining.Count, _tail.Array.Length - _tail.Offset - _tail.Count);
-                    Array.Copy(remaining.Array, remaining.Offset, _tail.Array, _tail.Offset + _tail.Count, copyCount);
-                    _tail = new ArraySegment<byte>(_tail.Array, _tail.Offset, _tail.Count + copyCount);
-                    remaining = new ArraySegment<byte>(remaining.Array, remaining.Offset + copyCount, remaining.Count - copyCount);
-                }
-                return false;
-            }
-
-            public void End(Exception error)
-            {
-                _buffers.Add(_tail);
-                _error = error;
-            }
-
-            public void Body(
-                Func<ArraySegment<byte>, Action, bool> write,
-                Action<Exception> end,
-                CancellationToken cancel)
-            {
-                try
-                {
-                    foreach (var data in _buffers)
-                    {
-                        if (cancel.IsCancellationRequested)
-                            break;
-
-                        write(data, null);
-                    }
-                    end(_error);
-                }
-                catch (Exception ex)
-                {
-                    end(ex);
-                }
-            }
-        }
-
     }
 }
 

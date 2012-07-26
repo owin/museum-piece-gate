@@ -13,7 +13,7 @@ namespace Gate.Hosts.AspNet.Tests
         [Test]
         public void Factory_method_should_be_called_once()
         {
-            AppDelegate handler = (env,result,fault)=> { };
+            AppDelegate handler = call => new Response().EndAsync();
             var calls = 0;
             AppSingleton.SetFactory(() =>
             {
@@ -34,7 +34,7 @@ namespace Gate.Hosts.AspNet.Tests
         [Test]
         public void Reassigning_factory_will_call_it_again()
         {
-            AppDelegate handler = (env, result, fault) => { };
+            AppDelegate handler = call => new Response().EndAsync();
             var calls = 0;
             Func<AppDelegate> factory = () =>
             {

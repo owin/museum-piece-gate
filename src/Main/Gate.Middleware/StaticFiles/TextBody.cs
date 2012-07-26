@@ -2,6 +2,8 @@ using System;
 using System.Text;
 using System.Threading;
 using Owin;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Gate.Middleware.StaticFiles
 {
@@ -9,7 +11,6 @@ namespace Gate.Middleware.StaticFiles
     {
         private readonly string text;
         private readonly Encoding encoding;
-        private BodyStream bodyStream;
 
         public TextBody(string text, Encoding encoding)
         {
@@ -19,40 +20,34 @@ namespace Gate.Middleware.StaticFiles
 
         public static BodyDelegate Create(string text, Encoding encoding)
         {
-            return (write, end, cancel) =>
+            return (stream, cancel) =>
             {
                 var textBody = new TextBody(text, encoding);
-                textBody.Start(write, end, cancel);
+                return textBody.Start(stream, cancel);
             };
         }
 
 
-        public void Start(Func<ArraySegment<byte>, Action, bool> write, Action<Exception> end, CancellationToken cancellationToken)
+        public Task Start(Stream stream, CancellationToken cancellationToken)
         {
-            bodyStream = new BodyStream(write, end, cancellationToken);
-
-            Action start = () =>
-            {
-                try
+            TaskCompletionSource<object> completed = new TaskCompletionSource<object>();
+            var bytes = encoding.GetBytes(text);
+            stream.BeginWrite(bytes, 0, bytes.Length,
+                async =>
                 {
-                    if (bodyStream.CanSend())
+                    try
                     {
-                        var bytes = encoding.GetBytes(text);
-                        var segment = new ArraySegment<byte>(bytes);
-
-                        // Not buffered.
-                        bodyStream.SendBytes(segment, null, null);
-
-                        bodyStream.Finish();
+                        stream.EndWrite(async);
+                        completed.TrySetResult(null);
                     }
-                }
-                catch (Exception ex)
-                {
-                    bodyStream.End(ex);
-                }
-            };
+                    catch (Exception ex)
+                    {
+                        completed.TrySetException(ex);
+                    }
+                },
+                null);
 
-            bodyStream.Start(start, null);
+            return completed.Task;
         }
     }
 }

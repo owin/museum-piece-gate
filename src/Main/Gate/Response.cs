@@ -1,70 +1,93 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Owin;
 using Gate.Utils;
+using Owin;
+using System.Text;
+using System.IO;
+using System.Threading;
 
 namespace Gate
 {
     public class Response
     {
-        ResultDelegate _result;
+        private static readonly Encoding defaultEncoding = Encoding.UTF8;
 
-        int _autostart;
-        readonly Object _onStartSync = new object();
-        Action _onStart = () => { };
+        private ResultParameters result;
+        private TaskCompletionSource<ResultParameters> callCompletionSource;
+        private TaskCompletionSource<Response> sendHeaderAsyncCompletionSource;
+        private TaskCompletionSource<object> bodyTransitionCompletionSource;
+        private TaskCompletionSource<object> bodyCompletionSource;
 
-        Func<ArraySegment<byte>, Action, bool> _responseWrite;
-        Action<Exception> _responseEnd;
-        CancellationToken _responseCancellationToken = CancellationToken.None;
-        Stream _outputStream;
+        private CancellationToken completeToken;
+        private ResponseStream responseStream;
+        private BodyDelegate defaultBodyDelegate;
 
-        public Response(ResultDelegate result)
-            : this(result, "200 OK")
+        public Response()
+            : this(200)
         {
         }
 
-        public Response(ResultDelegate result, string status)
-            : this(result, status, new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase))
+        public Response(int statusCode)
+            : this(statusCode, null)
         {
         }
 
-        public Response(ResultDelegate result, string status, IDictionary<string, string[]> headers)
-        {
-            _result = result;
-
-            _responseWrite = EarlyResponseWrite;
-            _responseEnd = EarlyResponseEnd;
-
-            Status = status;
-            Headers = headers;
-            Encoding = Encoding.UTF8;
-        }
-
-        public Response(ResultDelegate result, int statusCode)
-            : this(result, statusCode, new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase))
+        public Response(int statusCode, IDictionary<string, string[]> headers)
+            : this(statusCode, headers, null)
         {
         }
 
-        public Response(ResultDelegate result, int statusCode, IDictionary<string, string[]> headers)
-        {
-            _result = result;
-
-            _responseWrite = EarlyResponseWrite;
-            _responseEnd = EarlyResponseEnd;
-
-            StatusCode = statusCode;
-            Headers = headers;
-            Encoding = Encoding.UTF8;
+        public Response(int statusCode, IDictionary<string, string[]> headers, IDictionary<string, object> properties)
+            : this (
+                new ResultParameters()
+                {
+                    Status = statusCode,
+                    Headers = headers,
+                    Body = null,
+                    Properties = properties
+                })
+        {        
         }
 
-        int _statusCode;
-        string _reasonPhrase;
+        public Response(ResultParameters result, CancellationToken completed = default(CancellationToken))
+        {
+            this.defaultBodyDelegate = DefaultBodyDelegate;
+
+            this.result.Status = result.Status;
+            this.result.Body = result.Body ?? defaultBodyDelegate;
+            this.result.Headers = result.Headers ?? new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+            this.result.Properties = result.Properties ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+            this.callCompletionSource = new TaskCompletionSource<ResultParameters>();
+            this.sendHeaderAsyncCompletionSource = new TaskCompletionSource<Response>();
+            this.bodyTransitionCompletionSource = new TaskCompletionSource<object>();
+            this.bodyCompletionSource = new TaskCompletionSource<object>();
+
+            this.completeToken = completed;
+            this.Encoding = defaultEncoding;
+        }
+
+        internal Func<Task<ResultParameters>> Next { get; set; }
+
+        public void Skip()
+        {
+            Next.Invoke().CopyResultToCompletionSource(callCompletionSource);
+        }
+
+        public IDictionary<string, string[]> Headers
+        {
+            get { return result.Headers; }
+            set { result.Headers = value; }
+        }
+
+        public IDictionary<string, object> Properties
+        {
+            get { return result.Properties; }
+            set { result.Properties = value; }
+        }
 
         public string Status
         {
@@ -81,154 +104,38 @@ namespace Gate
                 {
                     throw new ArgumentException("Status must be a string with 3 digit statuscode, a space, and a reason phrase");
                 }
-                _statusCode = int.Parse(value.Substring(0, 3));
-                _reasonPhrase = value.Length < 4 ? null : value.Substring(4);
+                result.Status = int.Parse(value.Substring(0, 3));
+                ReasonPhrase = value.Length < 4 ? null : value.Substring(4);
             }
         }
+
         public int StatusCode
         {
             get
             {
-                return _statusCode;
+                return result.Status;
             }
             set
             {
-                if (_statusCode != value)
+                if (result.Status != value)
                 {
-                    _statusCode = value;
-                    _reasonPhrase = null;
+                    result.Status = value;
+                    ReasonPhrase = null;
                 }
             }
         }
+
         public string ReasonPhrase
         {
             get
             {
-                if (string.IsNullOrEmpty(_reasonPhrase))
-                {
-                    switch (_statusCode)
-                    {
-                        case 100:
-                            return "Continue";
-                        case 101:
-                            return "Switching Protocols";
-                        case 102:
-                            return "Processing";
-                        case 200:
-                            return "OK";
-                        case 201:
-                            return "Created";
-                        case 202:
-                            return "Accepted";
-                        case 203:
-                            return "Non-Authoritative Information";
-                        case 204:
-                            return "No Content";
-                        case 205:
-                            return "Reset Content";
-                        case 206:
-                            return "Partial Content";
-                        case 207:
-                            return "Multi-Status";
-                        case 226:
-                            return "IM Used";
-                        case 300:
-                            return "Multiple Choices";
-                        case 301:
-                            return "Moved Permanently";
-                        case 302:
-                            return "Found";
-                        case 303:
-                            return "See Other";
-                        case 304:
-                            return "Not Modified";
-                        case 305:
-                            return "Use Proxy";
-                        case 306:
-                            return "Reserved";
-                        case 307:
-                            return "Temporary Redirect";
-                        case 400:
-                            return "Bad Request";
-                        case 401:
-                            return "Unauthorized";
-                        case 402:
-                            return "Payment Required";
-                        case 403:
-                            return "Forbidden";
-                        case 404:
-                            return "Not Found";
-                        case 405:
-                            return "Method Not Allowed";
-                        case 406:
-                            return "Not Acceptable";
-                        case 407:
-                            return "Proxy Authentication Required";
-                        case 408:
-                            return "Request Timeout";
-                        case 409:
-                            return "Conflict";
-                        case 410:
-                            return "Gone";
-                        case 411:
-                            return "Length Required";
-                        case 412:
-                            return "Precondition Failed";
-                        case 413:
-                            return "Request Entity Too Large";
-                        case 414:
-                            return "Request-URI Too Long";
-                        case 415:
-                            return "Unsupported Media Type";
-                        case 416:
-                            return "Requested Range Not Satisfiable";
-                        case 417:
-                            return "Expectation Failed";
-                        case 418:
-                            return "I'm a Teapot";
-                        case 422:
-                            return "Unprocessable Entity";
-                        case 423:
-                            return "Locked";
-                        case 424:
-                            return "Failed Dependency";
-                        case 426:
-                            return "Upgrade Required";
-                        case 500:
-                            return "Internal Server Error";
-                        case 501:
-                            return "Not Implemented";
-                        case 502:
-                            return "Bad Gateway";
-                        case 503:
-                            return "Service Unavailable";
-                        case 504:
-                            return "Gateway Timeout";
-                        case 505:
-                            return "HTTP Version Not Supported";
-                        case 506:
-                            return "Variant Also Negotiates";
-                        case 507:
-                            return "Insufficient Storage";
-                        case 510:
-                            return "Not Extended";
-                        default:
-                            return null;
-                    }
-                }
-                return _reasonPhrase;
+                object value;
+                var reasonPhrase = Properties.TryGetValue("owin.ReasonPhrase", out value) ? Convert.ToString(value) : null;
+                return string.IsNullOrEmpty(reasonPhrase) ? ReasonPhrases.ToReasonPhrase(StatusCode) : reasonPhrase;
             }
-            set
-            {
-                _reasonPhrase = value;
-            }
+            set { Properties["owin.ReasonPhrase"] = value; }
         }
-
-
-        public IDictionary<string, string[]> Headers { get; set; }
-        public Encoding Encoding { get; set; }
-        public bool Buffer { get; set; }
-
+        
         public string GetHeader(string name)
         {
             var values = GetHeaders(name);
@@ -343,8 +250,7 @@ namespace Gate
                 Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             });
         }
-
-
+        
         public class Cookie
         {
             public Cookie()
@@ -370,251 +276,199 @@ namespace Gate
             set { SetHeader("Content-Type", value); }
         }
 
-
-        public Response Start()
+        public long ContentLength
         {
-            _autostart = 1;
-            Interlocked.Exchange(ref _result, ResultCalledAlready).Invoke(Status, Headers, ResponseBody);
-            return this;
+            get { return long.Parse(GetHeader("Content-Length"), CultureInfo.InvariantCulture); }
+            set { SetHeader("Content-Length", value.ToString(CultureInfo.InvariantCulture)); }
         }
 
-        public Response Start(string status)
-        {
-            if (!string.IsNullOrWhiteSpace(status))
-                Status = status;
+        public Encoding Encoding { get; set; }
 
-            return Start();
-        }
+        // (true) Buffer or (false) auto-start/SendHeaders on write 
+        public bool Buffer { get; set; }
 
-        public Response Start(string status, IEnumerable<KeyValuePair<string, string[]>> headers)
+        public BodyDelegate BodyDelegate
         {
-            if (headers != null)
+            get
             {
-                foreach (var header in headers)
+                return result.Body;
+            }
+            set
+            {
+                result.Body = value;
+            }
+        }
+
+        private void EnsureResponseStream()
+        {
+            if (responseStream == null)
+            {
+                responseStream = new ResponseStream();
+                if (result.Body != defaultBodyDelegate)
                 {
-                    Headers[header.Key] = header.Value;
+                    if (callCompletionSource.Task.IsCompleted)
+                    {
+                        throw new InvalidOperationException("The result has already been returned, the body delegate cannot be modified.");
+                    }
+                    result.Body = defaultBodyDelegate;
                 }
             }
-            return Start(status);
-        }
-
-        public void Start(string status, IEnumerable<KeyValuePair<string, string>> headers)
-        {
-            var actualHeaders = headers.Select(kv => new KeyValuePair<string, string[]>(kv.Key, new[] { kv.Value }));
-            Start(status, actualHeaders);
-        }
-
-        public void Start(Action continuation)
-        {
-            OnStart(continuation);
-            Start();
-        }
-
-        public void Start(string status, Action continuation)
-        {
-            OnStart(continuation);
-            Start(status);
         }
 
         public Stream OutputStream
         {
-            get
+            get 
             {
-                if (_outputStream == null)
+                EnsureResponseStream();
+                if (!Buffer) // Auto-Start
                 {
-                    Interlocked.Exchange(ref _outputStream, new ResponseStream(this));
+                    Start();
                 }
-                return _outputStream;
+                return responseStream;
             }
         }
 
-        public bool Write(string text)
+        public void Write(string text)
         {
-            // this could be more efficient if it spooled the immutable strings instead...
-            var data = Encoding.GetBytes(text);
-            return Write(new ArraySegment<byte>(data));
+            var data = (Encoding ?? defaultEncoding).GetBytes(text);
+            Write(data);
         }
 
-        public bool Write(string format, params object[] args)
+        public void Write(string format, params object[] args)
         {
-            return Write(string.Format(format, args));
+            Write(string.Format(format, args));
         }
 
-        public bool Write(ArraySegment<byte> data)
+        public void Write(byte[] buffer)
         {
-            return _responseWrite(data, null);
+            completeToken.ThrowIfCancellationRequested();            
+            OutputStream.Write(buffer, 0, buffer.Length);
         }
 
-        public bool Write(ArraySegment<byte> data, Action callback)
+        public void Write(byte[] buffer, int offset, int count)
         {
-            return _responseWrite(data, callback);
+            completeToken.ThrowIfCancellationRequested();
+            OutputStream.Write(buffer, offset, count);
+        }
+
+        public void Write(ArraySegment<byte> data)
+        {
+            completeToken.ThrowIfCancellationRequested();
+            OutputStream.Write(data.Array, data.Offset, data.Count);
+        }
+
+        public Task WriteAsync(byte[] buffer, int offset, int count)
+        {
+            return OutputStream.WriteAsync(buffer, offset, count, completeToken);
         }
 
         public Task WriteAsync(ArraySegment<byte> data)
         {
-            var tcs = new TaskCompletionSource<object>();
-            if (!_responseWrite(data, () => tcs.SetResult(null)))
-                tcs.SetResult(null);
-            return tcs.Task;
+            return OutputStream.WriteAsync(data.Array, data.Offset, data.Count, completeToken);
         }
 
-        public IAsyncResult BeginWrite(ArraySegment<byte> data, AsyncCallback callback, object state)
+        public IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            var tcs = new TaskCompletionSource<object>(state);
-            if (!_responseWrite(data, () => tcs.SetResult(null)))
-                tcs.SetResult(null);
-            tcs.Task.ContinueWith(t => callback(t));
-            return tcs.Task;
+
+            return OutputStream.BeginWrite(buffer, offset, count, callback, state);
         }
 
         public void EndWrite(IAsyncResult result)
         {
-            ((Task)result).Wait();
+            OutputStream.EndWrite(result);
         }
 
-
-        public bool Flush()
+        public void Flush()
         {
-            return Write(default(ArraySegment<byte>));
+            OutputStream.Flush();
         }
 
-        public bool Flush(Action callback)
+        // Copy the buffer to the output and then provide direct access to the output stream.
+        private Task DefaultBodyDelegate(Stream output, CancellationToken cancel)
         {
-            return Write(default(ArraySegment<byte>), callback);
+            EnsureResponseStream();
+            Task transitionTask = responseStream.TransitionFromBufferedToUnbuffered(output, cancel)
+                .Then(() =>
+                {
+                    // Offload complete
+                    sendHeaderAsyncCompletionSource.TrySetResult(this);
+                })
+                .Catch(errorInfo =>
+                {
+                    sendHeaderAsyncCompletionSource.TrySetCanceled();
+                    bodyCompletionSource.TrySetException(errorInfo.Exception);
+                    return errorInfo.Handled();
+                })
+                .Finally(() =>
+                {
+                    bodyTransitionCompletionSource.TrySetResult(null);
+                });
+            
+            return bodyCompletionSource.Task;
         }
 
-        public Task FlushAsync()
+        public void Start()
         {
-            return WriteAsync(default(ArraySegment<byte>));
+            StartAsync();
         }
 
-        public IAsyncResult BeginFlush(AsyncCallback callback, object state)
+        // Finalizes the status/headers/properties and returns a Task to notify the caller when the 
+        // BodyDelegate has been invoked, the buffered data offloaded, and it is now safe to write unbuffered data.
+        public Task<Response> StartAsync()
         {
-            return BeginWrite(default(ArraySegment<byte>), callback, state);
+            // Only execute once.
+            if (!callCompletionSource.Task.IsCompleted)
+            {
+                callCompletionSource.TrySetResult(result);
+
+                // TODO: Make Headers and Properties read only to prevent user errors
+                
+                if (result.Body == defaultBodyDelegate)
+                {
+                    // Register for cancelation in case the body delegate is not invoked.
+                    completeToken.Register(() => sendHeaderAsyncCompletionSource.TrySetCanceled());
+                }
+                else
+                {
+                    // Not using the default body delegate, don't block.
+                    sendHeaderAsyncCompletionSource.TrySetResult(this);
+                    bodyTransitionCompletionSource.TrySetResult(null);
+                }
+            }
+            return sendHeaderAsyncCompletionSource.Task;
         }
 
-        public void EndFlush(IAsyncResult result)
+        public ResultParameters Result
         {
-            EndWrite(result);
+            get { return result; }
+        }
+
+        public Task<ResultParameters> ResultTask
+        {
+            get { return callCompletionSource.Task; }
         }
 
         public void End()
         {
-            OnEnd(null);
+            EndAsync();
         }
 
-        public void End(string text)
+        // We are completely done with the response and body.
+        public Task<ResultParameters> EndAsync()
         {
-            Write(text);
-            OnEnd(null);
-        }
-
-        public void End(ArraySegment<byte> data)
-        {
-            Write(data);
-            OnEnd(null);
+            Start();
+            sendHeaderAsyncCompletionSource.TrySetCanceled();
+            // End the body as soon as the buffer copies.
+            bodyTransitionCompletionSource.Task.Then(() => { bodyCompletionSource.TrySetResult(null); } );
+            return callCompletionSource.Task;
         }
 
         public void Error(Exception error)
         {
-            OnEnd(error);
-        }
-
-        void ResponseBody(
-            Func<ArraySegment<byte>, Action, bool> write,
-            Action<Exception> end,
-            CancellationToken cancellationToken)
-        {
-            _responseWrite = write;
-            _responseEnd = end;
-            _responseCancellationToken = cancellationToken;
-            lock (_onStartSync)
-            {
-                Interlocked.Exchange(ref _onStart, null).Invoke();
-            }
-        }
-
-
-        static readonly ResultDelegate ResultCalledAlready =
-            (_, __, ___) =>
-            {
-                throw new InvalidOperationException("Start must only be called once on a Response and it must be called before Write or End");
-            };
-
-
-        void Autostart()
-        {
-            if (Interlocked.Increment(ref _autostart) == 1)
-            {
-                Start();
-            }
-        }
-
-
-        void OnStart(Action notify)
-        {
-            lock (_onStartSync)
-            {
-                if (_onStart != null)
-                {
-                    var prior = _onStart;
-                    _onStart = () =>
-                    {
-                        prior.Invoke();
-                        CallNotify(notify);
-                    };
-                    return;
-                }
-            }
-            CallNotify(notify);
-        }
-
-        void OnEnd(Exception error)
-        {
-            Interlocked.Exchange(ref _responseEnd, _ => { }).Invoke(error);
-        }
-
-        void CallNotify(Action notify)
-        {
-            try
-            {
-                notify.Invoke();
-            }
-            catch (Exception ex)
-            {
-                Error(ex);
-            }
-        }
-
-        bool EarlyResponseWrite(ArraySegment<byte> data, Action callback)
-        {
-            var copy = data;
-            if (copy.Count != 0)
-            {
-                copy = new ArraySegment<byte>(new byte[data.Count], 0, data.Count);
-                Array.Copy(data.Array, data.Offset, copy.Array, 0, data.Count);
-            }
-            OnStart(
-                () =>
-                {
-                    var willCallback = _responseWrite(copy, callback);
-                    if (callback != null && willCallback == false)
-                    {
-                        callback.Invoke();
-                    }
-                });
-            if (!Buffer || data.Array == null)
-            {
-                Autostart();
-            }
-            return true;
-        }
-
-
-        void EarlyResponseEnd(Exception ex)
-        {
-            OnStart(() => OnEnd(ex));
-            Autostart();
+            callCompletionSource.TrySetException(error);
+            // This just goes back to user code, we don't need to report their own exception back to them.
+            sendHeaderAsyncCompletionSource.TrySetCanceled();
+            bodyCompletionSource.TrySetException(error);            
         }
     }
 }

@@ -1,16 +1,17 @@
 ﻿using System;
 using Kayak;
+using Owin;
 
 namespace Gate.Hosts.Kayak
 {
     class DataConsumer : IDataConsumer
     {
-        readonly Func<ArraySegment<byte>, Action, bool> onData;
+        readonly Func<ArraySegment<byte>, Action<Exception>, bool> onData;
         readonly Action<Exception> onError;
         readonly Action onEnd;
 
         public DataConsumer(
-            Func<ArraySegment<byte>, Action, bool> onData,
+            Func<ArraySegment<byte>, Action<Exception>, bool> onData,
             Action<Exception> onError,
             Action onEnd)
         {
@@ -21,7 +22,11 @@ namespace Gate.Hosts.Kayak
 
         public bool OnData(ArraySegment<byte> data, Action continuation)
         {
-            return onData(data, continuation);
+            if (onData(data, ex => continuation()) == true)
+            {
+                return false;
+            }
+            return true;
         }
 
         public void OnEnd()

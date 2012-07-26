@@ -1,11 +1,12 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Gate.Builder;
-using Gate.TestHelpers;
 using NUnit.Framework;
 using Owin;
-using Gate.Middleware;
 
 namespace Gate.Middleware.Tests
 {
@@ -14,87 +15,109 @@ namespace Gate.Middleware.Tests
     {
         AppDelegate Build(Action<IAppBuilder> b)
         {
-            return AppBuilder.BuildConfiguration(b);
+            return AppBuilder.BuildPipeline<AppDelegate>(b);
+        }
+
+        private String ReadBody(BodyDelegate body)
+        {
+            using (MemoryStream buffer = new MemoryStream())
+            {
+                body(buffer, CancellationToken.None).Wait();
+                return Encoding.ASCII.GetString(buffer.ToArray());
+            }
         }
 
         [Test]
         public void Normal_request_should_pass_through_unchanged()
         {
-            var app = new FakeApp("200 OK", "Hello");
-            app.Headers.SetHeader("Content-Type", "text/plain");
-
             var stack = Build(b => b
                 .UseShowExceptions()
-                .Run(app.AppDelegate));
+                .Run(appCall =>
+                {
+                    Response appResult = new Response(200);
+                    appResult.Headers.SetHeader("Content-Type", "text/plain");
+                    appResult.Headers.SetHeader("Content-Length", "5");
+                    appResult.Write("Hello");
+                    return appResult.EndAsync();
+                }));
 
-            var host = new FakeHost(stack);
+            ResultParameters result = stack(new Request().Call).Result;
 
-            var response = host.GET("/");
-
-            Assert.That(response.Status, Is.EqualTo("200 OK"));
-            Assert.That(response.BodyText, Is.EqualTo("Hello"));
+            Assert.That(result.Status, Is.EqualTo(200));
+            Assert.That(ReadBody(result.Body), Is.EqualTo("Hello"));
         }
 
         [Test]
         public void Request_fault_should_be_500_with_html_body()
         {
-            var app = new FakeApp(new ApplicationException("Kaboom"));
-
             var stack = Build(b => b
                 .UseShowExceptions()
-                .Run(app.AppDelegate));
+                .Run(appCall => { throw new ApplicationException("Kaboom"); }));
 
-            var host = new FakeHost(stack);
+            ResultParameters result = stack(new Request().Call).Result;
 
-            var response = host.GET("/");
-
-            Assert.That(response.Status, Is.EqualTo("500 Internal Server Error"));
-            Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
-            Assert.That(response.BodyText, Is.StringContaining("ApplicationException"));
-            Assert.That(response.BodyText, Is.StringContaining("Kaboom"));
+            Assert.That(result.Status, Is.EqualTo(500));
+            Assert.That(result.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
+            String bodyText = ReadBody(result.Body);
+            Assert.That(bodyText, Is.StringContaining("ApplicationException"));
+            Assert.That(bodyText, Is.StringContaining("Kaboom"));
         }
 
         [Test]
-        public void Exception_in_response_body_stream_should_be_formatted_as_it_passes_through()
+        public void Sync_Exception_in_response_body_stream_should_be_formatted_as_it_passes_through()
         {
-            var app = new FakeApp { Status = "200 OK" };
-            app.Headers.SetHeader("Content-Type", "text/html");
-            app.Body = (write, end, cancel) =>
-            {
-                write(new ArraySegment<byte>(Encoding.UTF8.GetBytes("<p>so far so good</p>")), null);
-                end(new ApplicationException("failed sending body"));
-            };
-
             var stack = Build(b => b
                 .UseShowExceptions()
-                .Run(app.AppDelegate));
+                .Run(appCall =>
+                {
+                    ResultParameters rawResult = new ResultParameters();
+                    rawResult.Body = (stream, cancel) =>
+                        {
+                            byte[] bodyBytes = Encoding.ASCII.GetBytes("<p>so far so good</p>");
+                            stream.Write(bodyBytes, 0, bodyBytes.Length);
+                            throw new ApplicationException("failed sending body sync");
+                        };
+                    rawResult.Status = 200;
+                    Response appResult = new Response(rawResult);
+                    appResult.Headers.SetHeader("Content-Type", "text/html");
+                    appResult.Start();
+                    return appResult.ResultTask;
+                }));
 
-            var host = new FakeHost(stack);
+            ResultParameters result = stack(new Request().Call).Result;
 
-            var response = host.GET("/");
-
-            Assert.That(response.Status, Is.EqualTo("200 OK"));
-            Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
-            Assert.That(response.BodyText, Is.StringContaining("<p>so far so good</p>"));
-            Assert.That(response.BodyText, Is.StringContaining("failed sending body"));
+            Assert.That(result.Status, Is.EqualTo(200));
+            Assert.That(result.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
+            String bodyText = ReadBody(result.Body);
+            Assert.That(bodyText, Is.StringContaining("<p>so far so good</p>"));
+            Assert.That(bodyText, Is.StringContaining("failed sending body sync"));
         }
 
-        [Test, Ignore("Not sure why this has compiler error, but didn't before")]
-        public void Stack_frame_should_parse_with_and_without_line_numbers()
+        [Test]
+        public void Async_Exception_in_response_body_stream_should_be_formatted_as_it_passes_through()
         {
-            throw new Exception("Not sure why this has compiler error, but didn't before");
+            var stack = Build(b => b
+                .UseShowExceptions()
+                .Run(appCall =>
+                {
+                    Response appResult = new Response(200);
+                    appResult.Headers.SetHeader("Content-Type", "text/html");
+                    appResult.StartAsync().Then(
+                        resp1 =>
+                        {
+                            resp1.Write("<p>so far so good</p>");
+                            resp1.Error(new ApplicationException("failed sending body async"));
+                        });
+                    return appResult.ResultTask;
+                }));
 
-            //    var frames = ShowExceptionsExtensions.StackFrames(new[]{"  at foo in bar:line 42\r\n"}).ToArray();
-            //    Assert.That(frames.Length, Is.EqualTo(1));
-            //    Assert.That(frames[0].Function, Is.EqualTo("foo"));
-            //    Assert.That(frames[0].File, Is.EqualTo("bar"));
-            //    Assert.That(frames[0].Line, Is.EqualTo(42));
+            ResultParameters result = stack(new Request().Call).Result;
 
-            //    frames = ShowExceptionsExtensions.StackFrames(new[]{"  at foo\r\n"}).ToArray();
-            //    Assert.That(frames.Length, Is.EqualTo(1));
-            //    Assert.That(frames[0].Function, Is.EqualTo("foo"));
-            //    Assert.That(frames[0].File, Is.EqualTo(""));
-            //    Assert.That(frames[0].Line, Is.EqualTo(0));
+            Assert.That(result.Status, Is.EqualTo(200));
+            Assert.That(result.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
+            String bodyText = ReadBody(result.Body);
+            Assert.That(bodyText, Is.StringContaining("<p>so far so good</p>"));
+            Assert.That(bodyText, Is.StringContaining("failed sending body async"));
         }
     }
 }

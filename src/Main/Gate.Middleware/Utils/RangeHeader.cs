@@ -9,10 +9,8 @@ namespace Gate.Middleware.Utils
     {
         const string ValuePrefix = "bytes=";
 
-        public static bool IsValid(IDictionary<string, object> env)
+        public static bool IsValid(IDictionary<string, string[]> headers)
         {
-            var headers = new Environment(env).Headers;
-
             var httpRange = headers.GetHeader("Range");
 
             var isValid = (httpRange != null && httpRange.StartsWith(ValuePrefix, StringComparison.InvariantCultureIgnoreCase)) && httpRange.Length > ValuePrefix.Length;
@@ -20,14 +18,14 @@ namespace Gate.Middleware.Utils
             return isValid;
         }
 
-        public static IEnumerable<Tuple<long, long>> Parse(IDictionary<string, object> env, long size)
+        public static IEnumerable<Tuple<long, long>> Parse(IDictionary<string, string[]> headers, long size)
         {
-            if (!IsValid(env))
+            if (!IsValid(headers))
             {
                 throw new InvalidOperationException("Validate the Range header prior to parsing.");
             }
 
-            var httpRange = new Environment(env).Headers.GetHeader("Range");
+            var httpRange = headers.GetHeader("Range");
 
             var ranges = new List<Tuple<long, long>>();
 

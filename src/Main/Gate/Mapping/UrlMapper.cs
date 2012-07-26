@@ -1,31 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Owin;
 
 namespace Gate.Mapping
 {
     public class UrlMapper
     {
-        readonly AppDelegate _app;
+        readonly AppDelegate _defaultApp;
         IEnumerable<Tuple<string, AppDelegate>> _map = Enumerable.Empty<Tuple<string, AppDelegate>>();
 
         UrlMapper(AppDelegate app)
         {
-            _app = app;
+            _defaultApp = app;
         }
 
-        public static AppDelegate Create(IDictionary<string, AppDelegate> map)
-        {
-            return Create(NotFound.App(), map);
-        }
 
-        public static AppDelegate Create(AppDelegate app, IDictionary<string, AppDelegate> map)
+        public static AppDelegate Create(AppDelegate defaultApp, IDictionary<string, AppDelegate> map)
         {
-            if (app == null)
-                throw new ArgumentNullException("app");
+            if (defaultApp == null)
+                throw new ArgumentNullException("defaultApp");
 
-            var mapper = new UrlMapper(app);
+            var mapper = new UrlMapper(defaultApp);
             mapper.Remap(map);
             return mapper.Call;
         }
@@ -38,29 +36,29 @@ namespace Gate.Mapping
                 .ToArray();
         }
 
-        public void Call(
-            IDictionary<string, object> env,
-            ResultDelegate result,
-            Action<Exception> fault)
+        public Task<ResultParameters> Call(CallParameters call)
         {
-            var paths = new Paths(env);
+            var paths = new Paths(call.Environment);
             var path = paths.Path;
             var pathBase = paths.PathBase;
-            Action finish = () =>
-            {
-                paths.Path = path;
-                paths.PathBase = pathBase;
-            };
+            
             var match = _map.FirstOrDefault(m => path.StartsWith(m.Item1));
             if (match == null)
             {
                 // fall-through to default
-                _app(env, result, fault);
-                return;
+                return _defaultApp(call);
             }
+
+            // Map moves the matched portion of Path into PathBase
             paths.PathBase = pathBase + match.Item1;
             paths.Path = path.Substring(match.Item1.Length);
-            match.Item2.Invoke(env, result, fault);
+            return match.Item2.Invoke(call).Then(result =>
+            {
+                // Path and PathBase are restored as the call returnss
+                paths.Path = path;
+                paths.PathBase = pathBase;
+                return result;
+            });
         }
 
         /// <summary>
@@ -73,6 +71,10 @@ namespace Gate.Mapping
 
             public Paths(IDictionary<string, object> env)
             {
+                if (env == null)
+                {
+                    throw new ArgumentNullException("env");
+                }
                 _env = env;
             }
 

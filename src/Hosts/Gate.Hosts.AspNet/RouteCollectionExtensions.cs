@@ -19,7 +19,7 @@ namespace Gate.Hosts.AspNet
 
         public static void AddOwinRoute(this RouteCollection routes, string path, Action<IAppBuilder> configuration)
         {
-            var app = AppBuilder.BuildConfiguration(configuration);
+            var app = AppBuilder.BuildPipeline<AppDelegate>(configuration);
             routes.Add(new OwinRoute(path, app));
         }
 

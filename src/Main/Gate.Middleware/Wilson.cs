@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Owin;
 using Timer = System.Timers.Timer;
 
@@ -15,10 +16,10 @@ namespace Gate.Middleware
 
         public static AppDelegate App()
         {
-            return (env, result, fault) =>
+            return call =>
             {
-                var request = new Request(env);
-                var response = new Response(result) { Buffer = true, ContentType = "text/html" };
+                var request = new Request(call);
+                var response = new Response { ContentType = "text/html" };
                 var wilson = "left - right\r\n123456789012\r\nhello world!\r\n";
 
                 var href = "?flip=left";
@@ -39,24 +40,24 @@ namespace Gate.Middleware
                 }
                 response.Write("<p><a href='" + href + "'>flip!</a></p>");
                 response.Write("<p><a href='?flip=crash'>crash!</a></p>");
-                response.End();
+
+                return response.EndAsync();
             };
         }
 
         public static AppDelegate AsyncApp()
         {
-            return (env, result, fault) =>
+            return call =>
             {
-                var request = new Request(env);
-                var response = new Response(result)
+                var request = new Request(call);
+                var response = new Response()
                 {
                     ContentType = "text/html",
                 };
                 var wilson = "left - right\r\n123456789012\r\nhello world!\r\n";
 
-                ThreadPool.QueueUserWorkItem(_ =>
-                {
-                    try
+                response.StartAsync().Then(
+                    resp1 =>
                     {
                         var href = "?flip=left";
                         if (request.Query["flip"] == "left")
@@ -67,11 +68,11 @@ namespace Gate.Middleware
                             href = "?flip=right";
                         }
 
-                        response.Start(() => TimerLoop(350, response.Error,
-                            () => response.Write("<title>Hutchtastic</title>"),
-                            () => response.Write("<pre>"),
-                            () => response.Write(wilson),
-                            () => response.Write("</pre>"),
+                        return TimerLoop(350,
+                            () => resp1.Write("<title>Hutchtastic</title>"),
+                            () => resp1.Write("<pre>"),
+                            () => resp1.Write(wilson),
+                            () => resp1.Write("</pre>"),
                             () =>
                             {
                                 if (request.Query["flip"] == "crash")
@@ -79,20 +80,23 @@ namespace Gate.Middleware
                                     throw new ApplicationException("Wilson crashed!");
                                 }
                             },
-                            () => response.Write("<p><a href='" + href + "'>flip!</a></p>"),
-                            () => response.Write("<p><a href='?flip=crash'>crash!</a></p>"),
-                            response.End));
-                    }
-                    catch (Exception ex)
+                            () => resp1.Write("<p><a href='" + href + "'>flip!</a></p>"),
+                            () => resp1.Write("<p><a href='?flip=crash'>crash!</a></p>"),
+                            () => resp1.End());
+                    })
+                    .Catch(errorInfo =>
                     {
-                        fault(ex);
-                    }
-                });
+                        response.Error(errorInfo.Exception);
+                        return errorInfo.Handled();
+                    });
+
+                return response.ResultTask;
             };
         }
 
-        static void TimerLoop(double interval, Action<Exception> fault, params Action[] steps)
+        static Task TimerLoop(double interval, params Action[] steps)
         {
+            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
             var iter = steps.AsEnumerable().GetEnumerator();
             var timer = new Timer(interval);
             timer.Elapsed += (sender, e) =>
@@ -107,15 +111,17 @@ namespace Gate.Middleware
                     {
                         iter = null;
                         timer.Stop();
-                        fault(ex);
+                        tcs.TrySetException(ex);
                     }
                 }
                 else
                 {
+                    tcs.TrySetResult(null);
                     timer.Stop();
                 }
             };
             timer.Start();
+            return tcs.Task;
         }
     }
 }

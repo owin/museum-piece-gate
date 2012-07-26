@@ -1,7 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Gate.Middleware.Utils;
 using Owin;
 using System.Text;
+using Gate.Utils;
 
 namespace Gate.Middleware
 {
@@ -18,50 +23,40 @@ namespace Gate.Middleware
 
         public static AppDelegate Middleware(AppDelegate app)
         {
-            return
-                (env, result, fault) =>
-                    app(
-                        env,
-                        (status, headers, body) =>
-                        {
-                            if (IsStatusWithNoNoEntityBody(status) ||
-                                headers.ContainsKey("Content-Length") ||
-                                headers.ContainsKey("Transfer-Encoding"))
-                            {
-                                result(status, headers, body);
-                            }
-                            else
-                            {
-                                headers["Transfer-Encoding"] = new[] { "chunked" };
+            return call => app(call).Then(result =>
+            {
+                if (!IsStatusWithNoNoEntityBody(result.Status) &&
+                    !result.Headers.ContainsKey("Content-Length") &&
+                    !result.Headers.ContainsKey("Transfer-Encoding"))
+                {
+                    result.Headers.AddHeader("Transfer-Encoding", "chunked");
+                    result.Body = WrapOutputStream(result.Body);
+                }
+                return result;
+            });
+        }
 
-                                result(
-                                    status,
-                                    headers,
-                                    (write, end, cancel) =>
-                                        body(
-                                            (data, callback) =>
-                                            {
-                                                if (data.Count == 0)
-                                                {
-                                                    return write(data, callback);
-                                                }
+        public static BodyDelegate WrapOutputStream(BodyDelegate body)
+        {
+            return (output, cancel) =>
+                body(new StreamWrapper(output, OnWriteFilter), cancel)
+                    .Then(() =>
+                        output.WriteAsync(FinalChunk.Array, FinalChunk.Offset, FinalChunk.Count));
+        }
 
-                                                write(ChunkPrefix((uint)data.Count), null);
-                                                write(data, null);
-                                                return write(EndOfChunk, callback);
-                                            },
-                                            ex =>
-                                            {
-                                                if (ex == null)
-                                                {
-                                                    write(FinalChunk, null);
-                                                }
-                                                end(ex);
-                                            },
-                                            cancel));
-                            }
-                        },
-                        fault);
+        public static ArraySegment<byte>[] OnWriteFilter(ArraySegment<byte> data)
+        {
+            return data.Count == 0
+                ? new[]
+                {
+                    data
+                }
+                : new[]
+                {
+                    ChunkPrefix((uint) data.Count), 
+                    data, 
+                    EndOfChunk,
+                };
         }
 
         public static ArraySegment<byte> ChunkPrefix(uint dataCount)
@@ -85,12 +80,12 @@ namespace Gate.Middleware
             return new ArraySegment<byte>(prefixBytes, shift / 4, 10 - shift / 4);
         }
 
-        private static bool IsStatusWithNoNoEntityBody(string status)
+        private static bool IsStatusWithNoNoEntityBody(int status)
         {
-            return status.StartsWith("1") ||
-                status.StartsWith("204") ||
-                status.StartsWith("205") ||
-                status.StartsWith("304");
+            return (status >= 100 && status < 200) ||
+                status == 204 ||
+                status == 205 ||
+                status == 304;
         }
     }
 }

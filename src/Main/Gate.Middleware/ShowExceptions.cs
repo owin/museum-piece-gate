@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Owin;
+using System.Threading.Tasks;
 
 namespace Gate.Middleware
 {
@@ -17,54 +18,59 @@ namespace Gate.Middleware
 
         public static AppDelegate Middleware(AppDelegate app)
         {
-            return (env, result, fault) =>
+            return call =>
             {
-                Action<Exception, Action<ArraySegment<byte>>> showErrorMessage =
+                Action<Exception, Action<byte[]>> showErrorMessage =
                     (ex, write) =>
-                        ErrorPage(env, ex, text =>
+                        ErrorPage(call, ex, text =>
                         {
                             var data = Encoding.ASCII.GetBytes(text);
-                            write(new ArraySegment<byte>(data));
+                            write(data);
                         });
 
-                Action<Exception> showErrorPage = ex =>
+                Func<Exception, Task<ResultParameters>> showErrorPage = ex =>
                 {
-                    var response = new Response(result) { Status = "500 Internal Server Error", ContentType = "text/html" };
-                    response.Start(() =>
-                    {
-                        showErrorMessage(ex, data => response.Write(data));
-                        response.End();
-                    });
+                    var response = new Response() { Status = "500 Internal Server Error", ContentType = "text/html" };
+                    showErrorMessage(ex, data => response.Write(data));
+                    return response.EndAsync();
                 };
 
                 try
                 {
-                    app(
-                        env,
-                        (status, headers, body) =>
-                            result(
-                                status,
-                                headers,
-                                (write, end, token) =>
+                    return app(call)
+                        .Then(result =>
+                        {
+                            if (result.Body != null)
+                            {
+                                BodyDelegate nestedBody = result.Body;
+                                result.Body = (stream, cancel) =>
                                 {
-                                    showErrorPage = ex =>
+                                    try
                                     {
-                                        if (ex != null)
-                                        {
-                                            showErrorMessage(ex, data => write(data, null));
-                                        }
-                                        end(null);
-                                    };
-                                    body(
-                                        write,
-                                        showErrorPage,
-                                        token);
-                                }),
-                        ex => showErrorPage(ex));
+                                        return nestedBody(stream, cancel).Catch(
+                                            errorInfo =>
+                                            {
+                                                showErrorMessage(errorInfo.Exception, data => stream.Write(data, 0, data.Length));
+                                                return errorInfo.Handled();                                                
+                                            });
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        showErrorMessage(ex, data => stream.Write(data, 0, data.Length));
+                                        return TaskHelpers.Completed();
+                                    }
+                                };
+                            }
+                            return result;
+                        })
+                        .Catch(errorInfo =>
+                        {
+                            return errorInfo.Handled(showErrorPage(errorInfo.Exception).Result);
+                        });
                 }
                 catch (Exception exception)
                 {
-                    showErrorPage(exception);
+                    return showErrorPage(exception);
                 }
             };
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Owin;
+using System.Threading.Tasks;
 
 namespace Gate.Middleware
 {
@@ -30,18 +31,15 @@ namespace Gate.Middleware
 
         public static AppDelegate Middleware(AppDelegate app, string contentType)
         {
-            return (env, result, fault) => app(
-                env,
-                (status, headers, body) =>
+            return call => app(call).Then(result =>
+            {
+                if (!result.Headers.HasHeader("Content-Type"))
                 {
-                    if (!headers.HasHeader("Content-Type"))
-                    {
-                        headers.SetHeader("Content-Type", contentType);
-                    }
-
-                    result(status, headers, body);
-                },
-                fault);
+                    result.Headers.SetHeader("Content-Type", contentType);
+                }
+                return result;
+            });
         }
+
     }
 }

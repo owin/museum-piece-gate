@@ -13,7 +13,5 @@ namespace Gate.Middleware
         public const string RequestPathBase = "owin.RequestPathBase";
         public const string RequestPath = "owin.RequestPath";
         public const string RequestQueryString = "owin.RequestQueryString";
-        public const string RequestHeaders = "owin.RequestHeaders";
-        public const string RequestBody = "owin.RequestBody";
     }
 }
