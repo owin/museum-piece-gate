@@ -28,7 +28,6 @@ var BUILD_PROJECTS='${Files.Include(
 var TEST_PROJECTS='${Files.Include(
     SRC + "/**/Gate.Tests.csproj",
     SRC + "/**/Gate.Builder.Tests.csproj",
-    SRC + "/**/Gate.Helpers.Tests.csproj",
     SRC + "/**/Gate.Middleware.Tests.csproj",
     SRC + "/**/Gate.Hosts.Kayak.Tests.csproj",
     SRC + "/**/Gate.Hosts.AspNet.Tests.csproj",

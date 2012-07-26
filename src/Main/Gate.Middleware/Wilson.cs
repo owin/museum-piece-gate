@@ -30,16 +30,16 @@ namespace Gate.Middleware
                         .Aggregate("", (agg, line) => agg + line + System.Environment.NewLine);
                     href = "?flip=right";
                 }
-                response.Body.Write("<title>Wilson</title>");
-                response.Body.Write("<pre>");
-                response.Body.Write(wilson);
-                response.Body.Write("</pre>");
+                response.Write("<title>Wilson</title>");
+                response.Write("<pre>");
+                response.Write(wilson);
+                response.Write("</pre>");
                 if (request.Query["flip"] == "crash")
                 {
                     throw new ApplicationException("Wilson crashed!");
                 }
-                response.Body.Write("<p><a href='" + href + "'>flip!</a></p>");
-                response.Body.Write("<p><a href='?flip=crash'>crash!</a></p>");
+                response.Write("<p><a href='" + href + "'>flip!</a></p>");
+                response.Write("<p><a href='?flip=crash'>crash!</a></p>");
 
                 return response.EndAsync();
             };
@@ -56,8 +56,8 @@ namespace Gate.Middleware
                 };
                 var wilson = "left - right\r\n123456789012\r\nhello world!\r\n";
 
-                response.Body = new ResponseBody(
-                    body =>
+                response.StartAsync().Then(
+                    resp1 =>
                     {
                         var href = "?flip=left";
                         if (request.Query["flip"] == "left")
@@ -69,10 +69,10 @@ namespace Gate.Middleware
                         }
 
                         return TimerLoop(350,
-                            () => body.Write("<title>Hutchtastic</title>"),
-                            () => body.Write("<pre>"),
-                            () => body.Write(wilson),
-                            () => body.Write("</pre>"),
+                            () => resp1.Write("<title>Hutchtastic</title>"),
+                            () => resp1.Write("<pre>"),
+                            () => resp1.Write(wilson),
+                            () => resp1.Write("</pre>"),
                             () =>
                             {
                                 if (request.Query["flip"] == "crash")
@@ -80,11 +80,17 @@ namespace Gate.Middleware
                                     throw new ApplicationException("Wilson crashed!");
                                 }
                             },
-                            () => body.Write("<p><a href='" + href + "'>flip!</a></p>"),
-                            () => body.Write("<p><a href='?flip=crash'>crash!</a></p>"));
+                            () => resp1.Write("<p><a href='" + href + "'>flip!</a></p>"),
+                            () => resp1.Write("<p><a href='?flip=crash'>crash!</a></p>"),
+                            () => resp1.End());
+                    })
+                    .Catch(errorInfo =>
+                    {
+                        response.Error(errorInfo.Exception);
+                        return errorInfo.Handled();
                     });
 
-                return response.EndAsync();
+                return response.ResultTask;
             };
         }
 

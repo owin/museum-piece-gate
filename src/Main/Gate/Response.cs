@@ -5,14 +5,25 @@ using System.Linq;
 using System.Threading.Tasks;
 using Gate.Utils;
 using Owin;
+using System.Text;
+using System.IO;
+using System.Threading;
 
 namespace Gate
 {
     public class Response
     {
+        private static readonly Encoding defaultEncoding = Encoding.UTF8;
+
         private ResultParameters result;
         private TaskCompletionSource<ResultParameters> callCompletionSource;
-        private ResponseBody responseBody;
+        private TaskCompletionSource<Response> sendHeaderAsyncCompletionSource;
+        private TaskCompletionSource<object> bodyTransitionCompletionSource;
+        private TaskCompletionSource<object> bodyCompletionSource;
+
+        private CancellationToken completeToken;
+        private ResponseStream responseStream;
+        private BodyDelegate defaultBodyDelegate;
 
         public Response()
             : this(200)
@@ -41,12 +52,22 @@ namespace Gate
         {        
         }
 
-        public Response(ResultParameters result)
+        public Response(ResultParameters result, CancellationToken completed = default(CancellationToken))
         {
-            this.result = result;
+            this.defaultBodyDelegate = DefaultBodyDelegate;
+
+            this.result.Status = result.Status;
+            this.result.Body = result.Body ?? defaultBodyDelegate;
             this.result.Headers = result.Headers ?? new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
             this.result.Properties = result.Properties ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
             this.callCompletionSource = new TaskCompletionSource<ResultParameters>();
+            this.sendHeaderAsyncCompletionSource = new TaskCompletionSource<Response>();
+            this.bodyTransitionCompletionSource = new TaskCompletionSource<object>();
+            this.bodyCompletionSource = new TaskCompletionSource<object>();
+
+            this.completeToken = completed;
+            this.Encoding = defaultEncoding;
         }
 
         internal Func<Task<ResultParameters>> Next { get; set; }
@@ -114,8 +135,7 @@ namespace Gate
             }
             set { Properties["owin.ReasonPhrase"] = value; }
         }
-
-
+        
         public string GetHeader(string name)
         {
             var values = GetHeaders(name);
@@ -230,8 +250,7 @@ namespace Gate
                 Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             });
         }
-
-
+        
         public class Cookie
         {
             public Cookie()
@@ -263,6 +282,11 @@ namespace Gate
             set { SetHeader("Content-Length", value.ToString(CultureInfo.InvariantCulture)); }
         }
 
+        public Encoding Encoding { get; set; }
+
+        // (true) Buffer or (false) auto-start/SendHeaders on write 
+        public bool Buffer { get; set; }
+
         public BodyDelegate BodyDelegate
         {
             get
@@ -272,33 +296,146 @@ namespace Gate
             set
             {
                 result.Body = value;
-                responseBody = null;
             }
         }
 
-        public ResponseBody Body
+        private void EnsureResponseStream()
         {
-            get
+            if (responseStream == null)
             {
-                if (responseBody == null)
+                responseStream = new ResponseStream();
+                if (result.Body != defaultBodyDelegate)
                 {
-                    responseBody = new ResponseBody();
-                    result.Body = responseBody.Delegate;
+                    if (callCompletionSource.Task.IsCompleted)
+                    {
+                        throw new InvalidOperationException("The result has already been returned, the body delegate cannot be modified.");
+                    }
+                    result.Body = defaultBodyDelegate;
                 }
-                return responseBody;
             }
-            set
+        }
+
+        public Stream OutputStream
+        {
+            get 
             {
-                responseBody = value;
-                if (responseBody != null)
+                EnsureResponseStream();
+                if (!Buffer) // Auto-Start
                 {
-                    result.Body = value.Delegate;
+                    Start();
+                }
+                return responseStream;
+            }
+        }
+
+        public void Write(string text)
+        {
+            var data = (Encoding ?? defaultEncoding).GetBytes(text);
+            Write(data);
+        }
+
+        public void Write(string format, params object[] args)
+        {
+            Write(string.Format(format, args));
+        }
+
+        public void Write(byte[] buffer)
+        {
+            completeToken.ThrowIfCancellationRequested();            
+            OutputStream.Write(buffer, 0, buffer.Length);
+        }
+
+        public void Write(byte[] buffer, int offset, int count)
+        {
+            completeToken.ThrowIfCancellationRequested();
+            OutputStream.Write(buffer, offset, count);
+        }
+
+        public void Write(ArraySegment<byte> data)
+        {
+            completeToken.ThrowIfCancellationRequested();
+            OutputStream.Write(data.Array, data.Offset, data.Count);
+        }
+
+        public Task WriteAsync(byte[] buffer, int offset, int count)
+        {
+            return OutputStream.WriteAsync(buffer, offset, count, completeToken);
+        }
+
+        public Task WriteAsync(ArraySegment<byte> data)
+        {
+            return OutputStream.WriteAsync(data.Array, data.Offset, data.Count, completeToken);
+        }
+
+        public IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        {
+
+            return OutputStream.BeginWrite(buffer, offset, count, callback, state);
+        }
+
+        public void EndWrite(IAsyncResult result)
+        {
+            OutputStream.EndWrite(result);
+        }
+
+        public void Flush()
+        {
+            OutputStream.Flush();
+        }
+
+        // Copy the buffer to the output and then provide direct access to the output stream.
+        private Task DefaultBodyDelegate(Stream output, CancellationToken cancel)
+        {
+            EnsureResponseStream();
+            Task transitionTask = responseStream.TransitionFromBufferedToUnbuffered(output, cancel)
+                .Then(() =>
+                {
+                    // Offload complete
+                    sendHeaderAsyncCompletionSource.TrySetResult(this);
+                })
+                .Catch(errorInfo =>
+                {
+                    sendHeaderAsyncCompletionSource.TrySetCanceled();
+                    bodyCompletionSource.TrySetException(errorInfo.Exception);
+                    return errorInfo.Handled();
+                })
+                .Finally(() =>
+                {
+                    bodyTransitionCompletionSource.TrySetResult(null);
+                });
+            
+            return bodyCompletionSource.Task;
+        }
+
+        public void Start()
+        {
+            StartAsync();
+        }
+
+        // Finalizes the status/headers/properties and returns a Task to notify the caller when the 
+        // BodyDelegate has been invoked, the buffered data offloaded, and it is now safe to write unbuffered data.
+        public Task<Response> StartAsync()
+        {
+            // Only execute once.
+            if (!callCompletionSource.Task.IsCompleted)
+            {
+                callCompletionSource.TrySetResult(result);
+
+                // TODO: Make Headers and Properties read only to prevent user errors
+                
+                if (result.Body == defaultBodyDelegate)
+                {
+                    // Register for cancelation in case the body delegate is not invoked.
+                    completeToken.Register(() => sendHeaderAsyncCompletionSource.TrySetCanceled());
                 }
                 else
                 {
-                    result.Body = null;
+                    // Not using the default body delegate, don't block.
+                    sendHeaderAsyncCompletionSource.TrySetResult(this);
+                    bodyTransitionCompletionSource.TrySetResult(null);
                 }
             }
+            return sendHeaderAsyncCompletionSource.Task;
         }
 
         public ResultParameters Result
@@ -313,30 +450,25 @@ namespace Gate
 
         public void End()
         {
-            OnEnd(null);
+            EndAsync();
         }
 
+        // We are completely done with the response and body.
         public Task<ResultParameters> EndAsync()
         {
-            OnEnd(null);
+            Start();
+            sendHeaderAsyncCompletionSource.TrySetCanceled();
+            // End the body as soon as the buffer copies.
+            bodyTransitionCompletionSource.Task.Then(() => { bodyCompletionSource.TrySetResult(null); } );
             return callCompletionSource.Task;
         }
 
         public void Error(Exception error)
         {
-            OnEnd(error);
-        }
-
-        void OnEnd(Exception error)
-        {
-            if (error != null)
-            {
-                callCompletionSource.TrySetException(error);
-            }
-            else
-            {
-                callCompletionSource.TrySetResult(result);
-            }
+            callCompletionSource.TrySetException(error);
+            // This just goes back to user code, we don't need to report their own exception back to them.
+            sendHeaderAsyncCompletionSource.TrySetCanceled();
+            bodyCompletionSource.TrySetException(error);            
         }
     }
 }

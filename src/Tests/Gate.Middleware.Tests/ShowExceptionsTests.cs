@@ -37,7 +37,7 @@ namespace Gate.Middleware.Tests
                     Response appResult = new Response(200);
                     appResult.Headers.SetHeader("Content-Type", "text/plain");
                     appResult.Headers.SetHeader("Content-Length", "5");
-                    appResult.Body.Write("Hello");
+                    appResult.Write("Hello");
                     return appResult.EndAsync();
                 }));
 
@@ -70,15 +70,18 @@ namespace Gate.Middleware.Tests
                 .UseShowExceptions()
                 .Run(appCall =>
                 {
-                    Response appResult = new Response(200);
-                    appResult.Headers.SetHeader("Content-Type", "text/html"); 
-                    appResult.Body = new ResponseBody(
-                         body =>
-                         {
-                             body.Write("<p>so far so good</p>");
-                             throw new ApplicationException("failed sending body sync");
-                         });
-                    return appResult.EndAsync();
+                    ResultParameters rawResult = new ResultParameters();
+                    rawResult.Body = (stream, cancel) =>
+                        {
+                            byte[] bodyBytes = Encoding.ASCII.GetBytes("<p>so far so good</p>");
+                            stream.Write(bodyBytes, 0, bodyBytes.Length);
+                            throw new ApplicationException("failed sending body sync");
+                        };
+                    rawResult.Status = 200;
+                    Response appResult = new Response(rawResult);
+                    appResult.Headers.SetHeader("Content-Type", "text/html");
+                    appResult.Start();
+                    return appResult.ResultTask;
                 }));
 
             ResultParameters result = stack(new Request().Call).Result;
@@ -99,13 +102,13 @@ namespace Gate.Middleware.Tests
                 {
                     Response appResult = new Response(200);
                     appResult.Headers.SetHeader("Content-Type", "text/html");
-                    appResult.Body = new ResponseBody(
-                        body =>
+                    appResult.StartAsync().Then(
+                        resp1 =>
                         {
-                            body.Write("<p>so far so good</p>");
-                            return body.FailBodyAsync(new ApplicationException("failed sending body async"));
+                            resp1.Write("<p>so far so good</p>");
+                            resp1.Error(new ApplicationException("failed sending body async"));
                         });
-                    return appResult.EndAsync();
+                    return appResult.ResultTask;
                 }));
 
             ResultParameters result = stack(new Request().Call).Result;

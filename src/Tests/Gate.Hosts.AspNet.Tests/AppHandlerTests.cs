@@ -61,7 +61,7 @@ namespace Gate.Hosts.AspNet.Tests
         private Response DefaultResponse()
         {
             Response response = new Response();
-            response.Body.Write("Hello World");
+            response.Write("Hello World");
             return response;
         }
 

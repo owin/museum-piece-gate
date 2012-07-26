@@ -1,5 +1,6 @@
 ﻿using Gate;
 using Owin;
+using System.Threading.Tasks;
 
 namespace Sample.Nancy
 {
@@ -21,16 +22,16 @@ namespace Sample.Nancy
                 {
                     response.Status = "200 OK";
                     response.ContentType = "text/html";
-                    response.Body = new ResponseBody((body) =>
+                    response.StartAsync().Then(resp1 =>
                     {
-                        body.Write("<h1>Sample.App</h1>");
-                        body.Write("<p><a href='{0}/wilson/'>Wilson</a></p>", request.PathBase);
-                        body.Write("<p><a href='{0}/wilsonasync/'>Wilson (async)</a></p>", request.PathBase);
-                        body.Write("<p><a href='{0}/nancy/'>Nancy</a></p>", request.PathBase);
-                        body.Write("<p><a href='{0}/fileupload'>File Upload</a></p>", request.PathBase);
-                        return body.EndBodyAsync();
+                        resp1.Write("<h1>Sample.App</h1>");
+                        resp1.Write("<p><a href='{0}/wilson/'>Wilson</a></p>", request.PathBase);
+                        resp1.Write("<p><a href='{0}/wilsonasync/'>Wilson (async)</a></p>", request.PathBase);
+                        resp1.Write("<p><a href='{0}/nancy/'>Nancy</a></p>", request.PathBase);
+                        resp1.Write("<p><a href='{0}/fileupload'>File Upload</a></p>", request.PathBase);
+                        resp1.End();
                     });
-                    return response.EndAsync();
+                    return response.ResultTask;
                 }
                 else
                 {

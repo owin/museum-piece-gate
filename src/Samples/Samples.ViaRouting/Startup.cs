@@ -24,10 +24,9 @@ namespace Samples.ViaRouting
             builder.UseDirect((req, res) =>
             {
                 res.ContentType = "text/plain";
-                res.Body.Write("Hello from " + req.PathBase + req.Path);
+                res.Write("Hello from " + req.PathBase + req.Path);
                 return res.EndAsync();
             });
-
 
             // a route may also be added for a given builder method.
             // this can also be done from global.asax

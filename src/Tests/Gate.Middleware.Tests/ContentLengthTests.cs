@@ -32,8 +32,8 @@ namespace Gate.Middleware.Tests
                 .UseDirect(
                     (request, response) => 
                     {
-                        response.Body.Write("hello ");
-                        response.Body.Write("world.");
+                        response.Write("hello ");
+                        response.Write("world.");
                         return response.EndAsync();
                     }));
 

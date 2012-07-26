@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Gate.Middleware.Utils;
 using Owin;
 using System.Text;
+using Gate.Utils;
 
 namespace Gate.Middleware
 {
@@ -39,8 +40,8 @@ namespace Gate.Middleware
         {
             return (output, cancel) =>
                 body(new StreamWrapper(output, OnWriteFilter), cancel)
-                    .Finally(() =>
-                        output.Write(FinalChunk.Array, FinalChunk.Offset, FinalChunk.Count));
+                    .Then(() =>
+                        output.WriteAsync(FinalChunk.Array, FinalChunk.Offset, FinalChunk.Count));
         }
 
         public static ArraySegment<byte>[] OnWriteFilter(ArraySegment<byte> data)

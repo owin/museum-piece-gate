@@ -20,6 +20,11 @@ namespace Gate.Middleware.Tests
 
         private string ReadBody(BodyDelegate body)
         {
+            if (body == null)
+            {
+                throw new ArgumentNullException("body");
+            }
+
             using (MemoryStream buffer = new MemoryStream())
             {
                 body(buffer, CancellationToken.None).Wait();
@@ -60,17 +65,19 @@ namespace Gate.Middleware.Tests
                 {
                     resp.SetHeader("Content-Length", "12");
                     resp.SetHeader("Content-Type", "text/plain");
-                    resp.Body = new ResponseBody(
-                        body =>
+                    resp.StartAsync().Then(
+                        resp1 =>
                         {
-                            body.Write("hello ");
-                            body.Flush();
-                            body.Write("world.");
-                            body.Flush();
-                            return body.EndBodyAsync();
+                            resp1.Write("hello ");
+                            resp1.Write("world.");
+                            resp1.End();
+                        })
+                        .Catch(errorInfo =>
+                        {
+                            return errorInfo.Handled();
                         });
 
-                    return resp.EndAsync();
+                    return resp.ResultTask;
                 }));
 
             Assert.That(response.Headers.ContainsKey("transfer-encoding"), Is.False);
@@ -86,17 +93,15 @@ namespace Gate.Middleware.Tests
                 {
                     resp.SetHeader("transfer-encoding", "girl");
                     resp.SetHeader("Content-Type", "text/plain");
-                    resp.Body = new ResponseBody(
-                        body =>
+                    resp.StartAsync().Then(
+                        resp1 =>
                         {
-                            body.Write("hello ");
-                            body.Flush();
-                            body.Write("world.");
-                            body.Flush();
-                            return body.EndBodyAsync();
+                            resp1.Write("hello ");
+                            resp1.Write("world.");
+                            resp1.End();
                         });
 
-                    return resp.EndAsync();
+                    return resp.ResultTask;
                 }));
 
             Assert.That(response.Headers.GetHeader("Transfer-Encoding"), Is.EqualTo("girl"));
@@ -111,17 +116,15 @@ namespace Gate.Middleware.Tests
                 .UseDirect((req, resp) =>
                 {
                     resp.SetHeader("Content-Type", "text/plain");
-                    resp.Body = new ResponseBody(
-                        body =>                        
+                    resp.StartAsync().Then(
+                        resp1 =>
                         {
-                            body.Write("hello ");
-                            body.Flush();
-                            body.Write("world.");
-                            body.Flush();
-                            return body.EndBodyAsync();
+                            resp1.Write("hello ");
+                            resp1.Write("world.");
+                            resp1.End();
                         });
 
-                    return resp.EndAsync();
+                    return resp.ResultTask;
                 }));
 
             Assert.That(response.Headers.GetHeader("Transfer-Encoding"), Is.EqualTo("chunked"));

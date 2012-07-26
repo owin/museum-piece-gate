@@ -22,7 +22,6 @@ namespace Gate
                 };
 
                 app.Invoke(req, resp)
-                    .Then(() => resp.End())
                     .Catch(caught =>
                     {
                         resp.Error(caught.Exception);

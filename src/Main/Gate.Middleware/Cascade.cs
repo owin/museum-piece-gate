@@ -82,40 +82,31 @@ namespace Gate.Middleware
                     for (var hot = true; hot; )
                     {
                         hot = false;
-                        iter.Current.Invoke(call).ContinueWith(
-                            task =>
+                        iter.Current.Invoke(call)
+                            .Then(result =>
                             {
-                                if (tcs.SetIfTaskFailed(task))
+                                if (result.Status == 404 && iter.MoveNext())
                                 {
-                                    return;
-                                }
-
-                                ResultParameters result = task.Result;
-
-                                try
-                                {
-                                    if (result.Status == 404 && iter.MoveNext())
+                                    // ReSharper disable AccessToModifiedClosure
+                                    if (threadId == Thread.CurrentThread.ManagedThreadId)
                                     {
-                                        // ReSharper disable AccessToModifiedClosure
-                                        if (threadId == Thread.CurrentThread.ManagedThreadId)
-                                        {
-                                            hot = true;
-                                        }
-                                        else
-                                        {
-                                            loop();
-                                        }
-                                        // ReSharper restore AccessToModifiedClosure
+                                        hot = true;
                                     }
                                     else
                                     {
-                                        tcs.TrySetResult(result);
+                                        loop();
                                     }
+                                    // ReSharper restore AccessToModifiedClosure
                                 }
-                                catch (Exception ex)
+                                else
                                 {
-                                    tcs.TrySetException(ex);
+                                    tcs.TrySetResult(result);
                                 }
+                            })
+                            .Catch(errorInfo =>
+                            {
+                                tcs.TrySetException(errorInfo.Exception);
+                                return errorInfo.Handled();
                             });
                     }
                     threadId = 0;

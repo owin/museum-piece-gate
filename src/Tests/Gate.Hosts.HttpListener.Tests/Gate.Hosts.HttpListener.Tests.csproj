@@ -73,10 +73,6 @@
       <Project>{A1A94BF6-7E05-430E-947D-B046A2A00CAF}</Project>
       <Name>Gate.Hosts.HttpListener</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Main\Gate.Helpers\Gate.Helpers.csproj">
-      <Project>{85392B05-6564-472B-9A7B-58AFB721F2AE}</Project>
-      <Name>Gate.Helpers</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Main\Gate.Middleware\Gate.Middleware.csproj">
       <Project>{60C36D8F-BE53-4733-BD92-CFA103D46020}</Project>
       <Name>Gate.Middleware</Name>

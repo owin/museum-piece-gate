@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
-using Gate.Helpers;
 using Gate.Middleware;
 using Owin;
 using NUnit.Framework;
@@ -93,7 +92,7 @@ namespace Gate.Hosts.HttpListener.Tests
             {
                 var response = new Response();
                 response.Headers.SetHeader("Content-Length", "12");
-                response.Body.Write("Hello world.");
+                response.Write("Hello world.");
                 return response.EndAsync();
             };
             using (ServerFactory.Create(app, 8090, null))

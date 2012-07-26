@@ -36,10 +36,10 @@ namespace Gate.Tests
         public void Write_calls_will_spool_until_finish_is_called()
         {
             var resp = new Response() { Status = "200 Yep" };
-            resp.Body.Write("this");
-            resp.Body.Write("is");
-            resp.Body.Write("a");
-            resp.Body.Write("test");
+            resp.Write("this");
+            resp.Write("is");
+            resp.Write("a");
+            resp.Write("test");
             ResultParameters result = resp.EndAsync().Result;
             Assert.That(result.Status, Is.EqualTo(200));
 
