@@ -25,7 +25,6 @@ namespace Gate.Hosts.Kayak
         public void OnRequest(HttpRequestHead head, IDataProducer body, IHttpResponseDelegate response)
         {
             var request = new CallParameters();
-            request.Completed = CancellationToken.None; // TODO:
             request.Environment = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             var requestWrapper = new RequestEnvironment(request.Environment);
 

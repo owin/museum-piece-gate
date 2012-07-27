@@ -118,7 +118,7 @@ namespace Gate.Hosts.HttpListener
                                 {
                                     try
                                     {
-                                        Task bodyTask = result.Body(context.Response.OutputStream, CancellationToken.None);
+                                        Task bodyTask = result.Body(context.Response.OutputStream);
 
                                         bodyTask.ContinueWith(task => context.Response.Abort(), TaskContinuationOptions.NotOnRanToCompletion);
 

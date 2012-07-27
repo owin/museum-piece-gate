@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Owin;
 using Kayak;
 
@@ -7,9 +9,9 @@ namespace Gate.Hosts.Kayak
 {
     class DataProducer : IDataProducer
     {
-        readonly BodyDelegate del;
+        readonly Func<Stream, Task> del;
 
-        public DataProducer(BodyDelegate del)
+        public DataProducer(Func<Stream, Task> del)
         {
             this.del = del;
         }

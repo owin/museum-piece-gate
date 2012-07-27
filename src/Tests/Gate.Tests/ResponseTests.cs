@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Owin;
 using NUnit.Framework;
 
@@ -11,10 +12,10 @@ namespace Gate.Tests
     [TestFixture]
     public class ResponseTests
     {
-        private static byte[] Consume(BodyDelegate body)
+        private static byte[] Consume(Func<Stream, Task> body)
         {
             var memory = new MemoryStream();
-            body(memory, CancellationToken.None).Wait();
+            body(memory).Wait();
             return memory.ToArray();
         }
 

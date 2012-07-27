@@ -43,7 +43,7 @@ namespace Gate.Adapters.Nancy
                 var owinRequestQueryString = Get<string>(env, OwinConstants.RequestQueryString);
                 var owinRequestBody = call.Body;
                 var serverClientIp = Get<string>(env, "server.CLIENT_IP");
-                var callDisposing = call.Completed;
+                var callCompleted = Get<Task>(env, OwinConstants.CallCompleted);
 
                 var url = new Url
                 {
@@ -69,7 +69,7 @@ namespace Gate.Adapters.Nancy
                     nancyRequest,
                     context =>
                     {
-                        callDisposing.Register(context.Dispose);
+                        callCompleted.Finally(context.Dispose);
 
                         var nancyResponse = context.Response;
                         var headers = nancyResponse.Headers.ToDictionary(kv => kv.Key, kv => new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
@@ -85,7 +85,7 @@ namespace Gate.Adapters.Nancy
                         {
                             Status = (int)nancyResponse.StatusCode,
                             Headers = headers,
-                            Body = (output, cancel) =>
+                            Body = output =>
                             {
                                 nancyResponse.Contents(output);
                                 return TaskHelpers.Completed();

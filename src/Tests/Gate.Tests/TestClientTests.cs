@@ -106,7 +106,7 @@ namespace Gate.Tests
                 call.Body.CopyTo(buffer);
                 buffer.Seek(0, SeekOrigin.Begin);
                  
-                result.Body = (stream, cancel) =>
+                result.Body = stream =>
                 {
                     buffer.CopyTo(stream);                    
                     return TaskHelpers.Completed();
@@ -129,7 +129,7 @@ namespace Gate.Tests
                     {"X-Server", new[] {"inproc"}}
                 };
 
-                result.Body = (stream, cancel) =>
+                result.Body = stream =>
                 {
                     byte[] body = Encoding.ASCII.GetBytes(text);
                     stream.Write(body, 0, body.Length);

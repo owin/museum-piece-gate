@@ -29,22 +29,19 @@ namespace Gate.Hosts
         {
             if (result.Body != null)
             {
-                BodyDelegate nestedBody = result.Body;
-                result.Body = (stream, cancel) =>
+                var nestedBody = result.Body;
+                result.Body = stream =>
                 {
                     TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
                     ExecutionContext.SuppressFlow();
                     ThreadPool.QueueUserWorkItem(
-                        _ =>
-                        {
-                            nestedBody(stream, cancel)
-                                .Then(() => { bool ignored = tcs.TrySetResult(null); })
-                                .Catch(errorInfo => 
-                                { 
-                                    bool ignored = tcs.TrySetException(errorInfo.Exception); 
-                                    return errorInfo.Handled(); 
-                                });
-                        },
+                        _ => nestedBody(stream)
+                            .Then(() => { bool ignored = tcs.TrySetResult(null); })
+                            .Catch(errorInfo => 
+                            { 
+                                bool ignored = tcs.TrySetException(errorInfo.Exception); 
+                                return errorInfo.Handled(); 
+                            }),
                         null);
                     ExecutionContext.RestoreFlow();
                     return tcs.Task;

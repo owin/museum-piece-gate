@@ -32,7 +32,7 @@ namespace Gate.Middleware
                 {
                     {"Content-Type", new[] {"text/html"}}
                 },
-                Body = (output, _) =>
+                Body = output =>
                 {
                     output.Write(Body.Array, Body.Offset, Body.Count);
                     return TaskHelpers.Completed();
