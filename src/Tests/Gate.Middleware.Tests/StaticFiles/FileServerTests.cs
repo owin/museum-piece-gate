@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Gate.Middleware.StaticFiles;
 using Gate.Middleware.Utils;
 using NUnit.Framework;
@@ -22,11 +23,11 @@ namespace Gate.Middleware.Tests.StaticFiles
             return fileServer.Invoke(request.Call).Result;
         }
 
-        private String ReadBody(BodyDelegate body)
+        private String ReadBody(Func<Stream, Task> body)
         {
             using (MemoryStream buffer = new MemoryStream())
             {
-                body(buffer, CancellationToken.None).Wait();
+                body(buffer).Wait();
                 return Encoding.ASCII.GetString(buffer.ToArray());
             }
         }

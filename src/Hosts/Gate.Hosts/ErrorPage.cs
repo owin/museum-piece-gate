@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Owin;
 using System.Threading.Tasks;
@@ -35,12 +36,12 @@ namespace Gate.Hosts
                         {
                             if (result.Body != null)
                             {
-                                BodyDelegate nestedBody = result.Body;
-                                result.Body = (stream, cancel) =>
+                                var nestedBody = result.Body;
+                                result.Body = stream =>
                                 {
                                     try
                                     {
-                                        return nestedBody(stream, cancel)
+                                        return nestedBody(stream)
                                             .Catch(errorInfo =>
                                             {
                                                 logError(errorInfo.Exception);
@@ -83,7 +84,7 @@ namespace Gate.Hosts
                 {
                      { "Content-Type", new[] { "text/html" } }
                 },
-                Body = (stream, cancel) =>
+                Body = stream =>
                 {
                     stream.Write(Body.Array, Body.Offset, Body.Count);
                     return TaskHelpers.Completed();

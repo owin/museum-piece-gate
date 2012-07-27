@@ -22,7 +22,7 @@ namespace Gate.Hosts.HttpListener.Tests
                     Status = 200,
                     Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase) { { "Content-Type", new[] { "text/plain" } } },
                     Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
-                    Body = (stream, cancel) =>
+                    Body = stream =>
                     {
                         var bytes = Encoding.Default.GetBytes("This is a custom page");
                         stream.Write(bytes, 0, bytes.Length);

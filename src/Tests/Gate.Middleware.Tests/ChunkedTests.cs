@@ -18,7 +18,7 @@ namespace Gate.Middleware.Tests
             return app(new Request().Call).Result;
         }
 
-        private string ReadBody(BodyDelegate body)
+        private string ReadBody(Func<Stream, Task> body)
         {
             if (body == null)
             {
@@ -27,7 +27,7 @@ namespace Gate.Middleware.Tests
 
             using (MemoryStream buffer = new MemoryStream())
             {
-                body(buffer, CancellationToken.None).Wait();
+                body(buffer).Wait();
                 return Encoding.ASCII.GetString(buffer.ToArray());
             }
         }

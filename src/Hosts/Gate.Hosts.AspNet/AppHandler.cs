@@ -22,7 +22,6 @@ namespace Gate.Hosts.AspNet
 
         public IAsyncResult BeginProcessRequest(HttpContextBase httpContext, AsyncCallback callback, object state)
         {
-            var cancellationTokenSource = new CancellationTokenSource();
             var taskCompletionSource = new TaskCompletionSource<Action>(state);
             if (callback != null)
                 taskCompletionSource.Task.ContinueWith(task => callback(task), TaskContinuationOptions.ExecuteSynchronously);
@@ -45,8 +44,6 @@ namespace Gate.Hosts.AspNet
 
             call.Body = httpRequest.InputStream;
 
-            call.Completed = cancellationTokenSource.Token;
-
             call.Environment = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
             { 
                 {OwinConstants.Version, "1.0"},
@@ -57,6 +54,7 @@ namespace Gate.Hosts.AspNet
                 {OwinConstants.RequestQueryString, serverVariables.QueryString},
                 {OwinConstants.RequestProtocol, serverVariables.ProtocolVersion},
                 {"aspnet.HttpContextBase", httpContext},
+                {OwinConstants.CallCompleted, taskCompletionSource.Task},
             };
             foreach (var kv in serverVariables.AddToEnvironment())
             {
@@ -84,8 +82,7 @@ namespace Gate.Hosts.AspNet
 
                             if (result.Body != null)
                             {
-                                // TODO: Cancellation?
-                                result.Body(httpContext.Response.OutputStream, cancellationTokenSource.Token)
+                                result.Body(httpContext.Response.OutputStream)
                                     .Then(() =>
                                     {
                                         taskCompletionSource.TrySetResult(() => { });
@@ -111,15 +108,6 @@ namespace Gate.Hosts.AspNet
             catch (Exception ex)
             {
                 taskCompletionSource.TrySetException(ex);
-            }
-
-            if (taskCompletionSource.Task.IsCompleted)
-            {
-                cancellationTokenSource.Cancel(false);
-            }
-            else
-            {
-                taskCompletionSource.Task.ContinueWith(t => cancellationTokenSource.Cancel(false));
             }
 
             return taskCompletionSource.Task;

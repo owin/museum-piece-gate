@@ -19,7 +19,6 @@ namespace Gate.Tests
             return new CallParameters()
             {
                 Body = null,
-                Completed = CancellationToken.None,
                 Environment = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
                 Headers = Headers.New(),
             };

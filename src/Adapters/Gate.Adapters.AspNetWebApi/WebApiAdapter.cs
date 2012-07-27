@@ -68,7 +68,7 @@ namespace Gate.Adapters.AspNetWebApi
                 var owinRequestProtocol = Get<string>(call.Environment, "owin.RequestProtocol");
                 var owinRequestHeaders = call.Headers;
                 var owinRequestBody = call.Body;
-                var cancellationToken = call.Completed;
+                var owinCallCompleted = Get<Task>(call.Environment, "owin.CallCompleted");
 
                 var uriBuilder =
                     new UriBuilder(owinRequestScheme, "localhost")
@@ -99,8 +99,11 @@ namespace Gate.Adapters.AspNetWebApi
                         }
                     }
                 }
-                
-                return invoker.SendAsync(request, cancellationToken)
+
+                var cts = new CancellationTokenSource();
+                owinCallCompleted.Finally(() => cts.Cancel(false));
+
+                return invoker.SendAsync(request, cts.Token)
                     .Then(response =>
                     {
                         ResultParameters result = new ResultParameters();
@@ -131,18 +134,14 @@ namespace Gate.Adapters.AspNetWebApi
         }
 
 
-        private static BodyDelegate GetResponseBody(HttpContent content)
+        private static Func<Stream, Task> GetResponseBody(HttpContent content)
         {
             if (content == null)
             {
                 return null;
             }
 
-            return (output, cancel) =>
-            {
-                cancel.ThrowIfCancellationRequested();
-                return content.CopyToAsync(output);
-            };
+            return output => content.CopyToAsync(output);
         }
     }
 }
