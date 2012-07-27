@@ -69,7 +69,7 @@ namespace Gate.Adapters.Nancy
                     nancyRequest,
                     context =>
                     {
-                        callCompleted.Then(() => context.Dispose());
+                        callCompleted.Finally(context.Dispose);
 
                         var nancyResponse = context.Response;
                         var headers = nancyResponse.Headers.ToDictionary(kv => kv.Key, kv => new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
