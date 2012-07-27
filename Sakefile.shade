@@ -1,7 +1,7 @@
 
 var PROJECT='Gate'
 var VERSION='0.12'
-var FULL_VERSION='${VERSION}-ctp3'
+var FULL_VERSION='${VERSION}-ctp4'
 var AUTHORS='${PROJECT} contributors'
 
 var BASE_DIR='${Directory.GetCurrentDirectory()}'

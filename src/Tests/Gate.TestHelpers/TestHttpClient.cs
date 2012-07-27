@@ -38,7 +38,7 @@ namespace Gate.TestHelpers
             public IDictionary<string, object> Environment { get; set; }
             public int ResponseStatus { get; set; }
             public IDictionary<string, string[]> ResponseHeaders { get; set; }
-            public BodyDelegate ResponseBody { get; set; }
+            public Func<Stream, Task> ResponseBody { get; set; }
             public IDictionary<string, object> ResponseProperties { get; set; }
 
             public Exception Exception { get; set; }
@@ -99,15 +99,14 @@ namespace Gate.TestHelpers
                     {
                         Environment = call.Environment,
                         Headers = GetRequestHeaders(request),
-                        Body = body,
-                        Completed = cancel
+                        Body = body
                     }))
                     .Then(result =>
                     {
                         call.ResponseStatus = result.Status;
                         call.ResponseHeaders = result.Headers;
                         call.ResponseBody = result.Body;
-                        call.HttpResponseMessage = MakeResponseMessage(result.Status, result.Headers, result.Body, result.Properties, cancel);
+                        call.HttpResponseMessage = MakeResponseMessage(result.Status, result.Headers, result.Body, result.Properties);
                         call.HttpResponseMessage.RequestMessage = request;
                         return call.HttpResponseMessage;
                     });
@@ -128,13 +127,13 @@ namespace Gate.TestHelpers
                 return requestHeaders;
             }
 
-            static HttpResponseMessage MakeResponseMessage(int status, IDictionary<string, string[]> headers, BodyDelegate body, IDictionary<string, object> properties, CancellationToken cancel)
+            static HttpResponseMessage MakeResponseMessage(int status, IDictionary<string, string[]> headers, Func<Stream, Task> body, IDictionary<string, object> properties)
             {
                 var response = new HttpResponseMessage((HttpStatusCode)status);
 
                 if (body != null)
                 {
-                    response.Content = new BodyDelegateHttpContent(body, cancel);
+                    response.Content = new BodyDelegateHttpContent(body);
                 }
 
                 if (properties != null)
@@ -166,18 +165,16 @@ namespace Gate.TestHelpers
 
             class BodyDelegateHttpContent : HttpContent
             {
-                readonly BodyDelegate _body;
-                readonly CancellationToken _cancel;
+                readonly Func<Stream, Task> _body;
 
-                public BodyDelegateHttpContent(BodyDelegate body, CancellationToken cancel)
+                public BodyDelegateHttpContent(Func<Stream, Task> body)
                 {
                     _body = body;
-                    _cancel = cancel;
                 }
 
                 protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
                 {
-                    return _body(stream, _cancel);
+                    return _body(stream);
                 }
 
                 protected override bool TryComputeLength(out long length)

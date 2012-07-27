@@ -18,11 +18,11 @@ namespace Gate.Middleware.Tests
             return AppBuilder.BuildPipeline<AppDelegate>(b);
         }
 
-        private String ReadBody(BodyDelegate body)
+        private String ReadBody(Func<Stream, Task> body)
         {
             using (MemoryStream buffer = new MemoryStream())
             {
-                body(buffer, CancellationToken.None).Wait();
+                body(buffer).Wait();
                 return Encoding.ASCII.GetString(buffer.ToArray());
             }
         }
@@ -71,7 +71,7 @@ namespace Gate.Middleware.Tests
                 .Run(appCall =>
                 {
                     ResultParameters rawResult = new ResultParameters();
-                    rawResult.Body = (stream, cancel) =>
+                    rawResult.Body = stream =>
                         {
                             byte[] bodyBytes = Encoding.ASCII.GetBytes("<p>so far so good</p>");
                             stream.Write(bodyBytes, 0, bodyBytes.Length);

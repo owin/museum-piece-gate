@@ -52,7 +52,7 @@ namespace Samples.ViaRouting
             result.Status = 200;
             result.Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase) { { "Content-Type", new[] { "text/plain" } } };
             result.Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            result.Body = (stream, cancel) =>
+            result.Body = stream =>
                 {
                     byte[] body = Encoding.UTF8.GetBytes("Hello from lowest-level code");
                     stream.Write(body, 0, body.Length);

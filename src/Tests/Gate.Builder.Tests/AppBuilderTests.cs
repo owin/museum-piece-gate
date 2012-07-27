@@ -19,17 +19,15 @@ namespace Gate.Builder.Tests
         IDictionary<string, object>, // Environment
         IDictionary<string, string[]>, // Headers
         Stream, // Body
-        CancellationToken, // CallCancelled
         Task<Tuple< //Result
             IDictionary<string, object>, // Properties
             int, // Status
             IDictionary<string, string[]>, // Headers
             Func< // CopyTo
                 Stream, // Body
-                CancellationToken, // CopyToCancelled
                 Task>>>>; // Done
 
-    using ResultTuple = Tuple<IDictionary<string, object>, int, IDictionary<string, string[]>, Func<Stream, CancellationToken, Task>>;
+    using ResultTuple = Tuple<IDictionary<string, object>, int, IDictionary<string, string[]>, Func<Stream, Task>>;
 
     public class AppBuilderTests
     {
@@ -42,7 +40,7 @@ namespace Gate.Builder.Tests
                 {
                     {"Content-Type", new[] {"text/plain"}}
                 },
-                Body = (stream, stop) =>
+                Body = stream =>
                 {
                     stream.Write(Encoding.UTF8.GetBytes("Hello Foo"), 0, 9);
                     return TaskHelpers.Completed();
@@ -53,7 +51,7 @@ namespace Gate.Builder.Tests
                 }
             });
 
-        static readonly AppAction TwoHundredFooAction = (env, headers, body, cancel) => TaskHelpers.FromResult(
+        static readonly AppAction TwoHundredFooAction = (env, headers, body) => TaskHelpers.FromResult(
             new ResultTuple(
                 new Dictionary<string, object>
                 {
@@ -64,7 +62,7 @@ namespace Gate.Builder.Tests
                 {
                     {"Content-Type", new[] {"text/plain"}}
                 },
-                (stream, stop) =>
+                stream =>
                 {
                     stream.Write(Encoding.UTF8.GetBytes("Hello Foo"), 0, 9);
                     return TaskHelpers.Completed();
@@ -200,8 +198,8 @@ namespace Gate.Builder.Tests
 
         static readonly Func<AppAction, string, AppAction> AddStatus =
             (app, appendReasonPhrase) =>
-                (env, headers, body, cancel) =>
-                    app(env, headers, body, cancel).Then(result =>
+                (env, headers, body) =>
+                    app(env, headers, body).Then(result =>
                     {
                         result.Item1["owin.ReasonPhrase"] = result.Item1["owin.ReasonPhrase"] + appendReasonPhrase;
                         return result;
