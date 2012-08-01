@@ -7,7 +7,7 @@ namespace Gate.Hosts.Firefly
 {
     public class ServerFactory : Attribute
     {
-        public IDisposable Create(AppDelegate app, int port)
+        public static IDisposable Create(AppDelegate app, int port)
         {
             app = ExecutionContextPerRequest.Middleware(app);
             var serverFactory = new global::Firefly.Http.ServerFactory();
