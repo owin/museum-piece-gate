@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using DifferentNamespace;
 using Gate.Builder;
 using Gate.Builder.Loader;
@@ -12,21 +14,17 @@ using NUnit.Framework;
 
 namespace Gate.Builder.Tests.Loader
 {
-#pragma warning disable 811
-    using AppAction = Action< // app
-       IDictionary<string, object>, // env
-       Action< // result
-           string, // status
-           IDictionary<string, string[]>, // headers
-           Action< // body
-               Func< // write
-                   ArraySegment<byte>, // data                     
-                   Action, // continuation
-                   bool>, // async
-               Action< // end
-                   Exception>, // error
-               CancellationToken>>, // cancel
-       Action<Exception>>; // error
+    using AppAction = Func< // Call
+        IDictionary<string, object>, // Environment
+        IDictionary<string, string[]>, // Headers
+        Stream, // Body
+        Task<Tuple< //Result
+            IDictionary<string, object>, // Properties
+            int, // Status
+            IDictionary<string, string[]>, // Headers
+            Func< // CopyTo
+                Stream, // Body
+                Task>>>>; // Done
 
     [TestFixture]
     public class DefaultConfigurationLoaderTests

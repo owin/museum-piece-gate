@@ -14,7 +14,6 @@ using Xunit;
 
 namespace Gate.Builder.Tests
 {
-#pragma warning disable 811
     using AppAction = Func< // Call
         IDictionary<string, object>, // Environment
         IDictionary<string, string[]>, // Headers
