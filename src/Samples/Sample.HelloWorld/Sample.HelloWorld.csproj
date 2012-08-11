@@ -58,8 +58,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Owin">
-      <HintPath>..\..\..\packages\Owin.0.12\lib\net40\Owin.dll</HintPath>
+    <Reference Include="Owin, Version=0.14.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\packages\Owin.0.14\lib\net40\Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin.Startup, Version=0.2.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\..\..\packages\Owin.Startup.0.2\lib\net40\Owin.Startup.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>

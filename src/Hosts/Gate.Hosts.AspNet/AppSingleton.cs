@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Configuration;
-using Gate.Builder;
 using Owin;
+using Owin.Builder;
+using Owin.Loader;
 
 namespace Gate.Hosts.AspNet
 {
@@ -40,8 +41,16 @@ namespace Gate.Hosts.AspNet
 
         public static AppDelegate DefaultFactory()
         {
-            var configurationString = ConfigurationManager.AppSettings["Gate.Startup"];
-            return AppBuilder.BuildPipeline<AppDelegate>(configurationString);
+            var loader = new DefaultLoader();
+            var builder = new AppBuilder();
+
+            var startupName = ConfigurationManager.AppSettings["owin:Startup"];
+            var startupMethod = loader.Load(startupName);
+            if (startupMethod != null)
+            {
+                startupMethod.Invoke(builder);
+            }
+            return (AppDelegate)builder.Build(typeof(AppDelegate));
         }
     }
 }

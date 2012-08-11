@@ -1,7 +1,7 @@
 using System;
-using Gate.Builder;
 using NUnit.Framework;
 using Owin;
+using Owin.Builder;
 
 namespace Gate.Middleware.Tests
 {
@@ -10,7 +10,9 @@ namespace Gate.Middleware.Tests
     {
         private ResultParameters CallPipe(Action<IAppBuilder> pipe)
         {
-            AppDelegate app = AppBuilder.BuildPipeline<AppDelegate>(pipe);
+            var builder = new AppBuilder();
+            pipe(builder);
+            var app = (AppDelegate)builder.Build(typeof(AppDelegate));
             return app(new Request().Call).Result;
         }
 

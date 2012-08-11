@@ -1,45 +1,56 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Gate.Middleware;
 using Owin;
 using System.Threading.Tasks;
+
+namespace Owin
+{
+    public static class Extensions
+    {
+        public static IAppBuilder UseContentType(this IAppBuilder builder)
+        {
+            return builder.UseType<ContentType>();
+        }
+
+        public static IAppBuilder UseContentType(this IAppBuilder builder, string contentType)
+        {
+            return builder.UseType<ContentType>(contentType);
+        }
+    }
+}
 
 namespace Gate.Middleware
 {
     /// <summary>
     /// Sets content type in response if none present
     /// </summary>
-    public static class ContentType
+    public class ContentType
     {
+        readonly AppDelegate _next;
+        readonly string _contentType;
         const string DefaultContentType = "text/html";
 
-        public static IAppBuilder UseContentType(this IAppBuilder builder)
+        public ContentType(AppDelegate next)
         {
-            return builder.Use(Middleware);
+            _next = next;
+            _contentType = DefaultContentType;
         }
 
-        public static IAppBuilder UseContentType(this IAppBuilder builder, string contentType)
+        public ContentType(AppDelegate next, string contentType)
         {
-            return builder.Use(Middleware, contentType);
+            _next = next;
+            _contentType = contentType;
         }
 
-        public static AppDelegate Middleware(AppDelegate app)
+        public Task<ResultParameters> Invoke(CallParameters call)
         {
-            return Middleware(app, DefaultContentType);
-        }
-
-        public static AppDelegate Middleware(AppDelegate app, string contentType)
-        {
-            return call => app(call).Then(result =>
+            return _next(call).Then(result =>
             {
                 if (!result.Headers.HasHeader("Content-Type"))
                 {
-                    result.Headers.SetHeader("Content-Type", contentType);
+                    result.Headers.SetHeader("Content-Type", _contentType);
                 }
                 return result;
             });
         }
-
     }
 }

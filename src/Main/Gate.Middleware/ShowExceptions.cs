@@ -13,7 +13,7 @@ namespace Gate.Middleware
     {
         public static IAppBuilder UseShowExceptions(this IAppBuilder builder)
         {
-            return builder.Use(Middleware);
+            return builder.UseFunc<AppDelegate>(Middleware);
         }
 
         public static AppDelegate Middleware(AppDelegate app)

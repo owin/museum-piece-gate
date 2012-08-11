@@ -10,7 +10,7 @@ namespace Gate.Hosts.HttpListener.Tests
     {
         public static void Custom(IAppBuilder builder)
         {
-            builder.Use<AppDelegate>(App);
+            builder.UseFunc<AppDelegate>(App);
         }
 
         static AppDelegate App(AppDelegate arg)

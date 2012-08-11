@@ -12,22 +12,22 @@ namespace Gate.Middleware
     {
         public static IAppBuilder UseStatic(this IAppBuilder builder, string root, IEnumerable<string> urls)
         {
-            return builder.Use(Static.Middleware, root, urls);
+            return builder.UseFunc<AppDelegate>(app => Static.Middleware(app, root, urls));
         }
 
         public static IAppBuilder UseStatic(this IAppBuilder builder, IEnumerable<string> urls)
         {
-            return builder.Use(Static.Middleware, urls);
+            return builder.UseFunc<AppDelegate>(app => Static.Middleware(app, urls));
         }
 
         public static IAppBuilder UseStatic(this IAppBuilder builder, string root)
         {
-            return builder.Use(Static.Middleware, root);
+            return builder.UseFunc<AppDelegate>(app => Static.Middleware(app, root));
         }
 
         public static IAppBuilder UseStatic(this IAppBuilder builder)
         {
-            return builder.Use(Static.Middleware);
+            return builder.UseFunc<AppDelegate>(Static.Middleware);
         }
     }
 
