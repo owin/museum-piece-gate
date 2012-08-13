@@ -11,7 +11,7 @@ namespace Gate.Middleware
     {
         public static IAppBuilder UseContentLength(this IAppBuilder builder)
         {
-            return builder.Use<AppDelegate>(Middleware);
+            return builder.UseFunc<AppDelegate>(Middleware);
         }
         
         public static AppDelegate Middleware(AppDelegate app)

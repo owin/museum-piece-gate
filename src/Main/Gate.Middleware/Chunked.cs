@@ -14,7 +14,7 @@ namespace Gate.Middleware
     {
         public static IAppBuilder UseChunked(this IAppBuilder builder)
         {
-            return builder.Use<AppDelegate>(Middleware);
+            return builder.UseFunc<AppDelegate>(Middleware);
         }
 
         static readonly ArraySegment<byte> EndOfChunk = new ArraySegment<byte>(Encoding.ASCII.GetBytes("\r\n"));

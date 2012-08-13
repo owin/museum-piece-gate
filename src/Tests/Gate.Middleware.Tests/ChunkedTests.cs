@@ -1,11 +1,10 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Gate.Builder;
 using NUnit.Framework;
 using Owin;
+using Owin.Builder;
 
 namespace Gate.Middleware.Tests
 {
@@ -14,7 +13,9 @@ namespace Gate.Middleware.Tests
     {
         private ResultParameters Call(Action<IAppBuilder> pipe)
         {
-            AppDelegate app = AppBuilder.BuildPipeline<AppDelegate>(pipe);
+            var builder = new AppBuilder();
+            pipe(builder);
+            var app = (AppDelegate)builder.Build(typeof(AppDelegate));
             return app(new Request().Call).Result;
         }
 
@@ -105,7 +106,7 @@ namespace Gate.Middleware.Tests
                 }));
 
             Assert.That(response.Headers.GetHeader("Transfer-Encoding"), Is.EqualTo("girl"));
-            Assert.That(ReadBody(response.Body), Is.EqualTo("hello world."));            
+            Assert.That(ReadBody(response.Body), Is.EqualTo("hello world."));
         }
 
         [Test]

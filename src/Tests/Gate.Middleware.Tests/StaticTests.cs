@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using Gate.Builder;
 using NUnit.Framework;
 using Owin;
+using Owin.Builder;
 
 namespace Gate.Middleware.Tests
 {
@@ -11,7 +11,9 @@ namespace Gate.Middleware.Tests
     {
         private ResultParameters Call(Action<IAppBuilder> pipe, string path)
         {
-            AppDelegate app = AppBuilder.BuildPipeline<AppDelegate>(pipe);
+            var builder = new AppBuilder();
+            pipe(builder);
+            var app = builder.Build<AppDelegate>();
             return app(new Request() { Path = path }.Call).Result;
         }
 
@@ -53,7 +55,7 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Static_calls_down_the_chain_if_URL_root_is_unknown()
         {
-            var result = Call(b => b.UseStatic().Run(call => new Response(301).EndAsync()), "/johnson/and/johnson");
+            var result = Call(b => b.UseStatic().UseFunc<AppDelegate>(_=>call => new Response(301).EndAsync()), "/johnson/and/johnson");
 
             Assert.That(result.Status, Is.EqualTo(301));
         }

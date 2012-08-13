@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Gate.Builder;
 using NUnit.Framework;
 using Owin;
+using Owin.Builder;
 
 namespace Gate.Middleware.Tests
 {
@@ -15,7 +13,9 @@ namespace Gate.Middleware.Tests
     {
         AppDelegate Build(Action<IAppBuilder> b)
         {
-            return AppBuilder.BuildPipeline<AppDelegate>(b);
+            var builder = new AppBuilder();
+            b(builder);
+            return (AppDelegate)builder.Build(typeof(AppDelegate));
         }
 
         private String ReadBody(Func<Stream, Task> body)
@@ -32,7 +32,7 @@ namespace Gate.Middleware.Tests
         {
             var stack = Build(b => b
                 .UseShowExceptions()
-                .Run(appCall =>
+                .UseFunc<AppDelegate>(_ => appCall =>
                 {
                     Response appResult = new Response(200);
                     appResult.Headers.SetHeader("Content-Type", "text/plain");
@@ -52,7 +52,7 @@ namespace Gate.Middleware.Tests
         {
             var stack = Build(b => b
                 .UseShowExceptions()
-                .Run(appCall => { throw new ApplicationException("Kaboom"); }));
+                .UseFunc<AppDelegate>(_ => appCall => { throw new ApplicationException("Kaboom"); }));
 
             ResultParameters result = stack(new Request().Call).Result;
 
@@ -68,7 +68,7 @@ namespace Gate.Middleware.Tests
         {
             var stack = Build(b => b
                 .UseShowExceptions()
-                .Run(appCall =>
+                .UseFunc<AppDelegate>(_ => appCall =>
                 {
                     ResultParameters rawResult = new ResultParameters();
                     rawResult.Body = stream =>
@@ -98,7 +98,7 @@ namespace Gate.Middleware.Tests
         {
             var stack = Build(b => b
                 .UseShowExceptions()
-                .Run(appCall =>
+                .UseFunc<AppDelegate>(_=>appCall =>
                 {
                     Response appResult = new Response(200);
                     appResult.Headers.SetHeader("Content-Type", "text/html");

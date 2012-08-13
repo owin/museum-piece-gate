@@ -9,24 +9,24 @@ namespace Gate.Middleware
 {
     public static class Cascade
     {
-        public static IAppBuilder RunCascade(this IAppBuilder builder, params AppDelegate[] apps)
+        public static void RunCascade(this IAppBuilder builder, params AppDelegate[] apps)
         {
-            return builder.Run(App, apps);
+            builder.Run(App(apps));
         }
 
-        public static IAppBuilder RunCascade(this IAppBuilder builder, params Action<IAppBuilder>[] apps)
+        public static void RunCascade(this IAppBuilder builder, params Action<IAppBuilder>[] apps)
         {
-            return builder.Run(App, apps.Select(builder.Build<AppDelegate>));
+            builder.Run(App(apps.Select(cfg => builder.BuildNew<AppDelegate>(x => cfg(x)))));
         }
 
         public static IAppBuilder UseCascade(this IAppBuilder builder, params AppDelegate[] apps)
         {
-            return builder.Use(Middleware, apps);
+            return builder.UseFunc<AppDelegate>(app => Middleware(app, apps));
         }
 
         public static IAppBuilder UseCascade(this IAppBuilder builder, params Action<IAppBuilder>[] apps)
         {
-            return builder.Use(Middleware, apps.Select(builder.Build<AppDelegate>));
+            return builder.UseFunc<AppDelegate>(app => Middleware(app, apps.Select(cfg => builder.BuildNew<AppDelegate>(x => cfg(x)))));
         }
 
 

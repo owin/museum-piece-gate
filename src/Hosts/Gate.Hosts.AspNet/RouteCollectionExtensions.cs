@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Web.Routing;
-using Gate.Builder;
 using Owin;
+using Owin.Builder;
 
 namespace Gate.Hosts.AspNet
 {
@@ -19,13 +19,17 @@ namespace Gate.Hosts.AspNet
 
         public static void AddOwinRoute(this RouteCollection routes, string path, Action<IAppBuilder> configuration)
         {
-            var app = AppBuilder.BuildPipeline<AppDelegate>(configuration);
+            var builder = new AppBuilder();
+            configuration(builder);
+            var app = (AppDelegate)builder.Build(typeof(AppDelegate));
             routes.Add(new OwinRoute(path, app));
         }
 
         public static void AddOwinRoute(this RouteCollection routes, string path, IAppBuilder builder, Action<IAppBuilder> configuration)
         {
-            var app = builder.Build<AppDelegate>(configuration);
+            var nested = builder.New();
+            configuration(nested);
+            var app = (AppDelegate)nested.Build(typeof(AppDelegate));
             routes.Add(new OwinRoute(path, app));
         }
     }
