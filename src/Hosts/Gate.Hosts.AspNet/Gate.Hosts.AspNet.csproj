@@ -41,11 +41,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\Owin.0.14\lib\net40\Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Owin.Startup, Version=0.2.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
+    <Reference Include="Owin.Startup, Version=0.3.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-      <HintPath>..\..\..\packages\Owin.Startup.0.2\lib\net40\Owin.Startup.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\..\..\packages\Owin.Startup.0.3\lib\net40\Owin.Startup.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -61,10 +59,10 @@
     </Compile>
     <Compile Include="AppHandler.cs" />
     <Compile Include="AppSingleton.cs" />
-    <Compile Include="App_Packages\Owin.Builder.Sources.0.2\AppBuilder.cs" />
-    <Compile Include="App_Packages\Owin.Builder.Sources.0.2\Utils\Conversions.cs" />
-    <Compile Include="App_Packages\Owin.Loader.Sources.0.2\DefaultLoader.cs" />
-    <Compile Include="App_Packages\Owin.Loader.Sources.0.2\NullLoader.cs" />
+    <Compile Include="App_Packages\Owin.Builder.Sources.0.3\AppBuilder.cs" />
+    <Compile Include="App_Packages\Owin.Builder.Sources.0.3\Utils\Conversions.cs" />
+    <Compile Include="App_Packages\Owin.Loader.Sources.0.3\DefaultLoader.cs" />
+    <Compile Include="App_Packages\Owin.Loader.Sources.0.3\NullLoader.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
     <Compile Include="OwinHandler.cs" />

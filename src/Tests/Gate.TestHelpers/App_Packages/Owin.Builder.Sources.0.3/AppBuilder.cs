@@ -1,12 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
+using System.Threading.Tasks;
 using Owin.Builder.Utils;
 
 namespace Owin.Builder
 {
+    using ResultTuple = Tuple< //Result
+        IDictionary<string, object>, // Properties
+        int, // Status
+        IDictionary<string, string[]>, // Headers
+        Func< // CopyTo
+            Stream, // Body
+            Task>>; // Done
+
     internal class AppBuilder : IAppBuilder
     {
         public AppBuilder()
@@ -70,7 +79,7 @@ namespace Owin.Builder
             object app;
             if (!_properties.TryGetValue("builder.DefaultApp", out app))
             {
-                app = null;
+                app = NotFound;
             }
 
             foreach (var middleware in _middleware.Reverse())
@@ -80,13 +89,24 @@ namespace Owin.Builder
                 var middlewareArgs = middleware.Item3;
 
                 app = Convert(neededSignature, app);
-                var invokeParameters = new[] {app}.Concat(middlewareArgs).ToArray();
+                var invokeParameters = new[] { app }.Concat(middlewareArgs).ToArray();
                 app = middlewareDelegate.DynamicInvoke(invokeParameters);
                 app = Convert(neededSignature, app);
             }
 
             return Convert(signature, app);
         }
+
+        readonly Func<
+            IDictionary<string, object>,
+            IDictionary<string, string[]>,
+            Stream,
+            Task<ResultTuple>> NotFound = (_, __, ___) =>
+                TaskHelpers.FromResult(new ResultTuple(
+                    new Dictionary<string, object>(),
+                    404,
+                    new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase),
+                    output => TaskHelpers.Completed()));
 
         object Convert(Type signature, object app)
         {

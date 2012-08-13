@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -220,9 +221,9 @@ namespace Owin.Builder.Utils
             //                default(CancellationToken),
             //                false);
 
-            Expression<Action> b = () => TaskHelpers.FromResult(4).Then(x => "", default(CancellationToken), true);
-            var thenMethod = ((MethodCallExpression)b.Body).Method.GetGenericMethodDefinition();
-
+            var thenMethod = typeof(TaskHelpersExtensions)
+                .GetMethods(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod)
+                .Single(IsCorrectThenMethod);
 
             var appDelegateMethod = appDelegateType.GetMethod("Invoke");
             var taskOfResultParametersType = appDelegateMethod.ReturnType;
@@ -303,8 +304,9 @@ namespace Owin.Builder.Utils
             //            default(CancellationToken),
             //            false);
 
-            Expression<Action> b = () => TaskHelpers.FromResult(4).Then(x => "", default(CancellationToken), true);
-            var thenMethod = ((MethodCallExpression)b.Body).Method.GetGenericMethodDefinition();
+            var thenMethod = typeof(TaskHelpersExtensions)
+                .GetMethods(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod)
+                .Single(IsCorrectThenMethod);
 
             var appDelegateMethod = appDelegateType.GetMethod("Invoke");
             var taskOfResultParametersType = appDelegateMethod.ReturnType;
@@ -364,6 +366,43 @@ namespace Owin.Builder.Utils
             var conversion = conversionLambda.Compile();
 
             return app => conversion.DynamicInvoke(app);
+        }
+
+        static bool IsCorrectThenMethod(MethodInfo method)
+        {
+            if (method.Name != "Then")
+            {
+                return false;
+            }
+            if (!method.IsGenericMethodDefinition)
+            {
+                return false;
+            }
+            var genericArguments = method.GetGenericArguments();
+            if (genericArguments.Length != 2)
+            {
+                return false;
+            }
+            var parameters = method.GetParameters();
+            if (parameters.Length != 4)
+            {
+                return false;
+            }
+            var funcType = parameters[1].ParameterType;
+            if (!funcType.IsGenericType)
+            {
+                return false;
+            }
+            var funcGenericArguments = funcType.GetGenericArguments();
+            if (funcGenericArguments.Length != 2)
+            {
+                return false;
+            }
+            if (funcGenericArguments[1] != genericArguments[1])
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
