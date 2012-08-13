@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Gate.TestHelpers;
-using Gate.Builder;
 using Owin;
 using System.IO;
-using System.Threading;
+using Owin.Builder;
 
 namespace Gate.Middleware.Tests
 {
@@ -17,7 +13,9 @@ namespace Gate.Middleware.Tests
     {
         private ResultParameters Call(Action<IAppBuilder> pipe, Request request)
         {
-            AppDelegate app = AppBuilder.BuildPipeline<AppDelegate>(pipe);
+            var builder = new AppBuilder();
+            pipe(builder);
+            var app = (AppDelegate)builder.Build(typeof(AppDelegate));
             return app(request.Call).Result;
         }
 
