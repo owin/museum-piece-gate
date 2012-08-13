@@ -39,6 +39,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\Owin.0.14\lib\net40\Owin.dll</HintPath>
     </Reference>
+    <Reference Include="Owin.Builder">
+      <HintPath>..\..\..\packages\Owin.Builder.0.3\lib\net40\Owin.Builder.dll</HintPath>
+    </Reference>
     <Reference Include="Owin.Startup, Version=0.3.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\Owin.Startup.0.3\lib\net40\Owin.Startup.dll</HintPath>
@@ -60,8 +63,6 @@
     <Compile Include="..\..\Main\Gate\OwinConstants.cs">
       <Link>OwinConstants.cs</Link>
     </Compile>
-    <Compile Include="App_Packages\Owin.Builder.Sources.0.3\AppBuilder.cs" />
-    <Compile Include="App_Packages\Owin.Builder.Sources.0.3\Utils\Conversions.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
