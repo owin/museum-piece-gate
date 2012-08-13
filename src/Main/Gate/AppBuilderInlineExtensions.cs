@@ -13,7 +13,7 @@ namespace Gate
 
         public static IAppBuilder UseDirect(this IAppBuilder builder, Func<Request, Response, Task> app)
         {
-            return builder.Use<AppDelegate>(next => call =>
+            return builder.UseFunc<AppDelegate>(next => call =>
             {
                 var req = new Request(call);
                 var resp = new Response

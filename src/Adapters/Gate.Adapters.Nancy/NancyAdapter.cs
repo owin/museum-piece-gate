@@ -14,12 +14,12 @@ namespace Gate.Adapters.Nancy
     {
         public static IAppBuilder RunNancy(this IAppBuilder builder)
         {
-            return builder.Use<AppDelegate>(_ => App());
+            return builder.UseFunc<AppDelegate>(_ => App());
         }
 
         public static IAppBuilder RunNancy(this IAppBuilder builder, INancyBootstrapper bootstrapper)
         {
-            return builder.Use<AppDelegate>(_ => App(bootstrapper));
+            return builder.UseFunc<AppDelegate>(_ => App(bootstrapper));
         }
 
         public static AppDelegate App()

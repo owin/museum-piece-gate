@@ -15,27 +15,27 @@ namespace Gate.Adapters.AspNetWebApi
     {
         public static IAppBuilder RunHttpServer(this IAppBuilder builder)
         {
-            return builder.Use<AppDelegate>(_ => App());
+            return builder.UseFunc<AppDelegate>(_ => App());
         }
 
         public static IAppBuilder RunHttpServer(this IAppBuilder builder, HttpControllerDispatcher dispatcher)
         {
-            return builder.Use<AppDelegate>(_ => App(dispatcher));
+            return builder.UseFunc<AppDelegate>(_ => App(dispatcher));
         }
 
         public static IAppBuilder RunHttpServer(this IAppBuilder builder, HttpConfiguration configuration)
         {
-            return builder.Use<AppDelegate>(_ => App(configuration));
+            return builder.UseFunc<AppDelegate>(_ => App(configuration));
         }
 
         public static IAppBuilder RunHttpServer(this IAppBuilder builder, HttpConfiguration configuration, HttpMessageHandler dispatcher)
         {
-            return builder.Use<AppDelegate>(_ => App(configuration, dispatcher));
+            return builder.UseFunc<AppDelegate>(_ => App(configuration, dispatcher));
         }
 
         public static IAppBuilder RunHttpServer(this IAppBuilder builder, HttpServer server)
         {
-            return builder.Use<AppDelegate>(_ => App(server));
+            return builder.UseFunc<AppDelegate>(_ => App(server));
         }
 
         public static AppDelegate App()

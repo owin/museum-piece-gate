@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Gate.Builder;
 using NUnit.Framework;
 using Owin;
+using Owin.Builder;
 
 namespace Gate.Middleware.Tests
 {
@@ -16,7 +16,9 @@ namespace Gate.Middleware.Tests
     {
         AppDelegate Build(Action<IAppBuilder> b)
         {
-            return AppBuilder.BuildPipeline<AppDelegate>(b);
+            var builder = new AppBuilder();
+            b(builder);
+            return (AppDelegate)builder.Build(typeof(AppDelegate));
         }
 
         private Func<Stream, Task> CreateBody(String text)

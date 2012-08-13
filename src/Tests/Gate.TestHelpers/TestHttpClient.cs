@@ -4,11 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.Remoting.Contexts;
 using System.Threading;
 using System.Threading.Tasks;
-using Gate.Builder;
 using Owin;
+using Owin.Builder;
 
 namespace Gate.TestHelpers
 {
@@ -51,7 +50,9 @@ namespace Gate.TestHelpers
         /// <returns></returns>
         public static TestHttpClient ForConfiguration(Action<IAppBuilder> configuration)
         {
-            return ForAppDelegate(AppBuilder.BuildPipeline<AppDelegate>(configuration));
+            var builder = new AppBuilder();
+            configuration(builder);
+            return ForAppDelegate((AppDelegate)builder.Build(typeof(AppDelegate)));
         }
 
         /// <summary>
