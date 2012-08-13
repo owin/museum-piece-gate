@@ -76,7 +76,7 @@ namespace Gate.Hosts
             return new ResultParameters()
             {
                 Status = 500,
-                Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                Properties = new Dictionary<string, object>()
                 {
                     { "owin.ReasonPhrase", "Internal Server Error" }
                 },

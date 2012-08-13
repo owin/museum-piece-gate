@@ -21,8 +21,13 @@
 
         private const int buffering = 0; // Just copy write data to the buffer.
         private const int offloading = 1; // Emptying buffer to output stream, new writes still go into the buffer.
-        private const int streaming = 2; // Buffer is empty and output stream is avialable, bypass the buffer and go directly to the output stream.
+        private const int streaming = 2; // Buffer is empty and output stream is available, bypass the buffer and go directly to the output stream.
         private const int closed = 3; // Disposed, throw.
+
+        public ResponseStream(CancellationToken cancel)
+        {
+            this.cancel = cancel;
+        }
 
         public override bool CanRead
         {

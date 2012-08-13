@@ -122,7 +122,7 @@ namespace Gate.Tests
             {
                 ResultParameters result = new ResultParameters();
                 result.Status = 200;
-                result.Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                result.Properties = new Dictionary<string, object>();
                 result.Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
                 {
                     {"Content-Type", new[] {"text/plain"}},

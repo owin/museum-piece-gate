@@ -14,7 +14,7 @@ namespace Gate.Tests
         {
             return new CallParameters()
             {
-                Environment = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
+                Environment = new Dictionary<string, object>(),
                 Headers = Headers.New(),
                 Body = null,
             };

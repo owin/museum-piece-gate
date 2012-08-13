@@ -108,7 +108,7 @@ namespace Gate.Adapters.AspNetWebApi
                     {
                         ResultParameters result = new ResultParameters();
                         result.Status = (int)response.StatusCode;
-                        result.Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                        result.Properties = new Dictionary<string, object>();
                         result.Properties.Add("owin.ReasonPhrase", response.ReasonPhrase);
                         result.Properties.Add("owin.ResponseProtocol", "HTTP/" + response.Version.ToString(2));
 
