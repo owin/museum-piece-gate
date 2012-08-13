@@ -14,7 +14,7 @@ namespace Gate.Middleware
     {
         public static IAppBuilder UsePassiveValidation(this IAppBuilder builder)
         {
-            return builder.Use(PassiveValidator.Middleware);
+            return builder.UseFunc<AppDelegate>(PassiveValidator.Middleware);
         }
 
         public static AppDelegate Middleware(AppDelegate app)

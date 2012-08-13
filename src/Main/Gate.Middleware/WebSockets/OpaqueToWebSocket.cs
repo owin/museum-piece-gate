@@ -65,7 +65,7 @@ namespace Gate.Middleware.WebSockets
     {
         public static IAppBuilder UseWebSockets(this IAppBuilder builder)
         {
-            return builder.Use<AppDelegate>(OpaqueToWebSocket.Middleware);
+            return builder.UseFunc<AppDelegate>(OpaqueToWebSocket.Middleware);
         }
 
         public static AppDelegate Middleware(AppDelegate app)
