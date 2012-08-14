@@ -19,6 +19,7 @@ namespace Gate.Middleware.WebSockets
             >;
 
     // This class implements the WebSocket layer on top of an opaque stream.
+    // WebSocket Extension v0.2 is currently implemented.
     public class WebSocketLayer
     {
         private Stream incoming;

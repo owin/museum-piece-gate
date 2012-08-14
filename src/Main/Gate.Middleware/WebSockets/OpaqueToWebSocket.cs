@@ -61,6 +61,7 @@ namespace Gate.Middleware.WebSockets
         >;
 
     // This class demonstrates how to support WebSockets on a server that only supports opaque streams.
+    // WebSocket Extension v0.2 is currently implemented.
     public static class OpaqueToWebSocket
     {
         public static IAppBuilder UseWebSockets(this IAppBuilder builder)
