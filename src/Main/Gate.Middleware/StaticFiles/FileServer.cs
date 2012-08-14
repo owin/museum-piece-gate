@@ -73,7 +73,7 @@ namespace Gate.Middleware.StaticFiles
                             .SetHeader("Content-Length", body.Length.ToString(CultureInfo.InvariantCulture))
                             .SetHeader("X-Cascade", "pass"),
                         Body = TextBody.Create(body, Encoding.UTF8),
-                        Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                        Properties = new Dictionary<string, object>()
                     });
         }
 
@@ -129,7 +129,7 @@ namespace Gate.Middleware.StaticFiles
                     Status = status,
                     Headers = headers,
                     Body = FileBody.Create(path, range),
-                    Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                    Properties = new Dictionary<string, object>()
                 });
         }
     }

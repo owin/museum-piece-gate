@@ -51,8 +51,10 @@
     </Compile>
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
+    <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="NotFound.cs" />
     <Compile Include="OwinConstants.cs" />
+    <Compile Include="PassiveValidator.cs" />
     <Compile Include="StaticFiles\FileBody.cs" />
     <Compile Include="StaticFiles\FileServer.cs" />
     <Compile Include="MethodOverride.cs" />
@@ -73,6 +75,10 @@
     <Compile Include="Utils\HttpFormatExtensions.cs" />
     <Compile Include="Utils\RangeHeader.cs" />
     <Compile Include="Utils\StreamWrapper.cs" />
+    <Compile Include="WebSockets\BinaryStream.cs" />
+    <Compile Include="WebSockets\OpaqueToWebSocket.cs" />
+    <Compile Include="WebSockets\WebSocketLayer.cs" />
+    <Compile Include="WebSockets\WebSocketToBinaryStream.cs" />
     <Compile Include="Wilson.cs" />
   </ItemGroup>
   <ItemGroup>
