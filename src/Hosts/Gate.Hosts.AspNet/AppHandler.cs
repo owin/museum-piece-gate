@@ -44,7 +44,7 @@ namespace Gate.Hosts.AspNet
 
             call.Body = httpRequest.InputStream;
 
-            call.Environment = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            call.Environment = new Dictionary<string, object>()
             { 
                 {OwinConstants.Version, "1.0"},
                 {OwinConstants.RequestMethod, httpRequest.HttpMethod},

@@ -59,7 +59,7 @@ namespace Gate
             this.result.Status = result.Status;
             this.result.Body = result.Body ?? defaultBodyDelegate;
             this.result.Headers = result.Headers ?? new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-            this.result.Properties = result.Properties ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            this.result.Properties = result.Properties ?? new Dictionary<string, object>();
 
             this.callCompletionSource = new TaskCompletionSource<ResultParameters>();
             this.sendHeaderAsyncCompletionSource = new TaskCompletionSource<Response>();
@@ -303,7 +303,7 @@ namespace Gate
         {
             if (responseStream == null)
             {
-                responseStream = new ResponseStream();
+                responseStream = new ResponseStream(this.completeToken);
                 if (result.Body != defaultBodyDelegate)
                 {
                     if (callCompletionSource.Task.IsCompleted)

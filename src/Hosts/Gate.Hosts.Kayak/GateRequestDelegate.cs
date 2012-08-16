@@ -25,7 +25,7 @@ namespace Gate.Hosts.Kayak
         public void OnRequest(HttpRequestHead head, IDataProducer body, IHttpResponseDelegate response)
         {
             var request = new CallParameters();
-            request.Environment = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            request.Environment = new Dictionary<string, object>();
             var requestWrapper = new RequestEnvironment(request.Environment);
 
             if (context != null)
@@ -109,7 +109,7 @@ namespace Gate.Hosts.Kayak
             response.OnResponse(new HttpResponseHead()
             {
                 Status = "503 Internal Server Error",
-                Headers = new Dictionary<string, string>()
+                Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     { "Connection", "close" }
                 }
