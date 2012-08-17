@@ -39,7 +39,7 @@ var NUGET_GALLERY_SOURCE='https://nuget.org/api/v2/'
 var NUGET_ASPNET_SOURCE='http://www.myget.org/F/aspnetwebstacknightly/'
 var NUGET_OWIN_SOURCE='http://www.myget.org/F/gate/'
 
-var NUGET_GATE_DEPLOY='http://www.myget.org/F/gate/'
+var NUGET_DEPLOY='http://www.myget.org/F/gate/'
 
 var BUILD_NUMBER='${Environment.GetEnvironmentVariable("BUILD_NUMBER")}'
 set FULL_VERSION='${FULL_VERSION}-build${BUILD_NUMBER.PadLeft(4, (char)'0')}' if='!string.IsNullOrEmpty(BUILD_NUMBER)'
@@ -57,12 +57,14 @@ use-standard-goals features='nuget,xunit,nunit'
   nuget-install each='var package in Files.Include("src/**/packages.config")' outputDir='packages' extra='-Source ${NUGET_GALLERY_SOURCE};${NUGET_ASPNET_SOURCE};${NUGET_OWIN_SOURCE}'
   
 #nuget-deploy target='deploy' description='Upload NuGet packages to gallery'
-  nuget-push each='var nupkgFile in Files.Include("target/*.nupkg")' extra='-Source ${NUGET_GATE_DEPLOY}'
+  var extra=''
+  set extra='${extra} -Source ${NUGET_DEPLOY}' if='!string.IsNullOrEmpty(NUGET_DEPLOY)'
+  nuget-push each='var nupkgFile in Files.Include("target/*.nupkg")'
 
 #release
   @{
     // To publish, call `build release deploy`
-    NUGET_GATE_DEPLOY = 'https://nuget.org/api/v2/';
+    NUGET_DEPLOY = '';
     FULL_VERSION = VERSION;
   }
 
