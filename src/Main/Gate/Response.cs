@@ -11,6 +11,7 @@ using System.Threading;
 
 namespace Gate
 {
+    // A helper class for creating, modifying, or consuming ResultParameters response data.
     public class Response
     {
         private static readonly Encoding defaultEncoding = Encoding.UTF8;
@@ -130,10 +131,10 @@ namespace Gate
             get
             {
                 object value;
-                var reasonPhrase = Properties.TryGetValue("owin.ReasonPhrase", out value) ? Convert.ToString(value) : null;
+                var reasonPhrase = Properties.TryGetValue(OwinConstants.ReasonPhrase, out value) ? Convert.ToString(value) : null;
                 return string.IsNullOrEmpty(reasonPhrase) ? ReasonPhrases.ToReasonPhrase(StatusCode) : reasonPhrase;
             }
-            set { Properties["owin.ReasonPhrase"] = value; }
+            set { Properties[OwinConstants.ReasonPhrase] = value; }
         }
 
         public string GetHeader(string name)

@@ -9,6 +9,7 @@ using Owin;
 
 namespace Gate
 {
+    // A helper class for creating, modifying, or consuming CallParameters request data.
     public class Request
     {
         CallParameters _call;

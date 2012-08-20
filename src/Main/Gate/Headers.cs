@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Gate
 {
+    // Helper methods for creating and consuming CallParameters.Headers and ResultParameters.Headers.
     public static class Headers
     {
         public static IDictionary<string, string[]> New()

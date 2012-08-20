@@ -7,6 +7,8 @@ using Timer = System.Timers.Timer;
 
 namespace Gate.Middleware
 {
+    // A sample application that reads query parameters and returns a simple HTML page.
+    // It can also be used to demonstrate error handling via the 'crash' parameter.
     public class Wilson
     {
         public static AppDelegate App(bool asyncReply)
@@ -28,7 +30,9 @@ namespace Gate.Middleware
             var href = "?flip=left";
             if (request.Query["flip"] == "left")
             {
-                wilson = wilson.Split(new[] {System.Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries).Select(line => new string(line.Reverse().ToArray())).Aggregate("", (agg, line) => agg + line + System.Environment.NewLine);
+                wilson = wilson.Split(new[] {System.Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(line => new string(line.Reverse().ToArray()))
+                    .Aggregate("", (agg, line) => agg + line + System.Environment.NewLine);
                 href = "?flip=right";
             }
             response.Write("<title>Wilson</title>");
@@ -69,7 +73,9 @@ namespace Gate.Middleware
                 var href = "?flip=left";
                 if (request.Query["flip"] == "left")
                 {
-                    wilson = wilson.Split(new[] {System.Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries).Select(line => new string(line.Reverse().ToArray())).Aggregate("", (agg, line) => agg + line + System.Environment.NewLine);
+                    wilson = wilson.Split(new[] {System.Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(line => new string(line.Reverse().ToArray()))
+                        .Aggregate("", (agg, line) => agg + line + System.Environment.NewLine);
                     href = "?flip=right";
                 }
 

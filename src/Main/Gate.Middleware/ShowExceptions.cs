@@ -9,6 +9,12 @@ using System.Threading.Tasks;
 
 namespace Gate.Middleware
 {
+    // Catches any exceptions throw from the App Delegate or Body Delegate and returns an HTML error page.
+    // If possible a full 500 Internal Server Error is returned.  Otherwise error information is written
+    // out as part of the existing response body.
+    //
+    // This is not recommended for production deployments, only development, as it may display sensitive
+    // internal data to the end user.  It also does not honor content-length restrictions.
     public static partial class ShowExceptions
     {
         public static IAppBuilder UseShowExceptions(this IAppBuilder builder)

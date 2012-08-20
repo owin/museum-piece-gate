@@ -10,6 +10,8 @@
     using Gate.Utils;
     using System.Diagnostics;
 
+    // Buffers the response body until the ResultParameters.Body delegate is invoked with the server
+    // response stream.  It then offloads the buffered data and permits direct writes to the output stream.
     internal class ResponseStream : Stream
     {
         private object internalLock = new object();

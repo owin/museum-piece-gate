@@ -7,6 +7,8 @@ namespace Gate.Middleware
     using Gate.Utils;
     using Owin;
 
+    // This middleware defaults to Content-Length if the app does not specify Content-Length 
+    // or Transfer-Encoding.  The Content-Length is determined by buffering the response body.
     public static class ContentLength
     {
         public static IAppBuilder UseContentLength(this IAppBuilder builder)

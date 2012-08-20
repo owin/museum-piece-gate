@@ -42,7 +42,7 @@ namespace Gate.Adapters.Nancy
                 var owinRequestPath = Get<string>(env, OwinConstants.RequestPath);
                 var owinRequestQueryString = Get<string>(env, OwinConstants.RequestQueryString);
                 var owinRequestBody = call.Body;
-                var serverClientIp = Get<string>(env, "server.CLIENT_IP");
+                var serverClientIp = Get<string>(env, "server.RemoteIpAddress");
                 var callCompleted = Get<Task>(env, OwinConstants.CallCompleted);
 
                 var url = new Url

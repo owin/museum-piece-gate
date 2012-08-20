@@ -301,9 +301,16 @@ namespace Owin
             }
 
             string version = call.Environment.Get<string>("owin.Version");
-            if (!protocol.Equals("1.0", StringComparison.Ordinal))
+            Version parsedVersion;
+            if (!Version.TryParse(version, out parsedVersion))
             {
-                warnings.Add(CreateWarning("7", "Unrecognized OWIN version: " + scheme));
+                fatalResult = CreateFatalResult("7", "owin.Version could not be parsed: " + version);
+                return false;
+            }
+
+            if (!parsedVersion.Equals(new Version(1, 0)))
+            {
+                warnings.Add(CreateWarning("7", "Unrecognized OWIN version: " + version));
             }
             
             return true;

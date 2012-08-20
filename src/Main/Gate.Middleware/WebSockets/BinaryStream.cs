@@ -98,7 +98,7 @@ namespace Gate.Middleware.WebSockets
                 Task
             >;
 
-    // This class allows a developer to produce and consume websocket data as if it were a raw stream.
+    // This class allows a developer to produce and consume websocket data as if it were a binary stream.
     internal class BinaryStream : Stream
     {
         private const int closeCode = 0x8;

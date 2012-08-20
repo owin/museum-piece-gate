@@ -21,7 +21,7 @@ namespace Owin
 namespace Gate.Middleware
 {
     /// <summary>
-    /// Sets content type in response if none present
+    /// Sets content-type for the response if none is present.
     /// </summary>
     public class ContentType
     {

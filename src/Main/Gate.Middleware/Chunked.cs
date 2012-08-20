@@ -10,6 +10,8 @@ using Gate.Utils;
 
 namespace Gate.Middleware
 {
+    // This middleware implements chunked response body encoding as the default encoding 
+    // if the application does not specify Content-Length or Transfer-Encoding.
     public static class Chunked
     {
         public static IAppBuilder UseChunked(this IAppBuilder builder)

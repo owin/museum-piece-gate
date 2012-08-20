@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace Gate.Middleware.StaticFiles
 {
+    // Used by the Static middleware to send static files to the client.
     public class FileServer
     {
         private const int OK = 200;

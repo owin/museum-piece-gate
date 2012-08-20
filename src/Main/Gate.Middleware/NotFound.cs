@@ -6,6 +6,7 @@ using Owin;
 
 namespace Gate.Middleware
 {
+    // Provides a default 404 Not Found HTML response.
     public static class NotFound
     {
         static readonly ArraySegment<byte> Body = new ArraySegment<byte>(Encoding.UTF8.GetBytes(@"
@@ -38,6 +39,9 @@ namespace Gate.Middleware
                     return TaskHelpers.Completed();
                 },
                 Properties = new Dictionary<string, object>()
+                {
+                    {"owin.ReasonPhrase", "Not Found"}
+                }
             });
         }
     }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Gate.Middleware
 {
+    // Serves static files from the given root directory for any matching URLs.
     public static class StaticExtensions
     {
         public static IAppBuilder UseStatic(this IAppBuilder builder, string root, IEnumerable<string> urls)

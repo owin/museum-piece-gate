@@ -2,6 +2,9 @@ using Owin;
 
 namespace Gate.Middleware
 {
+    // Reads the X-Http-Method-Override header value to replace the request method. This is useful when 
+    // intermediate client, proxy, firewall, or server software does not understand or permit the necessary 
+    // methods.
     public static class MethodOverride
     {
         public static IAppBuilder UseMethodOverride(this IAppBuilder builder)
