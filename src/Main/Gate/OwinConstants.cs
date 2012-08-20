@@ -11,5 +11,7 @@
         public const string RequestProtocol = "owin.RequestProtocol";
         public const string ReasonPhrase = "owin.ReasonPhrase";
         public const string CallCompleted = "owin.CallCompleted";
+
+        public const string TraceOutput = "host.TraceOutput";
     }
 }

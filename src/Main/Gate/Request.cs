@@ -46,8 +46,8 @@ namespace Gate
         }
         public Task Completed
         {
-            get { return Get<Task>("owin.CallCompleted"); }
-            set { Environment["owin.CallCompleted"] = value; }
+            get { return Get<Task>(OwinConstants.CallCompleted); }
+            set { Environment[OwinConstants.CallCompleted] = value; }
         }
 
         private T Get<T>(string name)
@@ -61,8 +61,17 @@ namespace Gate
         /// </summary>
         public string Version
         {
-            get { return Get<string>("owin.Version"); }
-            set { Environment["owin.Version"] = value; }
+            get { return Get<string>(OwinConstants.Version); }
+            set { Environment[OwinConstants.Version] = value; }
+        }
+
+        /// <summary>
+        /// "owin.RequestProtocol" A string containing the protocol name and version (e.g. "HTTP/1.0" or "HTTP/1.1"). 
+        /// </summary>
+        public string Protocol
+        {
+            get { return Get<string>(OwinConstants.RequestProtocol); }
+            set { Environment[OwinConstants.RequestProtocol] = value; }
         }
 
         /// <summary>
@@ -70,8 +79,8 @@ namespace Gate
         /// </summary>
         public string Method
         {
-            get { return Get<string>("owin.RequestMethod"); }
-            set { Environment["owin.RequestMethod"] = value; }
+            get { return Get<string>(OwinConstants.RequestMethod); }
+            set { Environment[OwinConstants.RequestMethod] = value; }
         }
 
         /// <summary>
@@ -79,8 +88,8 @@ namespace Gate
         /// </summary>
         public string Scheme
         {
-            get { return Get<string>("owin.RequestScheme"); }
-            set { Environment["owin.RequestScheme"] = value; }
+            get { return Get<string>(OwinConstants.RequestScheme); }
+            set { Environment[OwinConstants.RequestScheme] = value; }
         }
 
         /// <summary>
@@ -88,8 +97,8 @@ namespace Gate
         /// </summary>
         public string PathBase
         {
-            get { return Get<string>("owin.RequestPathBase"); }
-            set { Environment["owin.RequestPathBase"] = value; }
+            get { return Get<string>(OwinConstants.RequestPathBase); }
+            set { Environment[OwinConstants.RequestPathBase] = value; }
         }
 
         /// <summary>
@@ -97,8 +106,8 @@ namespace Gate
         /// </summary>
         public string Path
         {
-            get { return Get<string>("owin.RequestPath"); }
-            set { Environment["owin.RequestPath"] = value; }
+            get { return Get<string>(OwinConstants.RequestPath); }
+            set { Environment[OwinConstants.RequestPath] = value; }
         }
 
         /// <summary>
@@ -106,8 +115,8 @@ namespace Gate
         /// </summary>
         public string QueryString
         {
-            get { return Get<string>("owin.RequestQueryString"); }
-            set { Environment["owin.RequestQueryString"] = value; }
+            get { return Get<string>(OwinConstants.RequestQueryString); }
+            set { Environment[OwinConstants.RequestQueryString] = value; }
         }
 
 
@@ -116,9 +125,10 @@ namespace Gate
         /// </summary>
         public TextWriter TraceOutput
         {
-            get { return Get<TextWriter>("host.TraceOutput"); }
-            set { Environment["host.TraceOutput"] = value; }
+            get { return Get<TextWriter>(OwinConstants.TraceOutput); }
+            set { Environment[OwinConstants.TraceOutput] = value; }
         }
+
         public IDictionary<string, string> Query
         {
             get
@@ -282,12 +292,11 @@ namespace Gate
                     return hostHeader;
                 }
 
-                var serverName = Get<string>("server.SERVER_NAME");
-                if (string.IsNullOrWhiteSpace(serverName))
-                    serverName = Get<string>("server.SERVER_ADDRESS");
-                var serverPort = Get<string>("server.SERVER_PORT");
-
-                return serverName + ":" + serverPort;
+                return string.Empty;
+            }
+            set
+            {
+                Headers.SetHeader("Host", value);
             }
         }
 
@@ -301,10 +310,51 @@ namespace Gate
                     var delimiter = hostHeader.IndexOf(':');
                     return delimiter < 0 ? hostHeader : hostHeader.Substring(0, delimiter);
                 }
-                var serverName = Get<string>("server.SERVER_NAME");
-                if (string.IsNullOrWhiteSpace(serverName))
-                    serverName = Get<string>("server.SERVER_ADDRESS");
-                return serverName;
+
+                return string.Empty;
+            }
+            set
+            {
+                string port = Port;
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    Headers.Remove("Host");
+                }
+                else if (!string.IsNullOrWhiteSpace(port))
+                {
+                    Headers.SetHeader("Host", value + ":" + port);
+                }
+                else
+                {
+                    Headers.SetHeader("Host", value);
+                }
+            }
+        }
+
+        public string Port
+        {
+            get
+            {
+                var hostHeader = Headers.GetHeader("Host");
+                if (!string.IsNullOrWhiteSpace(hostHeader))
+                {
+                    var delimiter = hostHeader.IndexOf(':');
+                    return delimiter < 0 ? string.Empty : hostHeader.Substring(delimiter + 1);
+                }
+
+                return string.Empty;
+            }
+            set
+            {
+                string host = Host;
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    Host = host; // Truncate port
+                }
+                else
+                {
+                    Headers.SetHeader("Host", host + ":" + value);
+                }
             }
         }
 

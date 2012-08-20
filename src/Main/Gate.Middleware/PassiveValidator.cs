@@ -99,7 +99,7 @@ namespace Owin
         // Otherwise any warnings are appended.
         private static bool TryValidateCall(CallParameters call, IList<string> warnings, out ResultParameters fatalResult)
         {
-            if (!CheckCallDictionaries(call, out fatalResult))
+            if (!CheckCallDictionaries(call, warnings, out fatalResult))
             {
                 return false;
             }            
@@ -107,7 +107,7 @@ namespace Owin
             return true;
         }
 
-        private static bool CheckCallDictionaries(CallParameters call, out ResultParameters fatalResult)
+        private static bool CheckCallDictionaries(CallParameters call, IList<string> warnings, out ResultParameters fatalResult)
         {
             fatalResult = default(ResultParameters);
             if (call.Environment == null)
@@ -166,7 +166,7 @@ namespace Owin
             string[] caseValue = new string[] { "Case Value" };
             call.Environment[upperKey] = caseValue;
             string[] resultValue = call.Environment.Get<string[]>(lowerKey);
-            if (resultValue != caseValue || resultValue[0] != caseValue[0])
+            if (resultValue != null)
             {
                 fatalResult = CreateFatalResult("3.3", "CallParameters.Environment is not case sensitive.");
                 return false;
@@ -179,15 +179,133 @@ namespace Owin
             caseValue = new string[] { "Case Value" };
             call.Headers[upperKey] = caseValue;
             resultValue = null;
-            if (!call.Headers.TryGetValue(lowerKey, out resultValue) || resultValue != caseValue || resultValue[0] != caseValue[0])
+            if (!call.Headers.TryGetValue(lowerKey, out resultValue) || resultValue.Length != caseValue.Length || resultValue[0] != caseValue[0])
             {
                 fatalResult = CreateFatalResult("3.7", "CallParameters.Headers is case sensitive.");
                 return false;
             }
             call.Headers.Remove(upperKey);
 
-            // TODO: Check for required owin.* keys and the HOST header.
+            // Check for required owin.* keys and the HOST header.
+            if (!CheckRequiredCallData(call, warnings, out fatalResult))
+            {
+                return false;
+            }
 
+            return true;
+        }
+
+        private static bool CheckRequiredCallData(CallParameters call, IList<string> warnings, out ResultParameters fatalResult)
+        {
+            fatalResult = default(ResultParameters);
+            string[] requiredKeys = new string[]
+            {
+                "owin.CallCompleted",
+                "owin.RequestMethod",
+                "owin.RequestPath",
+                "owin.RequestPathBase",
+                "owin.RequestProtocol",
+                "owin.RequestQueryString",
+                "owin.RequestScheme",
+                "owin.Version" 
+            };
+
+            object temp;
+            foreach (string key in requiredKeys)
+            {
+                if (!call.Environment.TryGetValue(key, out temp))
+                {
+                    fatalResult = CreateFatalResult("3.3", "Missing required Environment key: " + key);
+                    return false;
+                }
+
+                if (temp == null)
+                {
+                    fatalResult = CreateFatalResult("3.3", "Required Environment value is null: " + key);
+                    return false;
+                }
+            }
+
+            string[] header;
+            if (!call.Headers.TryGetValue("HOST", out header) || header.Length == 0)
+            {
+                fatalResult = CreateFatalResult("5.2", "Missing Host header");
+                return false;
+            }
+            
+            // Validate values
+
+            string[] stringValueTypes = new string[]
+            {
+                "owin.RequestMethod",
+                "owin.RequestPath",
+                "owin.RequestPathBase",
+                "owin.RequestProtocol",
+                "owin.RequestQueryString",
+                "owin.RequestScheme",
+                "owin.Version" 
+            };
+
+            foreach (string key in stringValueTypes)
+            {
+                if (!(call.Environment[key] is string))
+                {
+                    fatalResult = CreateFatalResult("3.3", key + " value is not of type string: " + call.Environment[key].GetType().FullName);
+                    return false;
+                }
+            }
+
+            if (!(call.Environment["owin.CallCompleted"] is Task))
+            {
+                fatalResult = CreateFatalResult("3.3", "owin.CallCompleted is not of type Task: " + call.Environment["owin.CallCompleted"].GetType().FullName);
+                return false;
+            }
+
+            if (call.Environment.Get<Task>("owin.CallCompleted").IsCompleted)
+            {
+                warnings.Add(CreateWarning("3.9", "The owin.CallCompleted Task was complete before processing the request."));
+            }
+
+            if (string.IsNullOrWhiteSpace(call.Environment.Get<string>("owin.RequestMethod")))
+            {
+                fatalResult = CreateFatalResult("3.3", "owin.RequestMethod is empty.");
+                return false;
+            }
+
+            if (!call.Environment.Get<string>("owin.RequestPath").StartsWith("/"))
+            {
+                fatalResult = CreateFatalResult("5.3", "owin.RequestPath does not start with a slash.");
+                return false;
+            }
+
+            if (call.Environment.Get<string>("owin.RequestPathBase").EndsWith("/"))
+            {
+                fatalResult = CreateFatalResult("5.3", "owin.RequestBasePath ends with a slash.");
+                return false;
+            }
+            
+            string protocol = call.Environment.Get<string>("owin.RequestProtocol");
+            if (!protocol.Equals("HTTP/1.1", StringComparison.OrdinalIgnoreCase)
+                && !protocol.Equals("HTTP/1.0", StringComparison.OrdinalIgnoreCase))
+            {
+                warnings.Add(CreateWarning("3.3", "Unrecognized request protocol: " + protocol));
+            }
+
+            // No query string validation.
+
+            string scheme = call.Environment.Get<string>("owin.RequestScheme");
+            if (!protocol.Equals("http", StringComparison.OrdinalIgnoreCase)
+                && !protocol.Equals("https", StringComparison.OrdinalIgnoreCase))
+            {
+                warnings.Add(CreateWarning("5.1", "Unrecognized request scheme: " + scheme));
+            }
+
+            string version = call.Environment.Get<string>("owin.Version");
+            if (!protocol.Equals("1.0", StringComparison.Ordinal))
+            {
+                warnings.Add(CreateWarning("7", "Unrecognized OWIN version: " + scheme));
+            }
+            
             return true;
         }
 
@@ -236,7 +354,7 @@ namespace Owin
             }
             catch (Exception ex)
             {
-                fatalResult = CreateFatalResult("3.7", "ResultParameters.Properties is not mutable: \r\n" + ex.ToString());
+                fatalResult = CreateFatalResult("3.6", "ResultParameters.Properties is not mutable: \r\n" + ex.ToString());
             }
 
             // Must be mutable
@@ -264,7 +382,7 @@ namespace Owin
             string[] caseValue = new string[] { "Case Value" };
             result.Properties[upperKey] = caseValue;
             string[] resultValue = result.Properties.Get<string[]>(lowerKey);
-            if (resultValue != caseValue || resultValue[0] != caseValue[0])
+            if (resultValue != null)
             {
                 fatalResult = CreateFatalResult("3.6", "ResultParameters.Properties is not case sensitive.");
                 return false;
@@ -277,7 +395,7 @@ namespace Owin
             caseValue = new string[] { "Case Value" };
             result.Headers[upperKey] = caseValue;
             resultValue = null;
-            if (!result.Headers.TryGetValue(lowerKey, out resultValue) || resultValue != caseValue || resultValue[0] != caseValue[0])
+            if (!result.Headers.TryGetValue(lowerKey, out resultValue) || resultValue.Length != caseValue.Length || resultValue[0] != caseValue[0])
             {
                 fatalResult = CreateFatalResult("3.7", "ResultParameters.Headers is case sensitive.");
                 return false;
@@ -292,9 +410,14 @@ namespace Owin
         private static ResultParameters CreateFatalResult(string standardSection, string message)
         {
             Response response = new Response(500);
-            response.Write("OWIN v0.14.0 validation failure: Section#{1}, {2}", standardSection, message);
+            response.Write("OWIN v0.14.0 validation failure: Section#{0}, {1}", standardSection, message);
             response.End();
             return response.Result;
+        }
+
+        private static string CreateWarning(string standardSection, string message)
+        {
+            return string.Format("OWIN v0.14.0 validation warning: Section#{0}, {1}", standardSection, message);
         }
     }
 }

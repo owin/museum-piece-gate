@@ -55,40 +55,46 @@ namespace Gate.Tests
         //}
 
         [Test]
-        public void Host_will_use_cgi_SERVER_NAME_if_present()
-        {
-            CallParameters call = CreateEmptyCall();
-            call.Environment.Add("server.SERVER_NAME", "Alpha");
-            var request = new Request(call);
-            Assert.That(request.Host, Is.EqualTo("Alpha"));
-        }
-
-        [Test]
-        public void Host_should_favor_Host_header_if_present()
-        {
-            CallParameters call = CreateEmptyCall();
-            call.Headers.SetHeader("Host", "Beta");
-            call.Environment.Add("server.SERVER_NAME", "Alpha");
-            var request = new Request(call);
-            Assert.That(request.Host, Is.EqualTo("Beta"));
-        }
-
-        [Test]
         public void Host_will_remove_port_from_request_header_if_needed()
         {
             CallParameters call = CreateEmptyCall();
             call.Headers.SetHeader("Host", "Beta:8080");
-            call.Environment.Add("server.SERVER_NAME", "Alpha");
             var request = new Request(call);
             Assert.That(request.Host, Is.EqualTo("Beta"));
         }
 
         [Test]
-        public void Host_is_null_if_nothing_provided()
+        public void Host_is_empty_if_nothing_provided()
         {
             CallParameters call = CreateEmptyCall();
             var request = new Request(call);
-            Assert.That(request.Host, Is.Null);
+            Assert.That(request.Host, Is.EqualTo(string.Empty));
+        }
+
+        [Test]
+        public void Port_will_remove_port_from_request_header_if_needed()
+        {
+            CallParameters call = CreateEmptyCall();
+            call.Headers.SetHeader("Host", "Beta:8080");
+            var request = new Request(call);
+            Assert.That(request.Port, Is.EqualTo("8080"));
+        }
+
+        [Test]
+        public void Port_is_empty_if_nothing_provided()
+        {
+            CallParameters call = CreateEmptyCall();
+            var request = new Request(call);
+            Assert.That(request.Port, Is.EqualTo(string.Empty));
+        }
+
+        [Test]
+        public void Port_is_empty_if_only_host_provided()
+        {
+            CallParameters call = CreateEmptyCall();
+            call.Headers.SetHeader("Host", "Beta");
+            var request = new Request(call);
+            Assert.That(request.Port, Is.EqualTo(string.Empty));
         }
 
         [Test]
