@@ -55,6 +55,8 @@
     <Compile Include="NotFound.cs" />
     <Compile Include="OwinConstants.cs" />
     <Compile Include="PassiveValidator.cs" />
+    <Compile Include="RequestLogger.cs" />
+    <Compile Include="RequestTracer.cs" />
     <Compile Include="StaticFiles\FileBody.cs" />
     <Compile Include="StaticFiles\FileServer.cs" />
     <Compile Include="MethodOverride.cs" />

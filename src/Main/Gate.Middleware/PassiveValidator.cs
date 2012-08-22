@@ -294,8 +294,8 @@ namespace Owin
             // No query string validation.
 
             string scheme = call.Environment.Get<string>("owin.RequestScheme");
-            if (!protocol.Equals("http", StringComparison.OrdinalIgnoreCase)
-                && !protocol.Equals("https", StringComparison.OrdinalIgnoreCase))
+            if (!scheme.Equals("http", StringComparison.OrdinalIgnoreCase)
+                && !scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
             {
                 warnings.Add(CreateWarning("5.1", "Unrecognized request scheme: " + scheme));
             }

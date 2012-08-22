@@ -111,11 +111,14 @@ namespace Gate.Middleware.WebSockets
         }
 
         // Inspect the method and headers to see if this is a valid websocket request.
+        // See RFC 6455 section 4.2.1.
         private static bool IsWebSocketRequest(CallParameters call)
         {
             throw new NotImplementedException();
         }
 
+        // Se the websocket response headers.
+        // See RFC 6455 section 4.2.2.
         private static void SetWebSocketResponseHeaders(CallParameters call, ResultParameters result)
         {
             throw new NotImplementedException();

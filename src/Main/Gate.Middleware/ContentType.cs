@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Owin
 {
-    public static class Extensions
+    public static class ContentTypeExtensions
     {
         public static IAppBuilder UseContentType(this IAppBuilder builder)
         {

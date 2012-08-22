@@ -84,6 +84,7 @@
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
     <Compile Include="ContentLengthTests.cs" />
     <Compile Include="PassiveValidatorTests.cs" />
+    <Compile Include="RequestLoggerTests.cs" />
     <Compile Include="StaticFiles\FileServerTests.cs" />
     <Compile Include="MethodOverrideTests.cs" />
     <Compile Include="StaticFiles\RangeHeaderTests.cs" />
