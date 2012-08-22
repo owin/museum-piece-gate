@@ -9,52 +9,45 @@ using Owin;
 
 namespace Gate
 {
-    // A helper class for creating, modifying, or consuming CallParameters request data.
+    // A helper class for creating, modifying, or consuming request data in an Environment dictionary.
     public class Request
     {
-        CallParameters _call;
+        IDictionary<string, object> environment;
         static readonly char[] CommaSemicolon = new[] { ',', ';' };
 
         public Request()
+            : this(new Dictionary<string, object>())
         {
-            _call = new CallParameters()
-            {
-                Body = null,
-                Environment = new Dictionary<string, object>(),
-                Headers = Gate.Headers.New()
-            };
+            // TODO: Create header dictionaries?
         }
 
-        public Request(CallParameters call)
+        public Request(IDictionary<string, object> environment)
         {
-            _call = call;
+            this.environment = environment;
         }
 
         public IDictionary<string, object> Environment
         {
-            get { return _call.Environment; }
-            set { _call.Environment = value; }
-        }
-        public IDictionary<string, string[]> Headers
-        {
-            get { return _call.Headers; }
-            set { _call.Headers = value; }
-        }
-        public Stream Body
-        {
-            get { return _call.Body; }
-            set { _call.Body = value; }
-        }
-        public Task Completed
-        {
-            get { return Get<Task>(OwinConstants.CallCompleted); }
-            set { Environment[OwinConstants.CallCompleted] = value; }
+            get { return environment; }
+            set { environment = value; }
         }
 
-        private T Get<T>(string name)
+        public IDictionary<string, string[]> Headers
         {
-            object value;
-            return Environment.TryGetValue(name, out value) ? (T)value : default(T);
+            get { return Environment.Get<IDictionary<string, string[]>>(OwinConstants.RequestHeaders); }
+            set { Environment.Set<IDictionary<string, string[]>>(OwinConstants.RequestHeaders, value); }
+        }
+
+        public Stream Body
+        {
+            get { return Environment.Get<Stream>(OwinConstants.RequestBody); }
+            set { Environment.Set<Stream>(OwinConstants.RequestBody, value); }
+        }
+
+        public Task Completed
+        {
+            get { return Environment.Get<Task>(OwinConstants.CallCompleted); }
+            set { Environment.Set<Task>(OwinConstants.CallCompleted, value); }
         }
 
         /// <summary>
@@ -62,8 +55,8 @@ namespace Gate
         /// </summary>
         public string Version
         {
-            get { return Get<string>(OwinConstants.Version); }
-            set { Environment[OwinConstants.Version] = value; }
+            get { return Environment.Get<string>(OwinConstants.Version); }
+            set { Environment.Set<string>(OwinConstants.Version, value); }
         }
 
         /// <summary>
@@ -71,8 +64,8 @@ namespace Gate
         /// </summary>
         public string Protocol
         {
-            get { return Get<string>(OwinConstants.RequestProtocol); }
-            set { Environment[OwinConstants.RequestProtocol] = value; }
+            get { return Environment.Get<string>(OwinConstants.RequestProtocol); }
+            set { Environment.Set<string>(OwinConstants.RequestProtocol, value); }
         }
 
         /// <summary>
@@ -80,8 +73,8 @@ namespace Gate
         /// </summary>
         public string Method
         {
-            get { return Get<string>(OwinConstants.RequestMethod); }
-            set { Environment[OwinConstants.RequestMethod] = value; }
+            get { return Environment.Get<string>(OwinConstants.RequestMethod); }
+            set { Environment.Set<string>(OwinConstants.RequestMethod, value); }
         }
 
         /// <summary>
@@ -89,8 +82,8 @@ namespace Gate
         /// </summary>
         public string Scheme
         {
-            get { return Get<string>(OwinConstants.RequestScheme); }
-            set { Environment[OwinConstants.RequestScheme] = value; }
+            get { return Environment.Get<string>(OwinConstants.RequestScheme); }
+            set { Environment.Set<string>(OwinConstants.RequestScheme, value); }
         }
 
         /// <summary>
@@ -98,8 +91,8 @@ namespace Gate
         /// </summary>
         public string PathBase
         {
-            get { return Get<string>(OwinConstants.RequestPathBase); }
-            set { Environment[OwinConstants.RequestPathBase] = value; }
+            get { return Environment.Get<string>(OwinConstants.RequestPathBase); }
+            set { Environment.Set<string>(OwinConstants.RequestPathBase, value); }
         }
 
         /// <summary>
@@ -107,8 +100,8 @@ namespace Gate
         /// </summary>
         public string Path
         {
-            get { return Get<string>(OwinConstants.RequestPath); }
-            set { Environment[OwinConstants.RequestPath] = value; }
+            get { return Environment.Get<string>(OwinConstants.RequestPath); }
+            set { Environment.Set<string>(OwinConstants.RequestPath, value); }
         }
 
         /// <summary>
@@ -116,8 +109,8 @@ namespace Gate
         /// </summary>
         public string QueryString
         {
-            get { return Get<string>(OwinConstants.RequestQueryString); }
-            set { Environment[OwinConstants.RequestQueryString] = value; }
+            get { return Environment.Get<string>(OwinConstants.RequestQueryString); }
+            set { Environment.Set<string>(OwinConstants.RequestQueryString, value); }
         }
 
 
@@ -126,8 +119,8 @@ namespace Gate
         /// </summary>
         public TextWriter TraceOutput
         {
-            get { return Get<TextWriter>(OwinConstants.TraceOutput); }
-            set { Environment[OwinConstants.TraceOutput] = value; }
+            get { return Environment.Get<TextWriter>(OwinConstants.TraceOutput); }
+            set { Environment.Set<TextWriter>(OwinConstants.TraceOutput, value); }
         }
 
         public IDictionary<string, string> Query
@@ -135,38 +128,37 @@ namespace Gate
             get
             {
                 var text = QueryString;
-                if (Get<string>("Gate.Request.Query#text") != text ||
-                    Get<IDictionary<string, string>>("Gate.Request.Query") == null)
+                if (Environment.Get<string>("Gate.Request.Query#text") != text ||
+                    Environment.Get<IDictionary<string, string>>("Gate.Request.Query") == null)
                 {
-                    Environment["Gate.Request.Query#text"] = text;
-                    Environment["Gate.Request.Query"] = ParamDictionary.Parse(text);
+                    Environment.Set<string>("Gate.Request.Query#text", text);
+                    Environment.Set<IDictionary<string, string>>("Gate.Request.Query", ParamDictionary.Parse(text));
                 }
-                return Get<IDictionary<string, string>>("Gate.Request.Query");
+                return Environment.Get<IDictionary<string, string>>("Gate.Request.Query");
             }
         }
 
-        static readonly char[] CookieParamSeparators = new[] { ';', ',' };
         public IDictionary<string, string> Cookies
         {
             get
             {
-                var cookies = Get<IDictionary<string, string>>("Gate.Request.Cookies#dictionary");
+                var cookies = Environment.Get<IDictionary<string, string>>("Gate.Request.Cookies#dictionary");
                 if (cookies == null)
                 {
                     cookies = new Dictionary<string, string>(StringComparer.Ordinal);
-                    Environment["Gate.Request.Cookies#dictionary"] = cookies;
+                    Environment.Set("Gate.Request.Cookies#dictionary", cookies);
                 }
 
                 var text = Headers.GetHeader("Cookie");
-                if (Get<string>("Gate.Request.Cookies#text") != text)
+                if (Environment.Get<string>("Gate.Request.Cookies#text") != text)
                 {
                     cookies.Clear();
-                    foreach (var kv in ParamDictionary.ParseToEnumerable(text, CookieParamSeparators))
+                    foreach (var kv in ParamDictionary.ParseToEnumerable(text, CommaSemicolon))
                     {
                         if (!cookies.ContainsKey(kv.Key))
                             cookies.Add(kv);
                     }
-                    Environment["Gate.Request.Cookies#text"] = text;
+                    Environment.Set("Gate.Request.Cookies#text", text);
                 }
                 return cookies;
             }
@@ -213,41 +205,40 @@ namespace Gate
                 return delimiterPos < 0 ? contentType : contentType.Substring(0, delimiterPos);
             }
         }
-
-
+        
         public Task CopyToStreamAsync(Stream stream)
         {
-            if (_call.Body == null)
+            if (Body == null)
             {
                 return TaskHelpers.Completed();
             }
-            if (_call.Body.CanSeek)
+            if (Body.CanSeek)
             {
-                _call.Body.Seek(0, SeekOrigin.Begin);
+                Body.Seek(0, SeekOrigin.Begin);
             }
-            return _call.Body.CopyToAsync(stream);
+            return Body.CopyToAsync(stream);
         }
 
         public void CopyToStream(Stream stream)
         {
-            if (_call.Body == null)
+            if (Body == null)
             {
                 return;
             }
-            if (_call.Body.CanSeek)
+            if (Body.CanSeek)
             {
-                _call.Body.Seek(0, SeekOrigin.Begin);
+                Body.Seek(0, SeekOrigin.Begin);
             }
-            _call.Body.CopyTo(stream);
+            Body.CopyTo(stream);
         }
 
 
         public Task<string> ReadTextAsync()
         {
-            var text = Get<string>("Gate.Request.Text");
+            var text = Environment.Get<string>("Gate.Request.Text");
 
             var thisInput = Body;
-            var lastInput = Get<object>("Gate.Request.Text#input");
+            var lastInput = Environment.Get<object>("Gate.Request.Text#input");
 
             if (text != null && ReferenceEquals(thisInput, lastInput))
             {
@@ -270,10 +261,10 @@ namespace Gate
 
         public string ReadText()
         {
-            var text = Get<string>("Gate.Request.Text");
+            var text = Environment.Get<string>("Gate.Request.Text");
 
             var thisInput = Body;
-            var lastInput = Get<object>("Gate.Request.Text#input");
+            var lastInput = Environment.Get<object>("Gate.Request.Text#input");
 
             if (text != null && ReferenceEquals(thisInput, lastInput))
             {
@@ -289,8 +280,8 @@ namespace Gate
                 text = new StreamReader(thisInput).ReadToEnd();
             }
 
-            Environment["Gate.Request.Text#input"] = thisInput;
-            Environment["Gate.Request.Text"] = text;
+            Environment.Set("Gate.Request.Text#input", thisInput);
+            Environment.Set("Gate.Request.Text", text);
             return text;
         }
 
@@ -301,9 +292,9 @@ namespace Gate
                 return TaskHelpers.FromResult(ParamDictionary.Parse(""));
             }
 
-            var form = Get<IDictionary<string, string>>("Gate.Request.Form");
+            var form = Environment.Get<IDictionary<string, string>>("Gate.Request.Form");
             var thisInput = Body;
-            var lastInput = Get<object>("Gate.Request.Form#input");
+            var lastInput = Environment.Get<object>("Gate.Request.Form#input");
             if (form != null && ReferenceEquals(thisInput, lastInput))
             {
                 return TaskHelpers.FromResult(form);
@@ -312,8 +303,8 @@ namespace Gate
             return ReadTextAsync().Then(text =>
             {
                 form = ParamDictionary.Parse(text);
-                Environment["Gate.Request.Form#input"] = thisInput;
-                Environment["Gate.Request.Form"] = form;
+                Environment.Set("Gate.Request.Form#input", thisInput);
+                Environment.Set("Gate.Request.Form", form);
                 return form;
             });
         }
@@ -325,9 +316,9 @@ namespace Gate
                 return ParamDictionary.Parse("");
             }
 
-            var form = Get<IDictionary<string, string>>("Gate.Request.Form");
+            var form = Environment.Get<IDictionary<string, string>>("Gate.Request.Form");
             var thisInput = Body;
-            var lastInput = Get<object>("Gate.Request.Form#input");
+            var lastInput = Environment.Get<object>("Gate.Request.Form#input");
             if (form != null && ReferenceEquals(thisInput, lastInput))
             {
                 return form;
@@ -335,8 +326,8 @@ namespace Gate
 
             var text = ReadText();
             form = ParamDictionary.Parse(text);
-            Environment["Gate.Request.Form#input"] = thisInput;
-            Environment["Gate.Request.Form"] = form;
+            Environment.Set("Gate.Request.Form#input", thisInput);
+            Environment.Set("Gate.Request.Form", form);
             return form;
         }
 
@@ -415,11 +406,6 @@ namespace Gate
                     Headers.SetHeader("Host", host + ":" + value);
                 }
             }
-        }
-
-        public CallParameters Call
-        {
-            get { return _call; }
         }
     }
 }

@@ -4,6 +4,9 @@ using Owin;
 
 namespace Gate
 {
+    // TODO: Remove
+    using AppDelegate = Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+
     public static class AppBuilderMapExtensions
     {
         /*

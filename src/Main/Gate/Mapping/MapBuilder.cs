@@ -4,6 +4,9 @@ using Owin;
 
 namespace Gate.Mapping
 {
+    // TODO: Remove
+    using AppDelegate = Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+
     class MapBuilder : IAppBuilder
     {
         readonly IAppBuilder _builder;

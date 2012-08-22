@@ -90,7 +90,7 @@ namespace Gate.Hosts.Kayak
             string status = result.Status.ToString(CultureInfo.InvariantCulture);
 
             object obj;
-            if (result.Properties != null && result.Properties.TryGetValue(OwinConstants.ReasonPhrase, out obj))
+            if (result.Properties != null && result.Properties.TryGetValue(OwinConstants.ResponseReasonPhrase, out obj))
             {
                 string reason = (string)obj;
                 if (!string.IsNullOrWhiteSpace(reason))

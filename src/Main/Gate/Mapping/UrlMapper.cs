@@ -7,6 +7,9 @@ using Owin;
 
 namespace Gate.Mapping
 {
+    // TODO: Remove
+    using AppDelegate = Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+
     public class UrlMapper
     {
         readonly AppDelegate _defaultApp;
@@ -36,9 +39,9 @@ namespace Gate.Mapping
                 .ToArray();
         }
 
-        public Task<ResultParameters> Call(CallParameters call)
+        public Task Call(IDictionary<string, object> env)
         {
-            var paths = new Paths(call.Environment);
+            var paths = new Paths(env);
             var path = paths.Path;
             var pathBase = paths.PathBase;
             
@@ -46,18 +49,17 @@ namespace Gate.Mapping
             if (match == null)
             {
                 // fall-through to default
-                return _defaultApp(call);
+                return _defaultApp(env);
             }
 
             // Map moves the matched portion of Path into PathBase
             paths.PathBase = pathBase + match.Item1;
             paths.Path = path.Substring(match.Item1.Length);
-            return match.Item2.Invoke(call).Then(result =>
+            return match.Item2.Invoke(env).Then(() =>
             {
-                // Path and PathBase are restored as the call returnss
+                // Path and PathBase are restored as the call returns
                 paths.Path = path;
                 paths.PathBase = pathBase;
-                return result;
             });
         }
 
