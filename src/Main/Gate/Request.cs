@@ -214,14 +214,33 @@ namespace Gate
             }
         }
 
+
         public Task CopyToStreamAsync(Stream stream)
         {
             if (_call.Body == null)
             {
                 return TaskHelpers.Completed();
             }
+            if (_call.Body.CanSeek)
+            {
+                _call.Body.Seek(0, SeekOrigin.Begin);
+            }
             return _call.Body.CopyToAsync(stream);
         }
+
+        public void CopyToStream(Stream stream)
+        {
+            if (_call.Body == null)
+            {
+                return;
+            }
+            if (_call.Body.CanSeek)
+            {
+                _call.Body.Seek(0, SeekOrigin.Begin);
+            }
+            _call.Body.CopyTo(stream);
+        }
+
 
         public Task<string> ReadTextAsync()
         {
@@ -241,6 +260,7 @@ namespace Gate
             return CopyToStreamAsync(buffer)
                 .Then(() =>
                 {
+                    buffer.Seek(0, SeekOrigin.Begin);
                     text = new StreamReader(buffer).ReadToEnd();
                     Environment["Gate.Request.Text#input"] = thisInput;
                     Environment["Gate.Request.Text"] = text;
@@ -250,7 +270,28 @@ namespace Gate
 
         public string ReadText()
         {
-            return ReadTextAsync().Result;
+            var text = Get<string>("Gate.Request.Text");
+
+            var thisInput = Body;
+            var lastInput = Get<object>("Gate.Request.Text#input");
+
+            if (text != null && ReferenceEquals(thisInput, lastInput))
+            {
+                return text;
+            }
+
+            if (thisInput != null)
+            {
+                if (thisInput.CanSeek)
+                {
+                    thisInput.Seek(0, SeekOrigin.Begin);
+                }
+                text = new StreamReader(thisInput).ReadToEnd();
+            }
+
+            Environment["Gate.Request.Text#input"] = thisInput;
+            Environment["Gate.Request.Text"] = text;
+            return text;
         }
 
         public Task<IDictionary<string, string>> ReadFormAsync()
@@ -279,7 +320,24 @@ namespace Gate
 
         public IDictionary<string, string> ReadForm()
         {
-            return ReadFormAsync().Result;
+            if (!HasFormData && !HasParseableData)
+            {
+                return ParamDictionary.Parse("");
+            }
+
+            var form = Get<IDictionary<string, string>>("Gate.Request.Form");
+            var thisInput = Body;
+            var lastInput = Get<object>("Gate.Request.Form#input");
+            if (form != null && ReferenceEquals(thisInput, lastInput))
+            {
+                return form;
+            }
+
+            var text = ReadText();
+            form = ParamDictionary.Parse(text);
+            Environment["Gate.Request.Form#input"] = thisInput;
+            Environment["Gate.Request.Form"] = form;
+            return form;
         }
 
 
