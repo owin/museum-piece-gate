@@ -18,7 +18,8 @@ namespace Gate
         public Request()
             : this(new Dictionary<string, object>())
         {
-            // TODO: Create header dictionaries?
+            Environment.Set(OwinConstants.RequestHeaders, Gate.Headers.New());
+            Environment.Set(OwinConstants.ResponseHeaders, Gate.Headers.New());
         }
 
         public Request(IDictionary<string, object> environment)

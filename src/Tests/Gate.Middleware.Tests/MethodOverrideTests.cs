@@ -5,27 +5,28 @@ using NUnit.Framework;
 using Owin;
 using System.IO;
 using Owin.Builder;
+using System.Collections.Generic;
 
 namespace Gate.Middleware.Tests
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     [TestFixture]
     class MethodOverrideTests
     {
-        private ResultParameters Call(Action<IAppBuilder> pipe, Request request)
+        private void Call(Action<IAppBuilder> pipe, Request request)
         {
             var builder = new AppBuilder();
             pipe(builder);
-            var app = (AppDelegate)builder.Build(typeof(AppDelegate));
-            return app(request.Call).Result;
+            var app = (AppFunc)builder.Build(typeof(AppFunc));
+            app(request.Environment).Wait();
         }
 
-        private string ReadBody(Func<Stream, Task> body)
+        private string ReadBody(Stream body)
         {
-            using (MemoryStream buffer = new MemoryStream())
-            {
-                body(buffer).Wait();
-                return Encoding.ASCII.GetString(buffer.ToArray());
-            }
+            MemoryStream buffer = (MemoryStream)body;
+            body.Seek(0, SeekOrigin.Begin);
+            return Encoding.ASCII.GetString(buffer.ToArray());
         }
 
         [Test]
@@ -34,18 +35,20 @@ namespace Gate.Middleware.Tests
             Request request = new Request();
             request.Method = "POST";
             request.Headers.SetHeader("x-http-method-override", "DELETE");
+            Response response = new Response(request.Environment);
+            response.OutputStream = new MemoryStream();
 
-            var result = Call(b => b
+            Call(b => b
                 .UseMethodOverride()
                 .UseDirect(
-                    (appRequest, response) => 
+                    (appRequest, appResponse) => 
                     {
-                        response.Write(appRequest.Method);
-                        return response.EndAsync();
+                        appResponse.Write(appRequest.Method);
+                        return appResponse.EndAsync();
                     }),
                 request);
 
-            Assert.That(ReadBody(result.Body), Is.EqualTo("DELETE"));
+            Assert.That(response.OutputStream, Is.EqualTo("DELETE"));
         }
 
         [Test]
@@ -53,8 +56,10 @@ namespace Gate.Middleware.Tests
         {
             Request request = new Request();
             request.Method = "POST";
+            Response response = new Response(request.Environment);
+            response.OutputStream = new MemoryStream();
 
-            var result = Call(b => b
+            Call(b => b
                 .UseMethodOverride()
                 .UseDirect(
                     (appRequest, appResponse) =>
@@ -64,7 +69,7 @@ namespace Gate.Middleware.Tests
                     }),
                 request);
 
-            Assert.That(ReadBody(result.Body), Is.EqualTo("POST"));
+            Assert.That(response.OutputStream, Is.EqualTo("POST"));
         }
     }
 }

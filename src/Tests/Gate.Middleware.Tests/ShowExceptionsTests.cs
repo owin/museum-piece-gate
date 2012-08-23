@@ -5,26 +5,27 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Owin;
 using Owin.Builder;
+using System.Collections.Generic;
 
 namespace Gate.Middleware.Tests
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     [TestFixture]
     public class ShowExceptionsTests
     {
-        AppDelegate Build(Action<IAppBuilder> b)
+        AppFunc Build(Action<IAppBuilder> b)
         {
             var builder = new AppBuilder();
             b(builder);
-            return (AppDelegate)builder.Build(typeof(AppDelegate));
+            return (AppFunc)builder.Build(typeof(AppFunc));
         }
 
-        private String ReadBody(Func<Stream, Task> body)
+        private string ReadBody(Stream body)
         {
-            using (MemoryStream buffer = new MemoryStream())
-            {
-                body(buffer).Wait();
-                return Encoding.ASCII.GetString(buffer.ToArray());
-            }
+            MemoryStream buffer = (MemoryStream)body;
+            body.Seek(0, SeekOrigin.Begin);
+            return Encoding.ASCII.GetString(buffer.ToArray());
         }
 
         [Test]
@@ -32,19 +33,22 @@ namespace Gate.Middleware.Tests
         {
             var stack = Build(b => b
                 .UseShowExceptions()
-                .UseFunc<AppDelegate>(_ => appCall =>
+                .UseFunc<AppFunc>(_ => appEnv =>
                 {
-                    Response appResult = new Response(200);
+                    Response appResult = new Response(appEnv) { StatusCode = 200 };
                     appResult.Headers.SetHeader("Content-Type", "text/plain");
                     appResult.Headers.SetHeader("Content-Length", "5");
                     appResult.Write("Hello");
                     return appResult.EndAsync();
                 }));
 
-            ResultParameters result = stack(new Request().Call).Result;
+            Request request = new Request();
+            Response response = new Response(request.Environment);
+            response.OutputStream = new MemoryStream();
+            stack(request.Environment).Wait();
 
-            Assert.That(result.Status, Is.EqualTo(200));
-            Assert.That(ReadBody(result.Body), Is.EqualTo("Hello"));
+            Assert.That(response.StatusCode, Is.EqualTo(200));
+            Assert.That(ReadBody(response.OutputStream), Is.EqualTo("Hello"));
         }
 
         [Test]
@@ -52,13 +56,16 @@ namespace Gate.Middleware.Tests
         {
             var stack = Build(b => b
                 .UseShowExceptions()
-                .UseFunc<AppDelegate>(_ => appCall => { throw new ApplicationException("Kaboom"); }));
+                .UseFunc<AppFunc>(_ => appEnv => { throw new ApplicationException("Kaboom"); }));
 
-            ResultParameters result = stack(new Request().Call).Result;
+            Request request = new Request();
+            Response response = new Response(request.Environment);
+            response.OutputStream = new MemoryStream();
+            stack(request.Environment).Wait();
 
-            Assert.That(result.Status, Is.EqualTo(500));
-            Assert.That(result.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
-            String bodyText = ReadBody(result.Body);
+            Assert.That(response.StatusCode, Is.EqualTo(500));
+            Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
+            String bodyText = ReadBody(response.OutputStream);
             Assert.That(bodyText, Is.StringContaining("ApplicationException"));
             Assert.That(bodyText, Is.StringContaining("Kaboom"));
         }
@@ -68,27 +75,25 @@ namespace Gate.Middleware.Tests
         {
             var stack = Build(b => b
                 .UseShowExceptions()
-                .UseFunc<AppDelegate>(_ => appCall =>
+                .UseFunc<AppFunc>(_ => appEnv =>
                 {
-                    ResultParameters rawResult = new ResultParameters();
-                    rawResult.Body = stream =>
-                        {
-                            byte[] bodyBytes = Encoding.ASCII.GetBytes("<p>so far so good</p>");
-                            stream.Write(bodyBytes, 0, bodyBytes.Length);
-                            throw new ApplicationException("failed sending body sync");
-                        };
-                    rawResult.Status = 200;
-                    Response appResult = new Response(rawResult);
-                    appResult.Headers.SetHeader("Content-Type", "text/html");
-                    appResult.Start();
-                    return appResult.ResultTask;
+                    Response appResponse = new Response(appEnv);
+                    appResponse.StatusCode = 200;
+                    appResponse.Headers.SetHeader("Content-Type", "text/html");
+
+                    byte[] bodyBytes = Encoding.ASCII.GetBytes("<p>so far so good</p>");
+                    appResponse.OutputStream.Write(bodyBytes, 0, bodyBytes.Length);
+                    throw new ApplicationException("failed sending body sync");
                 }));
 
-            ResultParameters result = stack(new Request().Call).Result;
+            Request request = new Request();
+            Response response = new Response(request.Environment);
+            response.OutputStream = new MemoryStream();
+            stack(request.Environment).Wait();
 
-            Assert.That(result.Status, Is.EqualTo(200));
-            Assert.That(result.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
-            String bodyText = ReadBody(result.Body);
+            Assert.That(response.Status, Is.EqualTo(200));
+            Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
+            String bodyText = ReadBody(response.OutputStream);
             Assert.That(bodyText, Is.StringContaining("<p>so far so good</p>"));
             Assert.That(bodyText, Is.StringContaining("failed sending body sync"));
         }
@@ -98,24 +103,25 @@ namespace Gate.Middleware.Tests
         {
             var stack = Build(b => b
                 .UseShowExceptions()
-                .UseFunc<AppDelegate>(_=>appCall =>
+                .UseFunc<AppFunc>(_ => appEnv =>
                 {
-                    Response appResult = new Response(200);
-                    appResult.Headers.SetHeader("Content-Type", "text/html");
-                    appResult.StartAsync().Then(
-                        resp1 =>
-                        {
-                            resp1.Write("<p>so far so good</p>");
-                            resp1.Error(new ApplicationException("failed sending body async"));
-                        });
-                    return appResult.ResultTask;
+                    Response appResponse = new Response(appEnv);
+                    appResponse.StatusCode = 200;
+                    appResponse.Headers.SetHeader("Content-Type", "text/html");
+                    
+                    byte[] bodyBytes = Encoding.ASCII.GetBytes("<p>so far so good</p>");
+                    appResponse.OutputStream.Write(bodyBytes, 0, bodyBytes.Length);
+                    return TaskHelpers.FromError(new ApplicationException("failed sending body sync"));
                 }));
 
-            ResultParameters result = stack(new Request().Call).Result;
+            Request request = new Request();
+            Response response = new Response(request.Environment);
+            response.OutputStream = new MemoryStream();
+            stack(request.Environment).Wait();
 
-            Assert.That(result.Status, Is.EqualTo(200));
-            Assert.That(result.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
-            String bodyText = ReadBody(result.Body);
+            Assert.That(response.Status, Is.EqualTo(200));
+            Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
+            String bodyText = ReadBody(response.OutputStream);
             Assert.That(bodyText, Is.StringContaining("<p>so far so good</p>"));
             Assert.That(bodyText, Is.StringContaining("failed sending body async"));
         }

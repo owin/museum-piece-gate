@@ -45,11 +45,13 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Gate\OwinConstants.cs">
+      <Link>OwinConstants.cs</Link>
+    </Compile>
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="NotFound.cs" />
-    <Compile Include="OwinConstants.cs" />
     <None Include="PassiveValidator.cs" />
     <None Include="RequestLogger.cs" />
     <None Include="RequestTracer.cs" />
@@ -63,7 +65,7 @@
     <None Include="ContentLength.cs" />
     <None Include="Chunked.cs" />
     <None Include="Cascade.cs" />
-    <None Include="ContentType.cs" />
+    <Compile Include="ContentType.cs" />
     <Compile Include="ShowExceptions.cs" />
     <Compile Include="ShowExceptions.View.cs">
       <AutoGen>True</AutoGen>
@@ -72,7 +74,8 @@
     </Compile>
     <Compile Include="Utils\HttpFormatExtensions.cs" />
     <Compile Include="Utils\RangeHeader.cs" />
-    <Compile Include="Utils\StreamWrapper.cs" />
+    <Compile Include="Utils\FilterStream.cs" />
+    <Compile Include="Utils\TriggerStream.cs" />
     <Compile Include="WebSockets\BinaryStream.cs" />
     <None Include="WebSockets\OpaqueToWebSocket.cs" />
     <Compile Include="WebSockets\WebSocketLayer.cs" />

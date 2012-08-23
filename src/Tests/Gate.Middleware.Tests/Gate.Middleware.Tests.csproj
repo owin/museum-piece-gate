@@ -40,10 +40,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\NUnit.2.5.10.11092\lib\nunit.mocks.dll</HintPath>
     </Reference>
-    <Reference Include="Owin, Version=0.14.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Owin.0.14\lib\net40\Owin.dll</HintPath>
-    </Reference>
     <Reference Include="Owin.Builder">
       <HintPath>..\..\..\packages\Owin.Builder.0.3\lib\net40\Owin.Builder.dll</HintPath>
     </Reference>
@@ -77,20 +73,23 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Main\Gate\DictionaryExtensions.cs">
+      <Link>DictionaryExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\..\Main\Gate\OwinConstants.cs">
       <Link>OwinConstants.cs</Link>
     </Compile>
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
-    <Compile Include="ContentLengthTests.cs" />
-    <Compile Include="PassiveValidatorTests.cs" />
-    <Compile Include="RequestLoggerTests.cs" />
+    <None Include="ContentLengthTests.cs" />
+    <None Include="PassiveValidatorTests.cs" />
+    <None Include="RequestLoggerTests.cs" />
     <Compile Include="StaticFiles\FileServerTests.cs" />
     <Compile Include="MethodOverrideTests.cs" />
     <Compile Include="StaticFiles\RangeHeaderTests.cs" />
     <Compile Include="StaticTests.cs" />
-    <Compile Include="ChunkedTests.cs" />
-    <Compile Include="CascadeTests.cs" />
+    <None Include="ChunkedTests.cs" />
+    <None Include="CascadeTests.cs" />
     <Compile Include="ContentTypeTests.cs" />
     <Compile Include="ShowExceptionsTests.cs" />
   </ItemGroup>

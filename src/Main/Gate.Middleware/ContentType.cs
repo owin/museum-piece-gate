@@ -1,6 +1,10 @@
 ﻿using Gate.Middleware;
 using Owin;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.IO;
+using Gate.Middleware.Utils;
 
 namespace Owin
 {
@@ -20,37 +24,45 @@ namespace Owin
 
 namespace Gate.Middleware
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     /// <summary>
     /// Sets content-type for the response if none is present.
     /// </summary>
     public class ContentType
     {
-        readonly AppDelegate _next;
-        readonly string _contentType;
-        const string DefaultContentType = "text/html";
+        private readonly AppFunc nextApp;
+        private readonly string contentType;
+        private const string DefaultContentType = "text/html";
 
-        public ContentType(AppDelegate next)
+        public ContentType(AppFunc nextApp)
         {
-            _next = next;
-            _contentType = DefaultContentType;
+            this.nextApp = nextApp;
+            this.contentType = DefaultContentType;
         }
 
-        public ContentType(AppDelegate next, string contentType)
+        public ContentType(AppFunc nextApp, string contentType)
         {
-            _next = next;
-            _contentType = contentType;
+            this.nextApp = nextApp;
+            this.contentType = contentType;
         }
 
-        public Task<ResultParameters> Invoke(CallParameters call)
+        public Task Invoke(IDictionary<string, object> env)
         {
-            return _next(call).Then(result =>
+            Stream orriginalStream = env.Get<Stream>(OwinConstants.ResponseBody);
+            TriggerStream triggerStream = new TriggerStream(orriginalStream);
+            triggerStream.OnFirstWrite = () =>
             {
-                if (!result.Headers.HasHeader("Content-Type"))
+                var responseHeaders = env.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders);
+                if (!responseHeaders.HasHeader("Content-Type"))
                 {
-                    result.Headers.SetHeader("Content-Type", _contentType);
+                    responseHeaders.SetHeader("Content-Type", contentType);
                 }
-                return result;
-            });
+            };
+
+            env[OwinConstants.ResponseBody] = triggerStream;
+
+            return nextApp(env);
         }
     }
 }
