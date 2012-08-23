@@ -5,32 +5,37 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Owin;
 using Owin.Builder;
+using System.Collections.Generic;
 
 namespace Gate.Middleware.Tests
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     [TestFixture]
     public class ChunkedTests
     {
-        private ResultParameters Call(Action<IAppBuilder> pipe)
+        private Response Call(Action<IAppBuilder> pipe)
         {
             var builder = new AppBuilder();
             pipe(builder);
-            var app = (AppDelegate)builder.Build(typeof(AppDelegate));
-            return app(new Request().Call).Result;
+            var app = (AppFunc)builder.Build(typeof(AppFunc));
+            Request request = new Request();
+            Response response = new Response(request.Environment);
+            response.OutputStream = new MemoryStream();
+            app(request.Environment).Wait();
+            return response;
         }
 
-        private string ReadBody(Func<Stream, Task> body)
+        private string ReadBody(Stream body)
         {
             if (body == null)
             {
                 throw new ArgumentNullException("body");
             }
 
-            using (MemoryStream buffer = new MemoryStream())
-            {
-                body(buffer).Wait();
-                return Encoding.ASCII.GetString(buffer.ToArray());
-            }
+            MemoryStream buffer = (MemoryStream)body;
+            body.Seek(0, SeekOrigin.Begin);
+            return Encoding.ASCII.GetString(buffer.ToArray());
         }
 
         [Test]
@@ -66,23 +71,13 @@ namespace Gate.Middleware.Tests
                 {
                     resp.SetHeader("Content-Length", "12");
                     resp.SetHeader("Content-Type", "text/plain");
-                    resp.StartAsync().Then(
-                        resp1 =>
-                        {
-                            resp1.Write("hello ");
-                            resp1.Write("world.");
-                            resp1.End();
-                        })
-                        .Catch(errorInfo =>
-                        {
-                            return errorInfo.Handled();
-                        });
-
-                    return resp.ResultTask;
+                    resp.Write("hello ");
+                    resp.Write("world.");                                        
+                    return resp.EndAsync();
                 }));
 
             Assert.That(response.Headers.ContainsKey("transfer-encoding"), Is.False);
-            Assert.That(ReadBody(response.Body), Is.EqualTo("hello world."));
+            Assert.That(ReadBody(response.OutputStream), Is.EqualTo("hello world."));
         }
 
         [Test]
@@ -94,19 +89,13 @@ namespace Gate.Middleware.Tests
                 {
                     resp.SetHeader("transfer-encoding", "girl");
                     resp.SetHeader("Content-Type", "text/plain");
-                    resp.StartAsync().Then(
-                        resp1 =>
-                        {
-                            resp1.Write("hello ");
-                            resp1.Write("world.");
-                            resp1.End();
-                        });
-
-                    return resp.ResultTask;
+                    resp.Write("hello ");
+                    resp.Write("world.");
+                    return resp.EndAsync();
                 }));
 
             Assert.That(response.Headers.GetHeader("Transfer-Encoding"), Is.EqualTo("girl"));
-            Assert.That(ReadBody(response.Body), Is.EqualTo("hello world."));
+            Assert.That(ReadBody(response.OutputStream), Is.EqualTo("hello world."));
         }
 
         [Test]
@@ -117,19 +106,13 @@ namespace Gate.Middleware.Tests
                 .UseDirect((req, resp) =>
                 {
                     resp.SetHeader("Content-Type", "text/plain");
-                    resp.StartAsync().Then(
-                        resp1 =>
-                        {
-                            resp1.Write("hello ");
-                            resp1.Write("world.");
-                            resp1.End();
-                        });
-
-                    return resp.ResultTask;
+                    resp.Write("hello ");
+                    resp.Write("world.");
+                    return resp.EndAsync();
                 }));
 
             Assert.That(response.Headers.GetHeader("Transfer-Encoding"), Is.EqualTo("chunked"));
-            Assert.That(ReadBody(response.Body), Is.EqualTo("6\r\nhello \r\n6\r\nworld.\r\n0\r\n\r\n"));
+            Assert.That(ReadBody(response.OutputStream), Is.EqualTo("6\r\nhello \r\n6\r\nworld.\r\n0\r\n\r\n"));
         }
     }
 }
