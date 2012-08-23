@@ -62,7 +62,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Static.cs" />
     <Compile Include="StaticFiles\TextBody.cs" />
-    <None Include="ContentLength.cs" />
+    <Compile Include="ContentLength.cs" />
     <None Include="Chunked.cs" />
     <None Include="Cascade.cs" />
     <Compile Include="ContentType.cs" />
