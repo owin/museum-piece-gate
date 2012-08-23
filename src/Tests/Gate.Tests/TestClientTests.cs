@@ -11,7 +11,6 @@ using Owin;
 using System.Threading.Tasks;
 using System.IO;
 
-/* // TODO: Temporarily disabled.  AppFunc is less compatible with HttpMessageHandler than it used to be.
 namespace Gate.Tests
 {
     // TODO: Remove
@@ -145,4 +144,3 @@ namespace Gate.Tests
         }
     }
 }
-*/

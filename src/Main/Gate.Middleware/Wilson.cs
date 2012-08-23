@@ -3,28 +3,31 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Owin;
+using System.Collections.Generic;
 using Timer = System.Timers.Timer;
 
 namespace Gate.Middleware
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     // A sample application that reads query parameters and returns a simple HTML page.
     // It can also be used to demonstrate error handling via the 'crash' parameter.
     public class Wilson
     {
-        public static AppDelegate App(bool asyncReply)
+        public static AppFunc App(bool asyncReply)
         {
             return asyncReply ? WilsonAsync.App() : App();
         }
 
-        public static AppDelegate App()
+        public static AppFunc App()
         {
             return new Wilson().Invoke;
         }
 
-        public Task<ResultParameters> Invoke(CallParameters call)
+        public Task Invoke(IDictionary<string, object> env)
         {
-            var request = new Request(call);
-            var response = new Response {ContentType = "text/html"};
+            var request = new Request(env);
+            var response = new Response(env) {ContentType = "text/html"};
             var wilson = "left - right\r\n123456789012\r\nhello world!\r\n";
 
             var href = "?flip=left";
@@ -47,52 +50,56 @@ namespace Gate.Middleware
             response.Write("<p><a href='?flip=crash'>crash!</a></p>");
 
             return response.EndAsync();
-        }
-
-        
+        }        
     }
 
     public class WilsonAsync
     {
-        public static AppDelegate App()
+        public static AppFunc App()
         {
             return new WilsonAsync().Invoke;
         }
 
-        public Task<ResultParameters> Invoke(CallParameters call)
+        public Task Invoke(IDictionary<string, object> env)
         {
-            var request = new Request(call);
-            var response = new Response()
+            var request = new Request(env);
+            var response = new Response(env)
             {
                 ContentType = "text/html",
             };
             var wilson = "left - right\r\n123456789012\r\nhello world!\r\n";
 
-            response.StartAsync().Then(resp1 =>
+            var href = "?flip=left";
+            if (request.Query["flip"] == "left")
             {
-                var href = "?flip=left";
-                if (request.Query["flip"] == "left")
-                {
-                    wilson = wilson.Split(new[] {System.Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(line => new string(line.Reverse().ToArray()))
-                        .Aggregate("", (agg, line) => agg + line + System.Environment.NewLine);
-                    href = "?flip=right";
-                }
+                wilson = wilson.Split(new[] {System.Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(line => new string(line.Reverse().ToArray()))
+                    .Aggregate("", (agg, line) => agg + line + System.Environment.NewLine);
+                href = "?flip=right";
+            }
 
-                return TimerLoop(350, () => resp1.Write("<title>Hutchtastic</title>"), () => resp1.Write("<pre>"), () => resp1.Write(wilson), () => resp1.Write("</pre>"), () =>
+            TimerLoop(350, 
+                () => response.Write("<title>Hutchtastic</title>"),
+                () => response.Write("<pre>"), 
+                () => response.Write(wilson), 
+                () => response.Write("</pre>"), 
+                () =>
                 {
                     if (request.Query["flip"] == "crash")
                     {
                         throw new ApplicationException("Wilson crashed!");
                     }
-                }, () => resp1.Write("<p><a href='" + href + "'>flip!</a></p>"), () => resp1.Write("<p><a href='?flip=crash'>crash!</a></p>"), () => resp1.End());
-            }).Catch(errorInfo =>
+                }, 
+                () => response.Write("<p><a href='" + href + "'>flip!</a></p>"),
+                () => response.Write("<p><a href='?flip=crash'>crash!</a></p>"), 
+                () => response.End())
+            .Catch(errorInfo =>
             {
-                response.Error(errorInfo.Exception);
+                response.End(errorInfo.Exception);
                 return errorInfo.Handled();
             });
 
-            return response.ResultTask;
+            return response.Task;
         }
 
         static Task TimerLoop(double interval, params Action[] steps)

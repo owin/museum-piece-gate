@@ -7,14 +7,14 @@ namespace Gate.Middleware
 {
     public static partial class ShowExceptions
     {
-        static void ErrorPage(CallParameters call, Exception ex, Action<string> write)
+        static void ErrorPage(IDictionary<string, object> env, Exception ex, Action<string> write)
         {
             // XXX test this more thoroughly on mono, it shouldn't throw NullRef,
             // but rather, branch gracefully if something comes up null
             try
             {
 
-                var request = new Request(call);
+                var request = new Request(env);
                 var path = request.PathBase + request.Path;
                 var frames = StackFrames(ex);
                 var first = frames.FirstOrDefault();
@@ -486,7 +486,7 @@ namespace Gate.Middleware
       </thead>
       <tbody>
         ");
-                foreach (var kv in call.Environment.OrderBy(kv => kv.Key))
+                foreach (var kv in env.OrderBy(kv => kv.Key))
                 {
                     write(@"
           <tr>

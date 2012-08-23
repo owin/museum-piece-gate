@@ -8,41 +8,43 @@ using System.Threading.Tasks;
 
 namespace Gate.Middleware
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     // Serves static files from the given root directory for any matching URLs.
     public static class StaticExtensions
     {
         public static IAppBuilder UseStatic(this IAppBuilder builder, string root, IEnumerable<string> urls)
         {
-            return builder.UseFunc<AppDelegate>(app => Static.Middleware(app, root, urls));
+            return builder.UseFunc<AppFunc>(app => Static.Middleware(app, root, urls));
         }
 
         public static IAppBuilder UseStatic(this IAppBuilder builder, IEnumerable<string> urls)
         {
-            return builder.UseFunc<AppDelegate>(app => Static.Middleware(app, urls));
+            return builder.UseFunc<AppFunc>(app => Static.Middleware(app, urls));
         }
 
         public static IAppBuilder UseStatic(this IAppBuilder builder, string root)
         {
-            return builder.UseFunc<AppDelegate>(app => Static.Middleware(app, root));
+            return builder.UseFunc<AppFunc>(app => Static.Middleware(app, root));
         }
 
         public static IAppBuilder UseStatic(this IAppBuilder builder)
         {
-            return builder.UseFunc<AppDelegate>(Static.Middleware);
+            return builder.UseFunc<AppFunc>(Static.Middleware);
         }
     }
 
     public class Static
     {
-        private readonly AppDelegate app;
+        private readonly AppFunc app;
         private readonly FileServer fileServer;
         private readonly IEnumerable<string> urls;
 
-        public Static(AppDelegate app, IEnumerable<string> urls)
+        public Static(AppFunc app, IEnumerable<string> urls)
             : this(app, null, urls)
         { }
 
-        public Static(AppDelegate app, string root = null, IEnumerable<string> urls = null)
+        public Static(AppFunc app, string root = null, IEnumerable<string> urls = null)
         {
             this.app = app;
 
@@ -69,37 +71,37 @@ namespace Gate.Middleware
             fileServer = new FileServer(root);
         }
 
-        public static AppDelegate Middleware(AppDelegate app, string root, IEnumerable<string> urls)
+        public static AppFunc Middleware(AppFunc app, string root, IEnumerable<string> urls)
         {
             return new Static(app, root, urls).Invoke;
         }
 
-        public static AppDelegate Middleware(AppDelegate app, string root)
+        public static AppFunc Middleware(AppFunc app, string root)
         {
             return new Static(app, root).Invoke;
         }
 
-        public static AppDelegate Middleware(AppDelegate app, IEnumerable<string> urls)
+        public static AppFunc Middleware(AppFunc app, IEnumerable<string> urls)
         {
             return new Static(app, urls).Invoke;
         }
 
-        public static AppDelegate Middleware(AppDelegate app)
+        public static AppFunc Middleware(AppFunc app)
         {
             return new Static(app).Invoke;
         }
 
-        public Task<ResultParameters> Invoke(CallParameters call)
+        public Task Invoke(IDictionary<string, object> env)
         {
-            var path = call.Environment[OwinConstants.RequestPath].ToString();
+            var path = env[OwinConstants.RequestPath].ToString();
 
             if (urls.Any(path.StartsWith))
             {
-                return fileServer.Invoke(call);
+                return fileServer.Invoke(env);
             }
             else
             {
-                return app.Invoke(call);
+                return app.Invoke(env);
             }
         }
     }

@@ -1,7 +1,12 @@
 using Owin;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Gate.Middleware
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     // Reads the X-Http-Method-Override header value to replace the request method. This is useful when 
     // intermediate client, proxy, firewall, or server software does not understand or permit the necessary 
     // methods.
@@ -9,19 +14,19 @@ namespace Gate.Middleware
     {
         public static IAppBuilder UseMethodOverride(this IAppBuilder builder)
         {
-            return builder.UseFunc<AppDelegate>(Middleware);
+            return builder.UseFunc<AppFunc>(Middleware);
         }
 
-        public static AppDelegate Middleware(AppDelegate app)
+        public static AppFunc Middleware(AppFunc app)
         {
-            return call =>
+            return env =>
             {
-                var req = new Request(call);
+                var req = new Request(env);
                 var method = req.Headers.GetHeader("x-http-method-override");
                 if (!string.IsNullOrWhiteSpace(method))
                     req.Method = method;
 
-                return app(call);
+                return app(env);
             };
         }
     }

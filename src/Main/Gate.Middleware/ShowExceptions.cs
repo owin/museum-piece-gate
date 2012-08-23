@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 namespace Gate.Middleware
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     // Catches any exceptions throw from the App Delegate or Body Delegate and returns an HTML error page.
     // If possible a full 500 Internal Server Error is returned.  Otherwise error information is written
     // out as part of the existing response body.
@@ -19,59 +21,35 @@ namespace Gate.Middleware
     {
         public static IAppBuilder UseShowExceptions(this IAppBuilder builder)
         {
-            return builder.UseFunc<AppDelegate>(Middleware);
+            return builder.UseFunc<AppFunc>(Middleware);
         }
 
-        public static AppDelegate Middleware(AppDelegate app)
+        public static AppFunc Middleware(AppFunc app)
         {
-            return call =>
+            return env =>
             {
                 Action<Exception, Action<byte[]>> showErrorMessage =
                     (ex, write) =>
-                        ErrorPage(call, ex, text =>
+                        ErrorPage(env, ex, text =>
                         {
                             var data = Encoding.ASCII.GetBytes(text);
                             write(data);
                         });
 
-                Func<Exception, Task<ResultParameters>> showErrorPage = ex =>
+                Func<Exception, Task> showErrorPage = ex =>
                 {
-                    var response = new Response() { Status = "500 Internal Server Error", ContentType = "text/html" };
+                    var response = new Response(env) { Status = "500 Internal Server Error", ContentType = "text/html" };
                     showErrorMessage(ex, data => response.Write(data));
                     return response.EndAsync();
                 };
 
                 try
                 {
-                    return app(call)
-                        .Then(result =>
-                        {
-                            if (result.Body != null)
-                            {
-                                var nestedBody = result.Body;
-                                result.Body = stream =>
-                                {
-                                    try
-                                    {
-                                        return nestedBody(stream).Catch(
-                                            errorInfo =>
-                                            {
-                                                showErrorMessage(errorInfo.Exception, data => stream.Write(data, 0, data.Length));
-                                                return errorInfo.Handled();                                                
-                                            });
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        showErrorMessage(ex, data => stream.Write(data, 0, data.Length));
-                                        return TaskHelpers.Completed();
-                                    }
-                                };
-                            }
-                            return result;
-                        })
+                    return app(env)
                         .Catch(errorInfo =>
                         {
-                            return errorInfo.Handled(showErrorPage(errorInfo.Exception).Result);
+                            showErrorPage(errorInfo.Exception).Wait();
+                            return errorInfo.Handled();
                         });
                 }
                 catch (Exception exception)
