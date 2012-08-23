@@ -7,43 +7,47 @@ using Owin;
 using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.IO;
+using System.IO;
 
 namespace Gate.Adapters.Nancy
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     public static class NancyAdapter
     {
         public static IAppBuilder RunNancy(this IAppBuilder builder)
         {
-            return builder.UseFunc<AppDelegate>(_ => App());
+            return builder.UseFunc<AppFunc>(_ => App());
         }
 
         public static IAppBuilder RunNancy(this IAppBuilder builder, INancyBootstrapper bootstrapper)
         {
-            return builder.UseFunc<AppDelegate>(_ => App(bootstrapper));
+            return builder.UseFunc<AppFunc>(_ => App(bootstrapper));
         }
 
-        public static AppDelegate App()
+        public static AppFunc App()
         {
             return App(NancyBootstrapperLocator.Bootstrapper);
         }
 
-        public static AppDelegate App(INancyBootstrapper bootstrapper)
+        public static AppFunc App(INancyBootstrapper bootstrapper)
         {
             bootstrapper.Initialise();
             var engine = bootstrapper.GetEngine();
-            return call =>
+            return env =>
             {
-                var env = call.Environment;
-
                 var owinRequestMethod = Get<string>(env, OwinConstants.RequestMethod);
                 var owinRequestScheme = Get<string>(env, OwinConstants.RequestScheme);
-                var owinRequestHeaders = call.Headers;
+                var owinRequestHeaders = Get<IDictionary<string, string[]>>(env, OwinConstants.RequestHeaders);
                 var owinRequestPathBase = Get<string>(env, OwinConstants.RequestPathBase);
                 var owinRequestPath = Get<string>(env, OwinConstants.RequestPath);
                 var owinRequestQueryString = Get<string>(env, OwinConstants.RequestQueryString);
-                var owinRequestBody = call.Body;
-                var serverClientIp = Get<string>(env, "server.RemoteIpAddress");
+                var owinRequestBody = Get<Stream>(env, OwinConstants.RequestBody);
+                var serverClientIp = Get<string>(env, OwinConstants.RemoteIpAddress);
                 var callCompleted = Get<Task>(env, OwinConstants.CallCompleted);
+
+                var owinResponseHeaders = Get<IDictionary<string, string[]>>(env, OwinConstants.ResponseHeaders);
+                var owinResponseBody = Get<Stream>(env, OwinConstants.ResponseBody);
 
                 var url = new Url
                 {
@@ -64,7 +68,7 @@ namespace Gate.Adapters.Nancy
                     owinRequestHeaders.ToDictionary(kv => kv.Key, kv => (IEnumerable<string>)kv.Value, StringComparer.OrdinalIgnoreCase),
                     serverClientIp);
 
-                var tcs = new TaskCompletionSource<ResultParameters>();
+                var tcs = new TaskCompletionSource<object>();
                 engine.HandleRequest(
                     nancyRequest,
                     context =>
@@ -72,25 +76,23 @@ namespace Gate.Adapters.Nancy
                         callCompleted.Finally(context.Dispose);
 
                         var nancyResponse = context.Response;
-                        var headers = nancyResponse.Headers.ToDictionary(kv => kv.Key, kv => new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
+                        foreach (var header in nancyResponse.Headers)
+                        {
+                            owinResponseHeaders.Add(header.Key, new string[] { header.Value });
+                        }
+
                         if (!string.IsNullOrWhiteSpace(nancyResponse.ContentType))
                         {
-                            headers["Content-Type"] = new[] { nancyResponse.ContentType };
+                            owinResponseHeaders["Content-Type"] = new[] { nancyResponse.ContentType };
                         }
                         if (nancyResponse.Cookies != null && nancyResponse.Cookies.Count != 0)
                         {
-                            headers["Set-Cookie"] = nancyResponse.Cookies.Select(cookie => cookie.ToString()).ToArray();
+                            owinResponseHeaders["Set-Cookie"] = nancyResponse.Cookies.Select(cookie => cookie.ToString()).ToArray();
                         }
-                        tcs.SetResult(new ResultParameters
-                        {
-                            Status = (int)nancyResponse.StatusCode,
-                            Headers = headers,
-                            Body = output =>
-                            {
-                                nancyResponse.Contents(output);
-                                return TaskHelpers.Completed();
-                            }
-                        });
+
+                        env[OwinConstants.ResponseStatusCode] = (int)nancyResponse.StatusCode;
+                        nancyResponse.Contents(owinResponseBody);
+                        tcs.TrySetResult(null);
                     },
                     tcs.SetException);
                 return tcs.Task;
