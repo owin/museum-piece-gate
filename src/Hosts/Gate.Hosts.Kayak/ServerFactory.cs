@@ -4,16 +4,18 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using Gate.Hosts.Kayak;
-using Owin;
 using Kayak;
 using Kayak.Http;
+using System.Threading.Tasks;
 
 [assembly: ServerFactory]
 namespace Gate.Hosts.Kayak
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     public class ServerFactory : Attribute
     {
-        public static IDisposable Create(AppDelegate app, int port, TextWriter output)
+        public static IDisposable Create(AppFunc app, int port, TextWriter output)
         {
             app = ExecutionContextPerRequest.Middleware(app);
             var endPoint = new IPEndPoint(IPAddress.Any, port);

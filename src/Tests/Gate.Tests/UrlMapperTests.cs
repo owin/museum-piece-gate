@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Gate.Mapping;
 using Owin;
-using Gate.TestHelpers;
 using NUnit.Framework;
 using System.Threading.Tasks;
 using System.Threading;

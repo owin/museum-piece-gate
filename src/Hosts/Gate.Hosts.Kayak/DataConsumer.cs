@@ -1,6 +1,5 @@
 ﻿using System;
 using Kayak;
-using Owin;
 
 namespace Gate.Hosts.Kayak
 {
