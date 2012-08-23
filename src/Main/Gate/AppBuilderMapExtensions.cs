@@ -1,11 +1,12 @@
 ﻿using System;
 using Gate.Mapping;
+using System.Threading.Tasks;
 using Owin;
+using System.Collections.Generic;
 
 namespace Gate
 {
-    // TODO: Remove
-    using AppDelegate = Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+    using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public static class AppBuilderMapExtensions
     {
@@ -13,7 +14,7 @@ namespace Gate
          * Fundamental definition of Map.
          */
 
-        public static IAppBuilder Map(this IAppBuilder builder, string path, AppDelegate app)
+        public static IAppBuilder Map(this IAppBuilder builder, string path, AppFunc app)
         {
             var mapBuilder = builder as MapBuilder ?? new MapBuilder(builder, UrlMapper.Create);
             mapBuilder.MapInternal(path, app);
@@ -26,11 +27,11 @@ namespace Gate
 
         public static IAppBuilder Map(this IAppBuilder builder, string path, Action<IAppBuilder> app)
         {
-            return builder.Map(path, builder.BuildNew<AppDelegate>(x=>app(x)));
+            return builder.Map(path, builder.BuildNew<AppFunc>(x => app(x)));
         }
 
         /*
-         * Extensions to map AppDelegate factory func to a given path, with optional parameters.
+         * Extensions to map AppFunc factory func to a given path, with optional parameters.
          */
 
         public static IAppBuilder Map(this IAppBuilder builder, string path, object app)

@@ -7,21 +7,20 @@ using Owin;
 
 namespace Gate.Mapping
 {
-    // TODO: Remove
-    using AppDelegate = Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+    using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public class UrlMapper
     {
-        readonly AppDelegate _defaultApp;
-        IEnumerable<Tuple<string, AppDelegate>> _map = Enumerable.Empty<Tuple<string, AppDelegate>>();
+        readonly AppFunc _defaultApp;
+        IEnumerable<Tuple<string, AppFunc>> _map = Enumerable.Empty<Tuple<string, AppFunc>>();
 
-        UrlMapper(AppDelegate app)
+        UrlMapper(AppFunc app)
         {
             _defaultApp = app;
         }
 
 
-        public static AppDelegate Create(AppDelegate defaultApp, IDictionary<string, AppDelegate> map)
+        public static AppFunc Create(AppFunc defaultApp, IDictionary<string, AppFunc> map)
         {
             if (defaultApp == null)
                 throw new ArgumentNullException("defaultApp");
@@ -31,7 +30,7 @@ namespace Gate.Mapping
             return mapper.Call;
         }
 
-        public void Remap(IDictionary<string, AppDelegate> map)
+        public void Remap(IDictionary<string, AppFunc> map)
         {
             _map = map
                 .Select(kv => Tuple.Create(kv.Key, kv.Value))

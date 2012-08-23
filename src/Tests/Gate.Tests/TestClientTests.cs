@@ -13,13 +13,12 @@ using System.IO;
 
 namespace Gate.Tests
 {
-    // TODO: Remove
-    using AppDelegate = Func<IDictionary<string, object>, Task>;
+    using AppFunc = Func<IDictionary<string, object>, Task>;
 
     [TestFixture]
     public class TestClientTests
     {
-        AppDelegate NotFound = call => { call.Set("owin.ResponseStatusCode", 404); return TaskHelpers.Completed(); };
+        AppFunc NotFound = call => { call.Set("owin.ResponseStatusCode", 404); return TaskHelpers.Completed(); };
 
         [Test]
         public void ForConfigurationShouldCallWithBuilderAndReturnHttpClient()

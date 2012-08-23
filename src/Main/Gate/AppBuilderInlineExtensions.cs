@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Owin;
+using System.Collections.Generic;
 
 namespace Gate
 {
-    // TODO: Remove
-    using AppDelegate = Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+    using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public static class AppBuilderInlineExtensions
     {
@@ -16,7 +16,7 @@ namespace Gate
 
         public static IAppBuilder UseDirect(this IAppBuilder builder, Func<Request, Response, Task> app)
         {
-            return builder.UseFunc<AppDelegate>(next => environment =>
+            return builder.UseFunc<AppFunc>(next => environment =>
             {
                 var req = new Request(environment);
                 var resp = new Response(environment)
@@ -25,6 +25,7 @@ namespace Gate
                 };
 
                 app.Invoke(req, resp)
+                    .Then(() => resp.EndAsync())
                     .Catch(caught =>
                     {
                         resp.End(caught.Exception);

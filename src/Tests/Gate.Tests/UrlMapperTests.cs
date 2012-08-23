@@ -9,13 +9,12 @@ using System;
 
 namespace Gate.Tests
 {
-    // TODO: Remove
-    using AppDelegate = Func<IDictionary<string, object>, Task>;
+    using AppFunc = Func<IDictionary<string, object>, Task>;
 
     [TestFixture]
     public class UrlMapperTests
     {
-        AppDelegate NotFound = call => { call.Set("owin.ResponseStatusCode", 404); return TaskHelpers.Completed(); };
+        AppFunc NotFound = call => { call.Set("owin.ResponseStatusCode", 404); return TaskHelpers.Completed(); };
 
         private IDictionary<string, object> CreateEmptyEnvironment()
         {
@@ -29,7 +28,7 @@ namespace Gate.Tests
         [Test]
         public void Call_on_empty_map_defaults_to_status_404()
         {
-            var map = new Dictionary<string, AppDelegate>();
+            var map = new Dictionary<string, AppFunc>();
             var app = UrlMapper.Create(NotFound, map);
             var env = CreateEmptyEnvironment();
             app(env).Wait();
@@ -39,7 +38,7 @@ namespace Gate.Tests
         //[Test]
         //public void Calling_mapped_path_hits_given_app()
         //{
-        //    var map = new Dictionary<string, AppDelegate>
+        //    var map = new Dictionary<string, AppFunc>
         //    {
         //        {"/foo", Wilson.App()}
         //    };
@@ -57,7 +56,7 @@ namespace Gate.Tests
         [Test]
         public void Path_and_PathBase_are_adjusted_by_location()
         {
-            var map = new Dictionary<string, AppDelegate>
+            var map = new Dictionary<string, AppFunc>
             {
                 {"/foo", AppUtils.ShowEnvironment()}
             };

@@ -43,10 +43,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\Nancy.Viewengines.Spark.0.11.0\lib\net40\Nancy.ViewEngines.Spark.dll</HintPath>
     </Reference>
-    <Reference Include="Owin, Version=0.14.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Owin.0.14\lib\net40\Owin.dll</HintPath>
-    </Reference>
     <Reference Include="Owin.Startup, Version=0.3.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\Owin.Startup.0.3\lib\net40\Owin.Startup.dll</HintPath>
@@ -79,10 +75,6 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Adapters\Gate.Adapters.Nancy\Gate.Adapters.Nancy.csproj">
-      <Project>{4C561FAE-24FD-470A-8E38-C725980DEE01}</Project>
-      <Name>Gate.Adapters.Nancy</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Main\Gate.Middleware\Gate.Middleware.csproj">
       <Project>{60C36D8F-BE53-4733-BD92-CFA103D46020}</Project>
       <Name>Gate.Middleware</Name>
@@ -90,10 +82,6 @@
     <ProjectReference Include="..\..\Main\Gate\Gate.csproj">
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Hosts\Gate.Hosts.AspNet\Gate.Hosts.AspNet.csproj">
-      <Project>{F32E456A-F26E-4C5D-93B8-311941A714E4}</Project>
-      <Name>Gate.Hosts.AspNet</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
