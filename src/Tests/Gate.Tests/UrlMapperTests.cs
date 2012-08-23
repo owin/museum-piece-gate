@@ -9,18 +9,20 @@ using System;
 
 namespace Gate.Tests
 {
+    // TODO: Remove
+    using AppDelegate = Func<IDictionary<string, object>, Task>;
+
     [TestFixture]
     public class UrlMapperTests
     {
-        AppDelegate NotFound = call => TaskHelpers.FromResult(new ResultParameters() { Status = 404 });
+        AppDelegate NotFound = call => { call.Set("owin.ResponseStatusCode", 404); return TaskHelpers.Completed(); };
 
-        private CallParameters CreateEmptyCall()
+        private IDictionary<string, object> CreateEmptyEnvironment()
         {
-            return new CallParameters()
+            return new Dictionary<string, object>()
             {
-                Body = null,
-                Environment = new Dictionary<string, object>(),
-                Headers = Headers.New(),
+                { "owin.RequestHeaders",  Headers.New() },
+                { "owin.ResponseHeaders", Headers.New() },
             };
         }
 
@@ -29,8 +31,9 @@ namespace Gate.Tests
         {
             var map = new Dictionary<string, AppDelegate>();
             var app = UrlMapper.Create(NotFound, map);
-            var callResult = app(CreateEmptyCall()).Result;
-            Assert.That(callResult.Status, Is.EqualTo(404));
+            var env = CreateEmptyEnvironment();
+            app(env).Wait();
+            Assert.That(env.Get<int>("owin.ResponseStatusCode"), Is.EqualTo(404));
         }
 
         //[Test]

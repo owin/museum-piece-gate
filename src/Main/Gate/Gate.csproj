@@ -53,7 +53,6 @@
     <Compile Include="Mapping\UrlMapper.cs" />
     <Compile Include="AppBuilderMapExtensions.cs" />
     <Compile Include="OwinConstants.cs" />
-    <Compile Include="ResponseStream.cs" />
     <Compile Include="Utils\Net40Extensions.cs" />
     <Compile Include="Utils\ParamDictionary.cs" />
     <Compile Include="Utils\ReasonPhrases.cs" />
