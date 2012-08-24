@@ -48,7 +48,7 @@ namespace Gate.Middleware.Tests
                     }),
                 request);
 
-            Assert.That(response.OutputStream, Is.EqualTo("DELETE"));
+            Assert.That(ReadBody(response.OutputStream), Is.EqualTo("DELETE"));
         }
 
         [Test]
@@ -69,7 +69,7 @@ namespace Gate.Middleware.Tests
                     }),
                 request);
 
-            Assert.That(response.OutputStream, Is.EqualTo("POST"));
+            Assert.That(ReadBody(response.OutputStream), Is.EqualTo("POST"));
         }
     }
 }

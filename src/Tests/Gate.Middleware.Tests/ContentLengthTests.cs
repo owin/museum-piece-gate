@@ -4,6 +4,7 @@ using Owin;
 using Owin.Builder;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Gate.Middleware.Tests
 {
@@ -19,6 +20,7 @@ namespace Gate.Middleware.Tests
             var app = (AppFunc)builder.Build(typeof(AppFunc));
             Request request = new Request();
             Response response = new Response(request.Environment);
+            response.OutputStream = new MemoryStream();
             app(request.Environment).Wait();
             return response.Headers;
         }

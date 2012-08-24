@@ -72,6 +72,13 @@ namespace Gate.Middleware
                         return buffer.CopyToAsync(orriginalStream);
                     }
                 }
+                else if (!IsStatusWithNoNoEntityBody(response.StatusCode)
+                    && !response.Headers.ContainsKey("Content-Length")
+                    && !response.Headers.ContainsKey("Transfer-Encoding"))
+                {
+                    // There were no Writes.
+                    response.Headers.SetHeader("Content-Length", "0");
+                }
                 return TaskHelpers.Completed();
             });
         }

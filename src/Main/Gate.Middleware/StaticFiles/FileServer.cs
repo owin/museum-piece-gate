@@ -74,6 +74,12 @@ namespace Gate.Middleware.StaticFiles
                         .SetHeader("Content-Type", "text/plain")
                         .SetHeader("Content-Length", body.Length.ToString(CultureInfo.InvariantCulture))
                         .SetHeader("X-Cascade", "pass");
+
+                    if (headerName != null && headerValue != null)
+                    {
+                        response.Headers.SetHeader(headerName, headerValue);
+                    }
+
                     response.Write(body);
                     return response.EndAsync();
                 };
@@ -127,15 +133,7 @@ namespace Gate.Middleware.StaticFiles
                 .SetHeader("Content-Type", Mime.MimeType(fileInfo.Extension, "text/plain"))
                 .SetHeader("Content-Length", size.ToString(CultureInfo.InvariantCulture));
 
-
-            // TODO: body
-            return response.EndAsync();
-            /*TaskHelpers.FromResult(new ResultParameters
-                {
-                    Status = status,
-                    Headers = headers,
-                    Body = FileBody.Create(path, range),
-                });*/
+            return new FileBody(path, range).Start(response.OutputStream);
         }
     }
 }

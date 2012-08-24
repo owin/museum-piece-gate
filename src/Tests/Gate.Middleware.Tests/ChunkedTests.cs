@@ -21,8 +21,10 @@ namespace Gate.Middleware.Tests
             var app = (AppFunc)builder.Build(typeof(AppFunc));
             Request request = new Request();
             Response response = new Response(request.Environment);
-            response.OutputStream = new MemoryStream();
+            MemoryStream buffer = new MemoryStream();
+            response.OutputStream = buffer;
             app(request.Environment).Wait();
+            response.OutputStream = buffer; // Replace the buffer so it can be read.
             return response;
         }
 

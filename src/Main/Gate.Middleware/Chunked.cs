@@ -56,6 +56,7 @@ namespace Gate.Middleware
                 }
 
                 // Buffer
+                response.Headers.SetHeader("Transfer-Encoding", "chunked");
                 filterStream = new FilterStream(orriginalStream, OnWriteFilter);
                 triggerStream.InnerStream = filterStream;
             };
@@ -67,7 +68,15 @@ namespace Gate.Middleware
                 if (filterStream != null)
                 {
                     // Write the chunked terminator
-                    return filterStream.WriteAsync(FinalChunk.Array, FinalChunk.Offset, FinalChunk.Count);
+                    return orriginalStream.WriteAsync(FinalChunk.Array, FinalChunk.Offset, FinalChunk.Count);
+                }
+                else if (!IsStatusWithNoNoEntityBody(response.StatusCode)
+                    && !response.Headers.ContainsKey("Content-Length")
+                    && !response.Headers.ContainsKey("Transfer-Encoding"))
+                {
+                    // There were no Writes.
+                    response.Headers.SetHeader("Transfer-Encoding", "chunked");
+                    return orriginalStream.WriteAsync(FinalChunk.Array, FinalChunk.Offset, FinalChunk.Count);
                 }
                 
                 return TaskHelpers.Completed();

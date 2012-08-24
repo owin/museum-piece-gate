@@ -49,7 +49,7 @@ namespace Gate.Tests
             resp.Write("a");
             resp.Write("test");
 
-            Assert.That(env.Get<int>("owin.ResponseStatus"), Is.EqualTo(200));
+            Assert.That(env.Get<int>("owin.ResponseStatusCode"), Is.EqualTo(200));
 
             buffer.Seek(0, SeekOrigin.Begin);
             var data = Encoding.UTF8.GetString(buffer.ToArray());

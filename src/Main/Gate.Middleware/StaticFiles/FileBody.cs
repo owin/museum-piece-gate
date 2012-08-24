@@ -19,16 +19,7 @@ namespace Gate.Middleware.StaticFiles
             this.range = range;
         }
 
-        public static Func<Stream, Task> Create(string path, Tuple<long, long> range)
-        {
-            return stream =>
-            {
-                var fileBody = new FileBody(path, range);
-                return fileBody.Start(stream);
-            };
-        }
-
-        private Task Start(Stream stream)
+        public Task Start(Stream stream)
         {
             this.OpenFileStream();
             return this.fileStream.CopyToAsync(stream, (int)(range.Item2 - range.Item1 + 1));

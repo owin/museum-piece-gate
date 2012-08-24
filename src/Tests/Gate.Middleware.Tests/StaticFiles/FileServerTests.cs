@@ -22,9 +22,11 @@ namespace Gate.Middleware.Tests.StaticFiles
         private Response GetFile(string path)
         {
             Request request = new Request();
+            Response response = new Response(request.Environment);
+            response.OutputStream = new MemoryStream();
             request.Path = path;
             fileServer.Invoke(request.Environment).Wait();
-            return new Response(request.Environment);
+            return response;
         }
 
         private string ReadBody(Stream body)
@@ -97,6 +99,7 @@ namespace Gate.Middleware.Tests.StaticFiles
             request.Path = "/test.txt";
             request.Headers.SetHeader("Range", "bytes=1234-5678");
             Response response = new Response(request.Environment);
+            response.OutputStream = new MemoryStream();
             fileServer.Invoke(request.Environment).Wait();
 
             Assert.That(response.StatusCode, Is.EqualTo(416)); //  Requested Range Not Satisfiable

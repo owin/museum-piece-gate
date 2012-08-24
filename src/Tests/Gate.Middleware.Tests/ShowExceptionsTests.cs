@@ -21,7 +21,7 @@ namespace Gate.Middleware.Tests
             return (AppFunc)builder.Build(typeof(AppFunc));
         }
 
-        private string ReadBody(Stream body)
+        private string ReadBody(MemoryStream body)
         {
             MemoryStream buffer = (MemoryStream)body;
             body.Seek(0, SeekOrigin.Begin);
@@ -44,11 +44,12 @@ namespace Gate.Middleware.Tests
 
             Request request = new Request();
             Response response = new Response(request.Environment);
-            response.OutputStream = new MemoryStream();
+            MemoryStream buffer = new MemoryStream();
+            response.OutputStream = buffer;
             stack(request.Environment).Wait();
 
             Assert.That(response.StatusCode, Is.EqualTo(200));
-            Assert.That(ReadBody(response.OutputStream), Is.EqualTo("Hello"));
+            Assert.That(ReadBody(buffer), Is.EqualTo("Hello"));
         }
 
         [Test]
@@ -60,12 +61,13 @@ namespace Gate.Middleware.Tests
 
             Request request = new Request();
             Response response = new Response(request.Environment);
-            response.OutputStream = new MemoryStream();
+            MemoryStream buffer = new MemoryStream();
+            response.OutputStream = buffer;
             stack(request.Environment).Wait();
 
             Assert.That(response.StatusCode, Is.EqualTo(500));
             Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
-            String bodyText = ReadBody(response.OutputStream);
+            String bodyText = ReadBody(buffer);
             Assert.That(bodyText, Is.StringContaining("ApplicationException"));
             Assert.That(bodyText, Is.StringContaining("Kaboom"));
         }
@@ -88,12 +90,13 @@ namespace Gate.Middleware.Tests
 
             Request request = new Request();
             Response response = new Response(request.Environment);
-            response.OutputStream = new MemoryStream();
+            MemoryStream buffer = new MemoryStream();
+            response.OutputStream = buffer;
             stack(request.Environment).Wait();
 
-            Assert.That(response.Status, Is.EqualTo(200));
+            Assert.That(response.StatusCode, Is.EqualTo(200));
             Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
-            String bodyText = ReadBody(response.OutputStream);
+            String bodyText = ReadBody(buffer);
             Assert.That(bodyText, Is.StringContaining("<p>so far so good</p>"));
             Assert.That(bodyText, Is.StringContaining("failed sending body sync"));
         }
@@ -111,17 +114,18 @@ namespace Gate.Middleware.Tests
                     
                     byte[] bodyBytes = Encoding.ASCII.GetBytes("<p>so far so good</p>");
                     appResponse.OutputStream.Write(bodyBytes, 0, bodyBytes.Length);
-                    return TaskHelpers.FromError(new ApplicationException("failed sending body sync"));
+                    return TaskHelpers.FromError(new ApplicationException("failed sending body async"));
                 }));
 
             Request request = new Request();
             Response response = new Response(request.Environment);
-            response.OutputStream = new MemoryStream();
+            MemoryStream buffer = new MemoryStream();
+            response.OutputStream = buffer;
             stack(request.Environment).Wait();
 
-            Assert.That(response.Status, Is.EqualTo(200));
+            Assert.That(response.StatusCode, Is.EqualTo(200));
             Assert.That(response.Headers.GetHeader("Content-Type"), Is.EqualTo("text/html"));
-            String bodyText = ReadBody(response.OutputStream);
+            String bodyText = ReadBody(buffer);
             Assert.That(bodyText, Is.StringContaining("<p>so far so good</p>"));
             Assert.That(bodyText, Is.StringContaining("failed sending body async"));
         }

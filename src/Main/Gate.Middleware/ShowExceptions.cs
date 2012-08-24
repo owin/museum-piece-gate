@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 namespace Gate.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
+    using Gate.Middleware.Utils;
 
     // Catches any exceptions throw from the App Delegate or Body Delegate and returns an HTML error page.
     // If possible a full 500 Internal Server Error is returned.  Otherwise error information is written
@@ -28,19 +29,29 @@ namespace Gate.Middleware
         {
             return env =>
             {
-                Action<Exception, Action<byte[]>> showErrorMessage =
+                Action<Exception, Action<byte[], int, int>> showErrorMessage =
                     (ex, write) =>
                         ErrorPage(env, ex, text =>
                         {
                             var data = Encoding.ASCII.GetBytes(text);
-                            write(data);
+                            write(data, 0, data.Length);
                         });
 
                 Func<Exception, Task> showErrorPage = ex =>
                 {
                     var response = new Response(env) { Status = "500 Internal Server Error", ContentType = "text/html" };
-                    showErrorMessage(ex, data => response.Write(data));
+                    showErrorMessage(ex, response.Write);
                     return response.EndAsync();
+                };
+
+                // Don't try to modify the headers after the first write has occurred.
+                TriggerStream triggerStream = new TriggerStream(env.Get<Stream>(OwinConstants.ResponseBody));
+                env[OwinConstants.ResponseBody] = triggerStream;
+
+                bool bodyHasStarted = false;
+                triggerStream.OnFirstWrite = () =>
+                {
+                    bodyHasStarted = true;
                 };
 
                 try
@@ -48,13 +59,28 @@ namespace Gate.Middleware
                     return app(env)
                         .Catch(errorInfo =>
                         {
-                            showErrorPage(errorInfo.Exception).Wait();
+                            if (!bodyHasStarted)
+                            {
+                                showErrorPage(errorInfo.Exception).Wait();
+                            }
+                            else
+                            {
+                                showErrorMessage(errorInfo.Exception, triggerStream.Write);
+                            }
                             return errorInfo.Handled();
                         });
                 }
                 catch (Exception exception)
                 {
-                    return showErrorPage(exception);
+                    if (!bodyHasStarted)
+                    {
+                        return showErrorPage(exception);
+                    }
+                    else
+                    {
+                        showErrorMessage(exception, triggerStream.Write);
+                        return TaskHelpers.Completed();
+                    }
                 }
             };
         }

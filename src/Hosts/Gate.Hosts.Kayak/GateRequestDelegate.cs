@@ -38,6 +38,8 @@ namespace Gate.Hosts.Kayak
             else
                 env[OwinConstants.RequestHeaders] = head.Headers.ToDictionary(kv => kv.Key, kv => new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
 
+            env[OwinConstants.ResponseHeaders] = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+
             request.Method = head.Method ?? "";
             request.Path = head.Path ?? "";
             request.PathBase = "";

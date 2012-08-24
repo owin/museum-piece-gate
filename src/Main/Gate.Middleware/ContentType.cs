@@ -51,6 +51,8 @@ namespace Gate.Middleware
         {
             Stream orriginalStream = env.Get<Stream>(OwinConstants.ResponseBody);
             TriggerStream triggerStream = new TriggerStream(orriginalStream);
+            env[OwinConstants.ResponseBody] = triggerStream;
+
             triggerStream.OnFirstWrite = () =>
             {
                 var responseHeaders = env.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders);
@@ -60,9 +62,11 @@ namespace Gate.Middleware
                 }
             };
 
-            env[OwinConstants.ResponseBody] = triggerStream;
-
-            return nextApp(env);
+            return nextApp(env).Then(() =>
+            {
+                // Make sure this gets run even if there were no writes.
+                triggerStream.OnFirstWrite();
+            });
         }
     }
 }
