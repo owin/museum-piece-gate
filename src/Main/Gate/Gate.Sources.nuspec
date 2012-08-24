@@ -12,7 +12,7 @@
     <tags></tags>
     <dependencies>
       <dependency id="Owin.Startup" version="0.4"/>
-      <dependency id="TaskHelpers.Sources" version="[0.1]"/>
+      <dependency id="TaskHelpers.Sources" version="0.1"/>
     </dependencies>
   </metadata>
   <files>
