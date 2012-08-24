@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 namespace Gate.Middleware.WebSockets
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     #pragma warning disable 811
     using WebSocketFunc =
         Func
@@ -66,19 +68,19 @@ namespace Gate.Middleware.WebSockets
         /*
         public static IAppBuilder UseOpaqueStreams(this IAppBuilder builder, int messageType = binaryOpCode)
         {
-            return builder.Use<AppDelegate>(new WebSocketToBinaryStream(messageType).Middleware);
+            return builder.Use<AppFunc>(new WebSocketToBinaryStream(messageType).Middleware);
         }
         */
-        public AppDelegate Middleware(AppDelegate app)
+        public AppFunc Middleware(AppFunc app)
         {
-            return call =>
+            return env =>
             {
-                string binarySupport = call.Environment.Get<string>("binarystream.Support");
-                string websocketSupport = call.Environment.Get<string>("websocket.Support");
+                string binarySupport = env.Get<string>("binarystream.Support");
+                string websocketSupport = env.Get<string>("websocket.Support");
                 if (websocketSupport != null && websocketSupport.Equals("WebSocketFunc") 
                     && (binarySupport == null || !binarySupport.Equals("BinaryStreamFunc")))
                 {
-                    call.Environment["binarystream.Support"] = "BinaryStreamFunc";
+                    env["binarystream.Support"] = "BinaryStreamFunc";
 
                     throw new NotImplementedException();
                     /*
@@ -105,7 +107,7 @@ namespace Gate.Middleware.WebSockets
                 }
                 else
                 {
-                    return app(call);
+                    return app(env);
                 }
             };
         }

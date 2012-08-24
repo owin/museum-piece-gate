@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Gate.Mapping;
 using Owin;
-using Gate.TestHelpers;
 using NUnit.Framework;
 using System.Threading.Tasks;
 using System.Threading;
@@ -9,34 +8,36 @@ using System;
 
 namespace Gate.Tests
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     [TestFixture]
     public class UrlMapperTests
     {
-        AppDelegate NotFound = call => TaskHelpers.FromResult(new ResultParameters() { Status = 404 });
+        AppFunc NotFound = call => { call.Set("owin.ResponseStatusCode", 404); return TaskHelpers.Completed(); };
 
-        private CallParameters CreateEmptyCall()
+        private IDictionary<string, object> CreateEmptyEnvironment()
         {
-            return new CallParameters()
+            return new Dictionary<string, object>()
             {
-                Body = null,
-                Environment = new Dictionary<string, object>(),
-                Headers = Headers.New(),
+                { "owin.RequestHeaders",  Headers.New() },
+                { "owin.ResponseHeaders", Headers.New() },
             };
         }
 
         [Test]
         public void Call_on_empty_map_defaults_to_status_404()
         {
-            var map = new Dictionary<string, AppDelegate>();
+            var map = new Dictionary<string, AppFunc>();
             var app = UrlMapper.Create(NotFound, map);
-            var callResult = app(CreateEmptyCall()).Result;
-            Assert.That(callResult.Status, Is.EqualTo(404));
+            var env = CreateEmptyEnvironment();
+            app(env).Wait();
+            Assert.That(env.Get<int>("owin.ResponseStatusCode"), Is.EqualTo(404));
         }
 
         //[Test]
         //public void Calling_mapped_path_hits_given_app()
         //{
-        //    var map = new Dictionary<string, AppDelegate>
+        //    var map = new Dictionary<string, AppFunc>
         //    {
         //        {"/foo", Wilson.App()}
         //    };
@@ -54,7 +55,7 @@ namespace Gate.Tests
         [Test]
         public void Path_and_PathBase_are_adjusted_by_location()
         {
-            var map = new Dictionary<string, AppDelegate>
+            var map = new Dictionary<string, AppFunc>
             {
                 {"/foo", AppUtils.ShowEnvironment()}
             };

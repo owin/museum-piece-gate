@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace Gate.Middleware.StaticFiles
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
+    // Used by the Static middleware to send static files to the client.
     public class FileServer
     {
         private const int OK = 200;
@@ -30,9 +33,9 @@ namespace Gate.Middleware.StaticFiles
             this.root = root;
         }
 
-        public Task<ResultParameters> Invoke(CallParameters call)
+        public Task Invoke(IDictionary<string, object> env)
         {
-            pathInfo = call.Environment[OwinConstants.RequestPath].ToString();
+            pathInfo = env.Get<string>(OwinConstants.RequestPath);
 
             if (pathInfo.StartsWith("/"))
             {
@@ -41,60 +44,63 @@ namespace Gate.Middleware.StaticFiles
 
             if (pathInfo.Contains(".."))
             {
-                return Fail(Forbidden, "Forbidden").Invoke(call);
+                return Fail(Forbidden, "Forbidden").Invoke(env);
             }
 
             path = Path.Combine(root ?? string.Empty, pathInfo);
 
             if (!File.Exists(path))
             {
-                return Fail(NotFound, "File not found: " + pathInfo).Invoke(call);
+                return Fail(NotFound, "File not found: " + pathInfo).Invoke(env);
             }
 
             try
             {
-                return Serve(call);
+                return Serve(env);
             }
             catch (UnauthorizedAccessException)
             {
-                return Fail(Forbidden, "Forbidden").Invoke(call);
+                return Fail(Forbidden, "Forbidden").Invoke(env);
             }
         }
 
-        private static AppDelegate Fail(int status, string body, IDictionary<string, string[]> headers = null)
+        private static AppFunc Fail(int status, string body, string headerName = null, string headerValue = null)
         {
-            return call =>
-                TaskHelpers.FromResult(
-                    new ResultParameters
+            return env =>
+                {
+                    Response response = new Response(env);
+                    response.StatusCode = status;
+                    response.Headers
+                        .SetHeader("Content-Type", "text/plain")
+                        .SetHeader("Content-Length", body.Length.ToString(CultureInfo.InvariantCulture))
+                        .SetHeader("X-Cascade", "pass");
+
+                    if (headerName != null && headerValue != null)
                     {
-                        Status = status,
-                        Headers = Headers.New(headers)
-                            .SetHeader("Content-Type", "text/plain")
-                            .SetHeader("Content-Length", body.Length.ToString(CultureInfo.InvariantCulture))
-                            .SetHeader("X-Cascade", "pass"),
-                        Body = TextBody.Create(body, Encoding.UTF8),
-                        Properties = new Dictionary<string, object>()
-                    });
+                        response.Headers.SetHeader(headerName, headerValue);
+                    }
+
+                    response.Write(body);
+                    return response.EndAsync();
+                };
         }
 
-        private Task<ResultParameters> Serve(CallParameters call)
+        private Task Serve(IDictionary<string, object> env)
         {
+            Request request = new Request(env);
+            Response response = new Response(env);
+
             var fileInfo = new FileInfo(path);
             var size = fileInfo.Length;
 
-            int status;
-            var headers = Headers.New()
-                .SetHeader("Last-Modified", fileInfo.LastWriteTimeUtc.ToHttpDateString())
-                .SetHeader("Content-Type", Mime.MimeType(fileInfo.Extension, "text/plain"));
-
-            if (!RangeHeader.IsValid(call.Headers))
+            if (!RangeHeader.IsValid(request.Headers))
             {
-                status = OK;
+                response.StatusCode = OK;
                 range = new Tuple<long, long>(0, size - 1);
             }
             else
             {
-                var ranges = RangeHeader.Parse(call.Headers, size);
+                var ranges = RangeHeader.Parse(request.Headers, size);
 
                 if (ranges == null)
                 {
@@ -102,35 +108,32 @@ namespace Gate.Middleware.StaticFiles
                     return Fail(
                         RequestedRangeNotSatisfiable,
                         "Byte range unsatisfiable",
-                        Headers.New().SetHeader("Content-Range", "bytes */" + size))
-                        .Invoke(call);
+                        "Content-Range", "bytes */" + size)
+                        .Invoke(env);
                 }
 
                 if (ranges.Count() > 1)
                 {
                     // TODO: Support multiple byte ranges.
-                    status = OK;
+                    response.StatusCode = OK;
                     range = new Tuple<long, long>(0, size - 1);
                 }
                 else
                 {
                     // Partial content
                     range = ranges.First();
-                    status = PartialContent;
-                    headers.SetHeader("Content-Range", "bytes " + range.Item1 + "-" + range.Item2 + "/" + size);
+                    response.StatusCode = PartialContent;
+                    response.Headers.SetHeader("Content-Range", "bytes " + range.Item1 + "-" + range.Item2 + "/" + size);
                     size = range.Item2 - range.Item1 + 1;
                 }
             }
 
-            headers.SetHeader("Content-Length", size.ToString());
+            response.Headers
+                .SetHeader("Last-Modified", fileInfo.LastWriteTimeUtc.ToHttpDateString())
+                .SetHeader("Content-Type", Mime.MimeType(fileInfo.Extension, "text/plain"))
+                .SetHeader("Content-Length", size.ToString(CultureInfo.InvariantCulture));
 
-            return TaskHelpers.FromResult(new ResultParameters
-                {
-                    Status = status,
-                    Headers = headers,
-                    Body = FileBody.Create(path, range),
-                    Properties = new Dictionary<string, object>()
-                });
+            return new FileBody(path, range).Start(response.OutputStream);
         }
     }
 }

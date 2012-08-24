@@ -1,53 +1,86 @@
 using System.Globalization;
+using System.IO;
+using System.Threading.Tasks;
+using Gate.Utils;
+using Owin;
+using System;
+using System.Collections.Generic;
+using Gate.Middleware;
+using Gate.Middleware.Utils;
 
-namespace Gate.Middleware
+namespace Owin
 {
-    using System.IO;
-    using System.Threading.Tasks;
-    using Gate.Utils;
-    using Owin;
-
-    public static class ContentLength
+    public static class ContentLengthExtensions
     {
         public static IAppBuilder UseContentLength(this IAppBuilder builder)
         {
-            return builder.UseFunc<AppDelegate>(Middleware);
+            return builder.UseType<ContentLength>();
         }
-        
-        public static AppDelegate Middleware(AppDelegate app)
+    }
+}
+
+namespace Gate.Middleware
+{
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
+    // This middleware defaults to Content-Length if the app does not specify Content-Length 
+    // or Transfer-Encoding.  The Content-Length is determined by buffering the response body.
+    public class ContentLength
+    {
+        private readonly AppFunc nextApp;
+
+        public ContentLength(AppFunc nextApp)
         {
-            return call =>
+            this.nextApp = nextApp;
+        }
+
+        public Task Invoke(IDictionary<string, object> env)
+        {
+            Response response = new Response(env);
+            Stream orriginalStream = response.OutputStream;
+            TriggerStream triggerStream = new TriggerStream(orriginalStream);
+            response.OutputStream = triggerStream;
+            MemoryStream buffer = null;
+            triggerStream.OnFirstWrite = () =>
             {
-                return app(call).Then<ResultParameters, ResultParameters>( 
-                    result =>
-                    {
-                        if (IsStatusWithNoNoEntityBody(result.Status)
-                            || result.Headers.ContainsKey("Content-Length") 
-                            || result.Headers.ContainsKey("Transfer-Encoding"))
-                        {
-                            return TaskHelpers.FromResult(result);
-                        }
+                if (IsStatusWithNoNoEntityBody(response.StatusCode)
+                    || response.Headers.ContainsKey("Content-Length")
+                    || response.Headers.ContainsKey("Transfer-Encoding"))
+                {
+                    return;
+                }
 
-                        if (result.Body == null)
-                        {
-                            result.Headers.SetHeader("Content-Length", "0");
-                            return TaskHelpers.FromResult(result);
-                        }
-
-                        // Buffer the body
-                        MemoryStream buffer = new MemoryStream();
-                        return result.Body(buffer).Then<ResultParameters>(
-                            () =>
-                            {
-                                buffer.Seek(0, SeekOrigin.Begin);
-                                result.Headers.SetHeader("Content-Length", buffer.Length.ToString(CultureInfo.InvariantCulture));
-                                result.Body = output => buffer.CopyToAsync(output);
-
-                                return TaskHelpers.FromResult(result);
-                            });
-
-                    });
+                // Buffer
+                buffer = new MemoryStream();
+                triggerStream.InnerStream = buffer;
             };
+
+            env[OwinConstants.ResponseBody] = triggerStream;
+
+            return nextApp(env).Then(() =>
+            {
+                if (buffer != null)
+                {
+                    if (buffer.Length == 0)
+                    {
+                        response.Headers.SetHeader("Content-Length", "0");
+                    }
+                    else
+                    {
+                        response.Headers.SetHeader("Content-Length", buffer.Length.ToString(CultureInfo.InvariantCulture));
+                        buffer.Seek(0, SeekOrigin.Begin);
+                        return buffer.CopyToAsync(orriginalStream);
+                    }
+                }
+                else if (!IsStatusWithNoNoEntityBody(response.StatusCode)
+                    && !response.Headers.ContainsKey("Content-Length")
+                    && !response.Headers.ContainsKey("Transfer-Encoding"))
+                {
+                    // There were no Writes.
+                    response.Headers.SetHeader("Content-Length", "0");
+                }
+                return TaskHelpers.Completed();
+            });
         }
 
         private static bool IsStatusWithNoNoEntityBody(int status)

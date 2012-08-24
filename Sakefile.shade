@@ -12,28 +12,20 @@ var TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 var SRC='src'
 var BUILD_PROJECTS='${Files.Include(
     SRC + "/**/Gate.csproj",
-    SRC + "/**/Gate.Builder.csproj", 
     SRC + "/**/Gate.Middleware.csproj",
     SRC + "/**/Gate.Hosts.Kayak.csproj",
     SRC + "/**/Gate.Hosts.Firefly.csproj",
-    SRC + "/**/Gate.Hosts.AspNet.csproj",
-    SRC + "/**/Gate.Hosts.HttpListener.csproj",
-    SRC + "/**/Gate.Adapters.AspNetWebApi.csproj",
     SRC + "/**/Gate.Adapters.Nancy.csproj",
-    SRC + "/**/Sample.AspNetWebApi.csproj",
     SRC + "/**/Sample.HelloWorld.csproj",
     SRC + "/**/Sample.Nancy.csproj",
     SRC + "/**/Samples.ViaRouting.csproj")}'
 
 var TEST_PROJECTS='${Files.Include(
     SRC + "/**/Gate.Tests.csproj",
-    SRC + "/**/Gate.Builder.Tests.csproj",
     SRC + "/**/Gate.Middleware.Tests.csproj",
-    SRC + "/**/Gate.Hosts.Kayak.Tests.csproj",
-    SRC + "/**/Gate.Hosts.AspNet.Tests.csproj",
-    SRC + "/**/Gate.Hosts.HttpListener.Tests.csproj")}'
+    SRC + "/**/Gate.Hosts.Kayak.Tests.csproj")}'
 
-var TEST_ASSEMBLIES='${Files.Include("target/test/**/*.Tests.dll").Exclude("target/test/**/HttpListener.Tests.dll")}'
+var TEST_ASSEMBLIES='${Files.Include("target/test/**/*.Tests.dll")}'
 
 var NUGET_GALLERY_SOURCE='https://nuget.org/api/v2/'
 var NUGET_ASPNET_SOURCE='http://www.myget.org/F/aspnetwebstacknightly/'

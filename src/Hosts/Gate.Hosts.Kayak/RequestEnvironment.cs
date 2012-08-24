@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Owin;
 using Kayak;
 
 namespace Gate.Hosts.Kayak

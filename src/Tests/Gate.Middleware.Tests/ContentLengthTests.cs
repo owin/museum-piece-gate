@@ -2,18 +2,27 @@ using System;
 using NUnit.Framework;
 using Owin;
 using Owin.Builder;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.IO;
 
 namespace Gate.Middleware.Tests
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     [TestFixture]
     public class ContentLengthTests
     {
-        private ResultParameters CallPipe(Action<IAppBuilder> pipe)
+        private IDictionary<string, string[]> CallPipe(Action<IAppBuilder> pipe)
         {
             var builder = new AppBuilder();
             pipe(builder);
-            var app = (AppDelegate)builder.Build(typeof(AppDelegate));
-            return app(new Request().Call).Result;
+            var app = (AppFunc)builder.Build(typeof(AppFunc));
+            Request request = new Request();
+            Response response = new Response(request.Environment);
+            response.OutputStream = new MemoryStream();
+            app(request.Environment).Wait();
+            return response.Headers;
         }
 
         [Test]
@@ -23,7 +32,7 @@ namespace Gate.Middleware.Tests
                 .UseContentLength()
                 .UseDirect((request, response) => response.EndAsync()));
 
-            Assert.That(result.Headers.GetHeader("content-length"), Is.EqualTo("0"));
+            Assert.That(result.GetHeader("content-length"), Is.EqualTo("0"));
         }
 
         [Test]
@@ -39,7 +48,7 @@ namespace Gate.Middleware.Tests
                         return response.EndAsync();
                     }));
 
-            Assert.That(result.Headers.GetHeader("content-length"), Is.EqualTo("12"));
+            Assert.That(result.GetHeader("content-length"), Is.EqualTo("12"));
         }
 
         [Test]
@@ -54,7 +63,7 @@ namespace Gate.Middleware.Tests
                         return response.EndAsync();
                     }));
 
-            Assert.That(result.Headers.GetHeader("content-length"), Is.EqualTo("69"));
+            Assert.That(result.GetHeader("content-length"), Is.EqualTo("69"));
         }
 
         [Test]
@@ -69,7 +78,7 @@ namespace Gate.Middleware.Tests
                         return response.EndAsync();
                     }));
 
-            Assert.That(result.Headers.ContainsKey("content-length"), Is.False);
+            Assert.That(result.ContainsKey("content-length"), Is.False);
         }
 
         [Test]
@@ -94,7 +103,7 @@ namespace Gate.Middleware.Tests
                         return response.EndAsync();
                     }));
 
-            Assert.That(result.Headers.ContainsKey("content-length"), Is.False);
+            Assert.That(result.ContainsKey("content-length"), Is.False);
         }
     }
 }

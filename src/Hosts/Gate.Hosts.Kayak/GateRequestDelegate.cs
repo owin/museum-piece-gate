@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
-using Owin;
 using Kayak;
 using Kayak.Http;
 using System.Threading;
@@ -11,41 +10,45 @@ using System.Globalization;
 
 namespace Gate.Hosts.Kayak
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+    using System.IO;
+
     class GateRequestDelegate : IHttpRequestDelegate
     {
-        AppDelegate appDelegate;
+        AppFunc appFunc;
         IDictionary<string, object> context;
 
-        public GateRequestDelegate(AppDelegate appDelegate, IDictionary<string, object> context)
+        public GateRequestDelegate(AppFunc appFunc, IDictionary<string, object> context)
         {
-            this.appDelegate = appDelegate;
+            this.appFunc = appFunc;
             this.context = context;
         }
 
         public void OnRequest(HttpRequestHead head, IDataProducer body, IHttpResponseDelegate response)
         {
-            var request = new CallParameters();
-            request.Environment = new Dictionary<string, object>();
-            var requestWrapper = new RequestEnvironment(request.Environment);
+            var env = new Dictionary<string, object>();
+            var request = new RequestEnvironment(env);
 
             if (context != null)
                 foreach (var kv in context)
-                    request.Environment[kv.Key] = kv.Value;
+                    env[kv.Key] = kv.Value;
 
             if (head.Headers == null)
-                request.Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+                env[OwinConstants.RequestHeaders] = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
             else
-                request.Headers = head.Headers.ToDictionary(kv => kv.Key, kv => new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
+                env[OwinConstants.RequestHeaders] = head.Headers.ToDictionary(kv => kv.Key, kv => new[] { kv.Value }, StringComparer.OrdinalIgnoreCase);
 
-            requestWrapper.Method = head.Method ?? "";
-            requestWrapper.Path = head.Path ?? "";
-            requestWrapper.PathBase = "";
-            requestWrapper.QueryString = head.QueryString ?? "";
-            requestWrapper.Scheme = "http"; // XXX
-            requestWrapper.Version = "1.0";
+            env[OwinConstants.ResponseHeaders] = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+
+            request.Method = head.Method ?? "";
+            request.Path = head.Path ?? "";
+            request.PathBase = "";
+            request.QueryString = head.QueryString ?? "";
+            request.Scheme = "http"; // XXX
+            request.Version = "1.0";
 
             if (body == null)
-                request.Body = null;
+                env[OwinConstants.RequestBody] = Stream.Null;
                 /*
             else
                 request.Body = (write, end, cancellationToken) =>
@@ -58,39 +61,39 @@ namespace Gate.Hosts.Kayak
                 };
                  */ // TODO: Request body stream
 
-            appDelegate(request)
-                .Then(result => HandleResponse(response, result))
+            appFunc(env)
+                .Then(() => HandleResponse(response, env))
                 .Catch(errorInfo => HandleError(response, errorInfo));
         }
 
-        private void HandleResponse(IHttpResponseDelegate response, ResultParameters result)
+        private void HandleResponse(IHttpResponseDelegate response, IDictionary<string, object> env)
         {
-            if (result.Headers == null)
-            {
-                result.Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-            }
-
-            if (result.Body != null &&
-                !result.Headers.ContainsKey("Content-Length") &&
-                !result.Headers.ContainsKey("Transfer-Encoding"))
+            var headers = (IDictionary<string, string[]>)env[OwinConstants.ResponseHeaders];
+            if (!headers.ContainsKey("Content-Length") &&
+                !headers.ContainsKey("Transfer-Encoding"))
             {
                 // disable keep-alive in this case
-                result.Headers["Connection"] = new[] { "close" };
+                headers["Connection"] = new[] { "close" };
             }
 
             response.OnResponse(new HttpResponseHead()
                 {
-                    Status = GetStatus(result),
-                    Headers = result.Headers.ToDictionary(kv => kv.Key, kv => string.Join("\r\n", kv.Value.ToArray()), StringComparer.OrdinalIgnoreCase),
+                    Status = GetStatus(env),
+                    Headers = headers.ToDictionary(kv => kv.Key, kv => string.Join("\r\n", kv.Value.ToArray()), StringComparer.OrdinalIgnoreCase),
                 }, null /* result.Body == null ? null : new DataProducer(result.Body) */); // TODO: How do we expose DataProducer as a Stream?
         }
 
-        private string GetStatus(ResultParameters result)
+        private string GetStatus(IDictionary<string, object> env)
         {
-            string status = result.Status.ToString(CultureInfo.InvariantCulture);
+            string status = "200";
+            object obj = null;
+            if (env.TryGetValue(OwinConstants.ResponseStatusCode, out obj))
+            {
+                status = ((int)obj).ToString(CultureInfo.InvariantCulture);
+            }
 
-            object obj;
-            if (result.Properties != null && result.Properties.TryGetValue(OwinConstants.ReasonPhrase, out obj))
+            obj = null;
+            if (env.TryGetValue(OwinConstants.ResponseReasonPhrase, out obj))
             {
                 string reason = (string)obj;
                 if (!string.IsNullOrWhiteSpace(reason))

@@ -59,7 +59,7 @@ namespace Sample.HelloWorld
                 resp.Write("</ul>");
                 resp.Write("</body>");
                 resp.Write("</html>");
-                return resp.ResultTask;
+                return resp.Task;
             });
         }
     }

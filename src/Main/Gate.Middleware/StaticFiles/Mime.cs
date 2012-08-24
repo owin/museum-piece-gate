@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 namespace Gate.Middleware.StaticFiles
 {
+    // Used by FileServer to map file extensions to MIME types.
     public class Mime
     {
         public static string MimeType(string extension, string fallback = null)

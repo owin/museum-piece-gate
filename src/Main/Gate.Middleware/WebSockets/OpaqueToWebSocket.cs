@@ -9,6 +9,8 @@ using System.IO;
 
 namespace Gate.Middleware.WebSockets
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     #pragma warning disable 811
     using WebSocketFunc =
         Func
@@ -66,30 +68,29 @@ namespace Gate.Middleware.WebSockets
     {
         public static IAppBuilder UseWebSockets(this IAppBuilder builder)
         {
-            return builder.UseFunc<AppDelegate>(OpaqueToWebSocket.Middleware);
+            return builder.UseFunc<AppFunc>(OpaqueToWebSocket.Middleware);
         }
 
-        public static AppDelegate Middleware(AppDelegate app)
+        public static AppFunc Middleware(AppFunc app)
         {
-            return call =>
+            return env =>
             {
-                string opaqueSupport = call.Environment.Get<string>("opaque.Support");
-                string websocketSupport = call.Environment.Get<string>("websocket.Support");
-                if (opaqueSupport == "OpaqueStreamFunc" && websocketSupport != "WebSocketFunc" && IsWebSocketRequest(call))
+                string opaqueSupport = env.Get<string>("opaque.Support");
+                string websocketSupport = env.Get<string>("websocket.Support");
+                if (opaqueSupport == "OpaqueStreamFunc" && websocketSupport != "WebSocketFunc" && IsWebSocketRequest(env))
                 {
                     // Announce websocket support
-                    call.Environment["websocket.Support"] = "WebSocketFunc";
+                    env["websocket.Support"] = "WebSocketFunc";
 
-                    return app(call).Then(result =>
+                    return app(env).Then(() =>
                     {
-                        if (result.Status == 101
-                            && result.Properties != null
-                            && result.Properties.Get<WebSocketFunc>("websocket.Func") != null)
+                        Response response = new Response(env);
+                        if (response.StatusCode == 101
+                            && env.Get<WebSocketFunc>("websocket.Func") != null)
                         {
-                            result.Headers = result.Headers ?? new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-                            SetWebSocketResponseHeaders(call, result);
+                            SetWebSocketResponseHeaders(env);
 
-                            WebSocketFunc wsBody = result.Properties.Get<WebSocketFunc>("websocket.Func");
+                            WebSocketFunc wsBody = env.Get<WebSocketFunc>("websocket.Func");
 
                             OpaqueStreamFunc opaqueBody = (incoming, outgoing) =>
                             {
@@ -98,25 +99,27 @@ namespace Gate.Middleware.WebSockets
                                     .Then(() => webSocket.CleanupAsync());
                             };
 
-                            result.Properties["opaque.Func"] = opaqueBody;
+                            env["opaque.Func"] = opaqueBody;
                         }
-                        return result;
                     });
                 }
                 else
                 {
-                    return app(call);
+                    return app(env);
                 }
             };
         }
 
         // Inspect the method and headers to see if this is a valid websocket request.
-        private static bool IsWebSocketRequest(CallParameters call)
+        // See RFC 6455 section 4.2.1.
+        private static bool IsWebSocketRequest(IDictionary<string, object> env)
         {
             throw new NotImplementedException();
         }
 
-        private static void SetWebSocketResponseHeaders(CallParameters call, ResultParameters result)
+        // Se the websocket response headers.
+        // See RFC 6455 section 4.2.2.
+        private static void SetWebSocketResponseHeaders(IDictionary<string, object> env)
         {
             throw new NotImplementedException();
         }
