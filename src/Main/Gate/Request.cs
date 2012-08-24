@@ -206,7 +206,7 @@ namespace Gate
                 return delimiterPos < 0 ? contentType : contentType.Substring(0, delimiterPos);
             }
         }
-        
+
         public Task CopyToStreamAsync(Stream stream)
         {
             if (Body == null)
@@ -343,11 +343,30 @@ namespace Gate
                     return hostHeader;
                 }
 
-                return string.Empty;
+                var localIpAddress = Environment.Get<string>(OwinConstants.LocalIpAddress);
+                if (string.IsNullOrWhiteSpace(localIpAddress))
+                {
+                    localIpAddress = "localhost";
+                }
+
+                var localPort = Environment.Get<string>(OwinConstants.LocalPort);
+                if (string.IsNullOrWhiteSpace(localPort))
+                {
+                    localPort = string.Equals(Scheme, "https", StringComparison.OrdinalIgnoreCase) ? "443" : "80";
+                }
+
+                return localIpAddress + ":" + localPort;
             }
             set
             {
-                Headers.SetHeader("Host", value);
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    Headers.Remove("Host");
+                }
+                else
+                {
+                    Headers.SetHeader("Host", value);
+                }
             }
         }
 
@@ -355,29 +374,26 @@ namespace Gate
         {
             get
             {
-                var hostHeader = Headers.GetHeader("Host");
-                if (!string.IsNullOrWhiteSpace(hostHeader))
+                var hostWithPort = HostWithPort;
+                if (!string.IsNullOrWhiteSpace(hostWithPort))
                 {
-                    var delimiter = hostHeader.IndexOf(':');
-                    return delimiter < 0 ? hostHeader : hostHeader.Substring(0, delimiter);
+                    var delimiter = hostWithPort.IndexOf(':');
+                    return delimiter < 0 ? hostWithPort : hostWithPort.Substring(0, delimiter);
                 }
 
                 return string.Empty;
             }
             set
             {
-                string port = Port;
-                if (string.IsNullOrWhiteSpace(value))
+                var port = Port;
+                if (string.IsNullOrWhiteSpace(value) ||
+                    string.IsNullOrWhiteSpace(port))
                 {
-                    Headers.Remove("Host");
-                }
-                else if (!string.IsNullOrWhiteSpace(port))
-                {
-                    Headers.SetHeader("Host", value + ":" + port);
+                    HostWithPort = value;
                 }
                 else
                 {
-                    Headers.SetHeader("Host", value);
+                    HostWithPort = value + ":" + port;
                 }
             }
         }
@@ -390,21 +406,30 @@ namespace Gate
                 if (!string.IsNullOrWhiteSpace(hostHeader))
                 {
                     var delimiter = hostHeader.IndexOf(':');
-                    return delimiter < 0 ? string.Empty : hostHeader.Substring(delimiter + 1);
+                    if (delimiter != -1)
+                    {
+                        return hostHeader.Substring(delimiter + 1);
+                    }
                 }
 
-                return string.Empty;
+                var localPort = Environment.Get<string>(OwinConstants.LocalPort);
+                if (string.IsNullOrWhiteSpace(localPort))
+                {
+                    return string.Equals(Scheme, "https", StringComparison.OrdinalIgnoreCase) ? "443" : "80";
+                }
+
+                return localPort;
             }
             set
             {
                 string host = Host;
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    Host = host; // Truncate port
+                    HostWithPort = host; // Truncate port
                 }
                 else
                 {
-                    Headers.SetHeader("Host", host + ":" + value);
+                    HostWithPort = host + ":" + value;
                 }
             }
         }

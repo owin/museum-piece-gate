@@ -21,6 +21,10 @@
         public const string ResponseBody = "owin.ResponseBody";
 
         public const string TraceOutput = "host.TraceOutput";
+
         public const string RemoteIpAddress = "server.RemoteIpAddress";
+        public const string RemotePort = "server.RemotePort";
+        public const string LocalIpAddress = "server.LocalIpAddress";
+        public const string LocalPort = "server.LocalPort";
     }
 }

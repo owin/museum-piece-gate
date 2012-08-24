@@ -18,6 +18,15 @@ namespace Gate.Tests
                 { "owin.ResponseHeaders", Headers.New() },
             };
         }
+        private IDictionary<string, object> CreateEmptyEnvironment(
+            Action<IDictionary<string, object>> setupEnv,
+            Action<IDictionary<string, string[]>> setupHeaders)
+        {
+            var env = CreateEmptyEnvironment();
+            setupEnv(env);
+            setupHeaders(env.Get<IDictionary<string, string[]>>("owin.RequestHeaders"));
+            return env;
+        }
 
         [Test]
         public void QueryString_is_used_to_populate_Query_dictionary()
@@ -63,11 +72,11 @@ namespace Gate.Tests
         }
 
         [Test]
-        public void Host_is_empty_if_nothing_provided()
+        public void Host_is_based_on_server_ip_if_header_is_missing()
         {
-            var env = CreateEmptyEnvironment();
+            var env = CreateEmptyEnvironment(e => e.Set("server.LocalIpAddress", "1.2.3.4"), h => { });
             var request = new Request(env);
-            Assert.That(request.Host, Is.EqualTo(string.Empty));
+            Assert.That(request.Host, Is.EqualTo("1.2.3.4"));
         }
 
         [Test]
@@ -80,21 +89,33 @@ namespace Gate.Tests
         }
 
         [Test]
-        public void Port_is_empty_if_nothing_provided()
+        public void Port_is_based_on_localport_if_not_part_of_request_header()
         {
-            var env = CreateEmptyEnvironment();
+            var env = CreateEmptyEnvironment(
+                e => e.Set("server.LocalPort", "55"),
+                h => h.SetHeader("Host", "Beta"));
             var request = new Request(env);
-            Assert.That(request.Port, Is.EqualTo(string.Empty));
+            Assert.That(request.Port, Is.EqualTo("55"));
+        }
+        [Test]
+        public void Port_is_based_on_scheme_if_there_is_no_local_port()
+        {
+            var env = CreateEmptyEnvironment(
+                e => e.Set("owin.RequestScheme", "https"),
+                h => h.SetHeader("Host", "Beta"));
+            var request = new Request(env);
+            Assert.That(request.Port, Is.EqualTo("443"));
+        }
+        [Test]
+        public void Port_default_to_80()
+        {
+            var env = CreateEmptyEnvironment(
+                e => { },
+                h => h.SetHeader("Host", "Beta"));
+            var request = new Request(env);
+            Assert.That(request.Port, Is.EqualTo("80"));
         }
 
-        [Test]
-        public void Port_is_empty_if_only_host_provided()
-        {
-            var env = CreateEmptyEnvironment();
-            env.Get<IDictionary<string, string[]>>("owin.RequestHeaders").SetHeader("Host", "Beta");
-            var request = new Request(env);
-            Assert.That(request.Port, Is.EqualTo(string.Empty));
-        }
 
         [Test]
         public void ContentType_and_MediaType_should_return_http_header()
@@ -190,7 +211,7 @@ namespace Gate.Tests
         [Test]
         public void QueryShouldDecodePlusAsSpace()
         {
-            var req = new Request {QueryString = "foo=hello+world&the+bar=quux"};
+            var req = new Request { QueryString = "foo=hello+world&the+bar=quux" };
             Assert.That(req.Query["foo"], Is.EqualTo("hello world"));
             Assert.That(req.Query["the bar"], Is.EqualTo("quux"));
         }
