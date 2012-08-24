@@ -9,34 +9,31 @@ using System.Threading.Tasks;
 
 namespace Gate.Middleware.Tests
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     [TestFixture]
     public class PassiveValidatorTests
     {
-        private static string ReadResponseBody(ResultParameters result)
+        private string ReadBody(Stream stream)
         {
-            if (result.Body != null)
-            {
-                Stream buffer = new MemoryStream();
-                result.Body(buffer).Wait();
-                buffer.Seek(0, SeekOrigin.Begin);
-                StreamReader reader = new StreamReader(buffer);
-                return reader.ReadToEnd();
-            }
-            return string.Empty;
+            MemoryStream buffer = (MemoryStream)stream;
+            buffer.Seek(0, SeekOrigin.Begin);
+            return Encoding.UTF8.GetString(buffer.ToArray());
         }
 
         [Test]
         public void NormalPassThrough_Success()
         {
-            AppDelegate middleware = PassiveValidator.Middleware(
-                call =>
+            AppFunc middleware = new PassiveValidator(
+                env =>
                 {
-                    Response response = new Response(200);
-                    return response.EndAsync();
-                });
+                    env[OwinConstants.ResponseStatusCode] = 200;
+                    return TaskHelpers.Completed();
+                }).Invoke;
 
             Request request = new Request();
             request.Completed = new TaskCompletionSource<object>().Task;
+            request.Body = Stream.Null;
             request.Method = "GET";
             request.Path = "/foo";
             request.PathBase = string.Empty;
@@ -46,10 +43,14 @@ namespace Gate.Middleware.Tests
             request.Version = "1.0";
             request.HostWithPort = "hostname:8080";
 
-            ResultParameters result = middleware(request.Call).Result;
+            request.Environment[OwinConstants.ResponseBody] = new MemoryStream();
 
-            Assert.That(ReadResponseBody(result), Is.EqualTo(string.Empty));
-            Assert.That(result.Status, Is.EqualTo(200));
+            middleware(request.Environment).Wait();
+
+            Response response = new Response(request.Environment);            
+
+            Assert.That(response.StatusCode, Is.EqualTo(200), ReadBody(response.OutputStream));
+            Assert.That(response.Headers.GetHeader("X-OwinValidatorWarning"), Is.Null);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Gate.Middleware.Tests
     public class RequestTracerTests
     {
         [Test]
-        public void NoLogger_PassThrough()
+        public void NoTracer_PassThrough()
         {
             RequestTracer middleware = new RequestTracer(env =>
             {
@@ -25,7 +25,7 @@ namespace Gate.Middleware.Tests
         }
 
         [Test]
-        public void Logger_Logged()
+        public void Tracer_Traced()
         {
             RequestTracer middleware = new RequestTracer(env =>
             {
@@ -34,7 +34,7 @@ namespace Gate.Middleware.Tests
 
             StringWriter writer = new StringWriter();
             TextWriterTraceListener textListener = new TextWriterTraceListener(writer, "TestTracer");
-            TraceSource traceSource = new TraceSource("TestSource");
+            TraceSource traceSource = new TraceSource("TestSource", SourceLevels.All);
             traceSource.Listeners.Add(textListener);
 
             Request request = new Request();

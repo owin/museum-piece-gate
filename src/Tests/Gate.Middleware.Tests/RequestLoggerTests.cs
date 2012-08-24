@@ -34,7 +34,7 @@ namespace Gate.Middleware.Tests
             StringWriter writer = new StringWriter();
             Request request = new Request();
             request.TraceOutput = writer;
-            middleware.Invoke(new Request().Environment).Wait();
+            middleware.Invoke(request.Environment).Wait();
             Assert.That(writer.GetStringBuilder().ToString(), Is.Not.EqualTo(string.Empty));
         }
     }

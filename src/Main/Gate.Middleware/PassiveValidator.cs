@@ -5,121 +5,83 @@ using System.Linq;
 using Gate.Middleware;
 using System.Threading.Tasks;
 using Gate;
+using Owin;
 
 namespace Owin
 {
+    public static class ValidatorExtensions
+    {
+        public static IAppBuilder UsePassiveValidator(this IAppBuilder builder)
+        {
+            return builder.UseType<PassiveValidator>();
+        }
+    }
+}
+
+namespace Gate.Middleware
+{
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     // This middleware does a passive validation of all requests and responses. If any requirements from the OWIN 
     // standard are violated, an 500 error or a warning header are returned to the client.
     // This is implemented using version 0.14.0 of the OWIN standard.
-    public static class PassiveValidator
+    public class PassiveValidator
     {
-        public static IAppBuilder UsePassiveValidation(this IAppBuilder builder)
+        private readonly AppFunc nextApp;
+
+        public PassiveValidator(AppFunc nextApp)
         {
-            // TODO: Validate the builder.Properties collection.
-            return builder.UseFunc<AppDelegate>(PassiveValidator.Middleware);
+            this.nextApp = nextApp;
         }
 
-        public static AppDelegate Middleware(AppDelegate app)
+        public Task Invoke(IDictionary<string, object> env)
         {
-            return call =>
+            IList<string> warnings = new List<string>();
+            if (!TryValidateCall(env, warnings))
             {
-                IList<string> warnings = new List<string>();
-                ResultParameters fatalResult;
-                if (!TryValidateCall(call, warnings, out fatalResult))
-                {
-                    return TaskHelpers.FromResult(fatalResult);
-                }
+                return TaskHelpers.Completed();
+            }
 
-                try
-                {
-                    return app(call)
-                        .Then(appResult =>
+            try
+            {
+                return nextApp(env)
+                    .Then(() =>
+                    {
+                        if (!TryValidateResult(env, warnings))
                         {
-                            if (!TryValidateResult(call, appResult, warnings, out fatalResult))
-                            {
-                                return fatalResult;
-                            }
+                            return;
+                        }
 
-                            if (warnings.Count > 0)
-                            {
-                                appResult.Headers["X-OwinValidatorWarning"] = warnings.ToArray();
-                            }
-
-                            // Intercept the body delegate for parameter validation and error handling validation.
-                            Func<Stream, Task> nestedBody = appResult.Body;
-                            appResult.Body = output =>
-                            {
-                                // TODO: Validate output stream.
-                                // TODO: How to report errors for things like a null output stream?  Exceptions?
-
-                                if (nestedBody == null)
-                                {
-                                    return TaskHelpers.Completed();
-                                }
-                                
-                                try
-                                {
-                                    return nestedBody(output)
-                                        .Then(() => { /* TODO: Any post body validation required? */ })
-                                        .Catch(errorInfo =>
-                                        {
-                                            // TODO: Write out exception?
-                                            // return errorInfo.Handled();
-                                            return errorInfo.Throw();
-                                        });
-                                }
-                                catch (Exception)
-                                {
-                                    // TODO: Write out exception?
-                                    // return TaskHelpers.Completed();
-                                    throw;
-                                }
-                            };
-
-                            return appResult;
-                        })
-                        .Catch<ResultParameters>(errorInfo =>
+                        if (warnings.Count > 0)
                         {
-                            ResultParameters errorResult = CreateFatalResult("6.1", "An asynchronous exception was thrown from the AppDelegate: \r\n"
-                                + errorInfo.Exception.ToString());
-                            return errorInfo.Handled(errorResult);
-                        });
-                }
-                catch (Exception ex)
-                {
-                    return TaskHelpers.FromResult(CreateFatalResult("6.1", "A synchronous exception was thrown from the AppDelegate: \r\n"
-                                + ex.ToString()));
-                }
-            };
+                            var headers = env.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders);
+                            headers["X-OwinValidatorWarning"] = warnings.ToArray();
+                        }
+                    })
+                    .Catch(errorInfo =>
+                    {
+                        SetFatalResult(env, "6.1", "An asynchronous exception was thrown from the AppDelegate: \r\n"
+                            + errorInfo.Exception.ToString());
+                        return errorInfo.Handled();
+                    });
+            }
+            catch (Exception ex)
+            {
+                SetFatalResult(env, "6.1", "A synchronous exception was thrown from the AppDelegate: \r\n"
+                            + ex.ToString());
+                return TaskHelpers.Completed();
+            }
         }
 
         #region Call Rules
 
         // Returns false for fatal errors, along with a resulting message.
         // Otherwise any warnings are appended.
-        private static bool TryValidateCall(CallParameters call, IList<string> warnings, out ResultParameters fatalResult)
+        private static bool TryValidateCall(IDictionary<string, object> env, IList<string> warnings)
         {
-            if (!CheckCallDictionaries(call, warnings, out fatalResult))
+            if (env == null)
             {
-                return false;
-            }            
-
-            return true;
-        }
-
-        private static bool CheckCallDictionaries(CallParameters call, IList<string> warnings, out ResultParameters fatalResult)
-        {
-            fatalResult = default(ResultParameters);
-            if (call.Environment == null)
-            {
-                fatalResult = CreateFatalResult("3.3", "CallParameters.Environment is null.");
-                return false;
-            }
-            
-            if (call.Headers == null)
-            {
-                fatalResult = CreateFatalResult("3.7", "CallParameters.Headers is null.");
-                return false;
+                throw new ArgumentNullException("env");
             }
             
             // Must be mutable
@@ -127,67 +89,36 @@ namespace Owin
             {
                 string key = "validator.MutableKey";
                 string input = "Mutable Value";
-                call.Environment[key] = input;
-                string output = call.Environment.Get<string>(key);
+                env[key] = input;
+                string output = env.Get<string>(key);
                 if (output == null || output != input)
                 {
-                    fatalResult = CreateFatalResult("3.3", "CallParameters.Environment is not fully mutable.");
+                    SetFatalResult(env, "3.3", "CallParameters.Environment is not fully mutable.");
                     return false;
                 }
-                call.Environment.Remove(key);
+                env.Remove(key);
             }
             catch (Exception ex)
             {
-                fatalResult = CreateFatalResult("3.3", "CallParameters.Environment is not mutable: \r\n" + ex.ToString());
-            }
-
-            // Must be mutable
-            try
-            {
-                string key = "x-validator-mutate";
-                string[] input = new string[] { "Mutable Value" };
-                call.Headers[key] = input;
-                string[] output = call.Headers[key];
-                if (output == null || output.Length != input.Length || output[0] != input[0])
-                {
-                    fatalResult = CreateFatalResult("3.7", "CallParameters.Headers is not fully mutable.");
-                    return false;
-                }
-                call.Headers.Remove(key);
-            }
-            catch (Exception ex)
-            {
-                fatalResult = CreateFatalResult("3.7", "CallParameters.Headers is not mutable: \r\n" + ex.ToString());
+                SetFatalResult(env, "3.3", "CallParameters.Environment is not mutable: \r\n" + ex.ToString());
+                return false;
             }
 
             // Environment key names MUST be case sensitive.
             string upperKey = "Validator.CaseKey";
             string lowerKey = "validator.casekey";
             string[] caseValue = new string[] { "Case Value" };
-            call.Environment[upperKey] = caseValue;
-            string[] resultValue = call.Environment.Get<string[]>(lowerKey);
+            env[upperKey] = caseValue;
+            string[] resultValue = env.Get<string[]>(lowerKey);
             if (resultValue != null)
             {
-                fatalResult = CreateFatalResult("3.3", "CallParameters.Environment is not case sensitive.");
+                SetFatalResult(env, "3.3", "CallParameters.Environment is not case sensitive.");
                 return false;
             }
-            call.Environment.Remove(upperKey);
-
-            // Header key names MUST be case insensitive.
-            upperKey = "X-Validator-Case";
-            lowerKey = "x-validator-case";
-            caseValue = new string[] { "Case Value" };
-            call.Headers[upperKey] = caseValue;
-            resultValue = null;
-            if (!call.Headers.TryGetValue(lowerKey, out resultValue) || resultValue.Length != caseValue.Length || resultValue[0] != caseValue[0])
-            {
-                fatalResult = CreateFatalResult("3.7", "CallParameters.Headers is case sensitive.");
-                return false;
-            }
-            call.Headers.Remove(upperKey);
-
+            env.Remove(upperKey);
+            
             // Check for required owin.* keys and the HOST header.
-            if (!CheckRequiredCallData(call, warnings, out fatalResult))
+            if (!CheckRequiredCallData(env, warnings))
             {
                 return false;
             }
@@ -195,41 +126,59 @@ namespace Owin
             return true;
         }
 
-        private static bool CheckRequiredCallData(CallParameters call, IList<string> warnings, out ResultParameters fatalResult)
+        private static bool CheckRequiredCallData(IDictionary<string, object> env, IList<string> warnings)
         {
-            fatalResult = default(ResultParameters);
             string[] requiredKeys = new string[]
             {
                 "owin.CallCompleted",
+                "owin.RequestBody",
+                "owin.RequestHeaders",
                 "owin.RequestMethod",
                 "owin.RequestPath",
                 "owin.RequestPathBase",
                 "owin.RequestProtocol",
                 "owin.RequestQueryString",
                 "owin.RequestScheme",
-                "owin.Version" 
+
+                "owin.ResponseHeaders",
+                "owin.ResponseBody",
+
+                "owin.Version"
             };
 
             object temp;
             foreach (string key in requiredKeys)
             {
-                if (!call.Environment.TryGetValue(key, out temp))
+                if (!env.TryGetValue(key, out temp))
                 {
-                    fatalResult = CreateFatalResult("3.3", "Missing required Environment key: " + key);
+                    SetFatalResult(env, "3.3", "Missing required Environment key: " + key);
                     return false;
                 }
 
                 if (temp == null)
                 {
-                    fatalResult = CreateFatalResult("3.3", "Required Environment value is null: " + key);
+                    SetFatalResult(env, "3.3", "Required Environment value is null: " + key);
                     return false;
                 }
             }
 
-            string[] header;
-            if (!call.Headers.TryGetValue("HOST", out header) || header.Length == 0)
+            IDictionary<string, string[]> requestHeaders = env.Get<IDictionary<string, string[]>>("owin.RequestHeaders");
+            IDictionary<string, string[]> responseHeaders = env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders");
+
+            if (!TryValidateHeaderCollection(env, requestHeaders, "Request", warnings))
             {
-                fatalResult = CreateFatalResult("5.2", "Missing Host header");
+                return false;
+            }
+
+            if (!TryValidateHeaderCollection(env, responseHeaders, "Response", warnings))
+            {
+                return false;
+            }
+
+            string[] header;
+            if (!requestHeaders.TryGetValue("HOST", out header) || header.Length == 0)
+            {
+                SetFatalResult(env, "5.2", "Missing Host header");
                 return false;
             }
             
@@ -248,43 +197,43 @@ namespace Owin
 
             foreach (string key in stringValueTypes)
             {
-                if (!(call.Environment[key] is string))
+                if (!(env[key] is string))
                 {
-                    fatalResult = CreateFatalResult("3.3", key + " value is not of type string: " + call.Environment[key].GetType().FullName);
+                    SetFatalResult(env, "3.3", key + " value is not of type string: " + env[key].GetType().FullName);
                     return false;
                 }
             }
 
-            if (!(call.Environment["owin.CallCompleted"] is Task))
+            if (!(env["owin.CallCompleted"] is Task))
             {
-                fatalResult = CreateFatalResult("3.3", "owin.CallCompleted is not of type Task: " + call.Environment["owin.CallCompleted"].GetType().FullName);
+                SetFatalResult(env, "3.3", "owin.CallCompleted is not of type Task: " + env["owin.CallCompleted"].GetType().FullName);
                 return false;
             }
 
-            if (call.Environment.Get<Task>("owin.CallCompleted").IsCompleted)
+            if (env.Get<Task>("owin.CallCompleted").IsCompleted)
             {
                 warnings.Add(CreateWarning("3.9", "The owin.CallCompleted Task was complete before processing the request."));
             }
 
-            if (string.IsNullOrWhiteSpace(call.Environment.Get<string>("owin.RequestMethod")))
+            if (string.IsNullOrWhiteSpace(env.Get<string>("owin.RequestMethod")))
             {
-                fatalResult = CreateFatalResult("3.3", "owin.RequestMethod is empty.");
+                SetFatalResult(env, "3.3", "owin.RequestMethod is empty.");
                 return false;
             }
 
-            if (!call.Environment.Get<string>("owin.RequestPath").StartsWith("/"))
+            if (!env.Get<string>("owin.RequestPath").StartsWith("/"))
             {
-                fatalResult = CreateFatalResult("5.3", "owin.RequestPath does not start with a slash.");
+                SetFatalResult(env, "5.3", "owin.RequestPath does not start with a slash.");
                 return false;
             }
 
-            if (call.Environment.Get<string>("owin.RequestPathBase").EndsWith("/"))
+            if (env.Get<string>("owin.RequestPathBase").EndsWith("/"))
             {
-                fatalResult = CreateFatalResult("5.3", "owin.RequestBasePath ends with a slash.");
+                SetFatalResult(env, "5.3", "owin.RequestBasePath ends with a slash.");
                 return false;
             }
             
-            string protocol = call.Environment.Get<string>("owin.RequestProtocol");
+            string protocol = env.Get<string>("owin.RequestProtocol");
             if (!protocol.Equals("HTTP/1.1", StringComparison.OrdinalIgnoreCase)
                 && !protocol.Equals("HTTP/1.0", StringComparison.OrdinalIgnoreCase))
             {
@@ -293,18 +242,18 @@ namespace Owin
 
             // No query string validation.
 
-            string scheme = call.Environment.Get<string>("owin.RequestScheme");
+            string scheme = env.Get<string>("owin.RequestScheme");
             if (!scheme.Equals("http", StringComparison.OrdinalIgnoreCase)
                 && !scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
             {
                 warnings.Add(CreateWarning("5.1", "Unrecognized request scheme: " + scheme));
             }
 
-            string version = call.Environment.Get<string>("owin.Version");
+            string version = env.Get<string>("owin.Version");
             Version parsedVersion;
             if (!Version.TryParse(version, out parsedVersion))
             {
-                fatalResult = CreateFatalResult("7", "owin.Version could not be parsed: " + version);
+                SetFatalResult(env, "7", "owin.Version could not be parsed: " + version);
                 return false;
             }
 
@@ -316,110 +265,89 @@ namespace Owin
             return true;
         }
 
-        #endregion Call Rules
-
-        #region Result Rules
-
-        private static bool TryValidateResult(CallParameters call, ResultParameters appResult, IList<string> warnings, out ResultParameters fatalResult)
+        // Shared code for validating that the request and response header collections adhere to some basic requirements like mutability and casing.
+        private static bool TryValidateHeaderCollection(IDictionary<string, object> env, IDictionary<string, string[]> headers, 
+            string headerId, IList<string> warnings)
         {
-            if (!CheckResultDictionaries(appResult, out fatalResult))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private static bool CheckResultDictionaries(ResultParameters result, out ResultParameters fatalResult)
-        {
-            fatalResult = default(ResultParameters);
-            if (result.Properties == null)
-            {
-                fatalResult = CreateFatalResult("3.6", "ResultParameters.Properties is null.");
-                return false;
-            }
-
-            if (result.Headers == null)
-            {
-                fatalResult = CreateFatalResult("3.7", "ResultParameters.Headers is null.");
-                return false;
-            }
-            
-            // Must be mutable
-            try
-            {
-                string key = "validator.MutableKey";
-                string input = "Mutable Value";
-                result.Properties[key] = input;
-                string output = result.Properties.Get<string>(key);
-                if (output == null || output != input)
-                {
-                    fatalResult = CreateFatalResult("3.6", "ResultParameters.Properties is not fully mutable.");
-                    return false;
-                }
-                result.Properties.Remove(key);
-            }
-            catch (Exception ex)
-            {
-                fatalResult = CreateFatalResult("3.6", "ResultParameters.Properties is not mutable: \r\n" + ex.ToString());
-            }
-
             // Must be mutable
             try
             {
                 string key = "x-validator-mutate";
                 string[] input = new string[] { "Mutable Value" };
-                result.Headers[key] = input;
-                string[] output = result.Headers[key];
+                headers[key] = input;
+                string[] output = headers[key];
                 if (output == null || output.Length != input.Length || output[0] != input[0])
                 {
-                    fatalResult = CreateFatalResult("3.7", "ResultParameters.Headers is not fully mutable.");
+                    SetFatalResult(env, "3.7", headerId + " headers are not fully mutable.");
                     return false;
                 }
-                result.Headers.Remove(key);
+                headers.Remove(key);
             }
             catch (Exception ex)
             {
-                fatalResult = CreateFatalResult("3.7", "ResultParameters.Headers is not mutable: \r\n" + ex.ToString());
-            }
-
-            // Properties key names MUST be case sensitive.
-            string upperKey = "Validator.CaseKey";
-            string lowerKey = "validator.casekey";
-            string[] caseValue = new string[] { "Case Value" };
-            result.Properties[upperKey] = caseValue;
-            string[] resultValue = result.Properties.Get<string[]>(lowerKey);
-            if (resultValue != null)
-            {
-                fatalResult = CreateFatalResult("3.6", "ResultParameters.Properties is not case sensitive.");
+                SetFatalResult(env, "3.7", headerId + " headers are not mutable: \r\n" + ex.ToString());
                 return false;
             }
-            result.Properties.Remove(upperKey);
 
             // Header key names MUST be case insensitive.
-            upperKey = "X-Validator-Case";
-            lowerKey = "x-validator-case";
-            caseValue = new string[] { "Case Value" };
-            result.Headers[upperKey] = caseValue;
-            resultValue = null;
-            if (!result.Headers.TryGetValue(lowerKey, out resultValue) || resultValue.Length != caseValue.Length || resultValue[0] != caseValue[0])
+            string upperKey = "X-Validator-Case";
+            string lowerKey = "x-validator-case";
+            string[] caseValue = new string[] { "Case Value" };
+            headers[upperKey] = caseValue;
+            string[] resultValue = null;
+            if (!headers.TryGetValue(lowerKey, out resultValue) || resultValue.Length != caseValue.Length || resultValue[0] != caseValue[0])
             {
-                fatalResult = CreateFatalResult("3.7", "ResultParameters.Headers is case sensitive.");
+                SetFatalResult(env, "3.7", headerId + " headers are case sensitive.");
                 return false;
             }
-            result.Headers.Remove(upperKey);
+            headers.Remove(upperKey);
+
+            foreach (var pair in headers)
+            {
+                if (pair.Value == null)
+                {
+                    warnings.Add(CreateWarning("3.7", headerId + " header " + pair.Key + " has a null string[]."));
+                }
+                else
+                {
+                    for (int i = 0; i < pair.Value.Length; i++)
+                    {
+                        if (pair.Value[i] == null)
+                        {
+                            warnings.Add(CreateWarning("3.7", headerId + " header " + pair.Key + " has a null value at index " + i));
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        #endregion Call Rules
+
+        #region Result Rules
+
+        private static bool TryValidateResult(IDictionary<string, object> env, IList<string> warnings)
+        {
+            IDictionary<string, string[]> responseHeaders = env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders");
+
+            if (!TryValidateHeaderCollection(env, responseHeaders, "Response", warnings))
+            {
+                return false;
+            }
 
             return true;
         }
 
         #endregion Result Rules
 
-        private static ResultParameters CreateFatalResult(string standardSection, string message)
+        private static void SetFatalResult(IDictionary<string, object> env, string standardSection, string message)
         {
-            Response response = new Response(500);
+            Response response = new Response(env);
+            response.StatusCode = 500;
+            response.ReasonPhrase = "Internal Server Error";
             response.Write("OWIN v0.14.0 validation failure: Section#{0}, {1}", standardSection, message);
             response.End();
-            return response.Result;
         }
 
         private static string CreateWarning(string standardSection, string message)

@@ -52,7 +52,7 @@
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="NotFound.cs" />
-    <None Include="PassiveValidator.cs" />
+    <Compile Include="PassiveValidator.cs" />
     <Compile Include="RequestLogger.cs" />
     <Compile Include="RequestTracer.cs" />
     <Compile Include="StaticFiles\FileBody.cs" />

@@ -71,8 +71,6 @@ namespace Gate.Middleware
 
         private void LogResult(IDictionary<string, object> env)
         {
-            int statusCode = env.Get<int>(OwinConstants.ResponseStatusCode);
-
             logger.WriteLine("{0} - Response: Environment#{1}", DateTime.Now, env.Count);
 
             logger.WriteLine("Environment: ");
@@ -96,8 +94,10 @@ namespace Gate.Middleware
         {
             foreach (KeyValuePair<string, string[]> header in headers)
             {
-                logger.WriteLine("{0}: {1}", header.Key,
-                    (header.Value == null ? "(null)" : string.Join(", ", header.Value)));
+                foreach (string value in header.Value)
+                {
+                    logger.WriteLine("{0}: {1}", header.Key, value ?? "(null)");
+                }
             }
         }
     }
