@@ -9,68 +9,78 @@ using System.Threading.Tasks;
 
 namespace Gate.Middleware
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+    using Gate.Middleware.Utils;
+
+    // Catches any exceptions throw from the App Delegate or Body Delegate and returns an HTML error page.
+    // If possible a full 500 Internal Server Error is returned.  Otherwise error information is written
+    // out as part of the existing response body.
+    //
+    // This is not recommended for production deployments, only development, as it may display sensitive
+    // internal data to the end user.  It also does not honor content-length restrictions.
     public static partial class ShowExceptions
     {
         public static IAppBuilder UseShowExceptions(this IAppBuilder builder)
         {
-            return builder.UseFunc<AppDelegate>(Middleware);
+            return builder.UseFunc<AppFunc>(Middleware);
         }
 
-        public static AppDelegate Middleware(AppDelegate app)
+        public static AppFunc Middleware(AppFunc app)
         {
-            return call =>
+            return env =>
             {
-                Action<Exception, Action<byte[]>> showErrorMessage =
+                Action<Exception, Action<byte[], int, int>> showErrorMessage =
                     (ex, write) =>
-                        ErrorPage(call, ex, text =>
+                        ErrorPage(env, ex, text =>
                         {
                             var data = Encoding.ASCII.GetBytes(text);
-                            write(data);
+                            write(data, 0, data.Length);
                         });
 
-                Func<Exception, Task<ResultParameters>> showErrorPage = ex =>
+                Func<Exception, Task> showErrorPage = ex =>
                 {
-                    var response = new Response() { Status = "500 Internal Server Error", ContentType = "text/html" };
-                    showErrorMessage(ex, data => response.Write(data));
+                    var response = new Response(env) { Status = "500 Internal Server Error", ContentType = "text/html" };
+                    showErrorMessage(ex, response.Write);
                     return response.EndAsync();
+                };
+
+                // Don't try to modify the headers after the first write has occurred.
+                TriggerStream triggerStream = new TriggerStream(env.Get<Stream>(OwinConstants.ResponseBody));
+                env[OwinConstants.ResponseBody] = triggerStream;
+
+                bool bodyHasStarted = false;
+                triggerStream.OnFirstWrite = () =>
+                {
+                    bodyHasStarted = true;
                 };
 
                 try
                 {
-                    return app(call)
-                        .Then(result =>
-                        {
-                            if (result.Body != null)
-                            {
-                                var nestedBody = result.Body;
-                                result.Body = stream =>
-                                {
-                                    try
-                                    {
-                                        return nestedBody(stream).Catch(
-                                            errorInfo =>
-                                            {
-                                                showErrorMessage(errorInfo.Exception, data => stream.Write(data, 0, data.Length));
-                                                return errorInfo.Handled();                                                
-                                            });
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        showErrorMessage(ex, data => stream.Write(data, 0, data.Length));
-                                        return TaskHelpers.Completed();
-                                    }
-                                };
-                            }
-                            return result;
-                        })
+                    return app(env)
                         .Catch(errorInfo =>
                         {
-                            return errorInfo.Handled(showErrorPage(errorInfo.Exception).Result);
+                            if (!bodyHasStarted)
+                            {
+                                showErrorPage(errorInfo.Exception).Wait();
+                            }
+                            else
+                            {
+                                showErrorMessage(errorInfo.Exception, triggerStream.Write);
+                            }
+                            return errorInfo.Handled();
                         });
                 }
                 catch (Exception exception)
                 {
-                    return showErrorPage(exception);
+                    if (!bodyHasStarted)
+                    {
+                        return showErrorPage(exception);
+                    }
+                    else
+                    {
+                        showErrorMessage(exception, triggerStream.Write);
+                        return TaskHelpers.Completed();
+                    }
                 }
             };
         }

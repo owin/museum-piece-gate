@@ -3,21 +3,24 @@ using System.Collections.Generic;
 using System.Text;
 using System.Web.Routing;
 using Gate;
-using Gate.Hosts.AspNet;
 using Gate.Middleware;
 using Owin;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Owin;
 
 namespace Samples.ViaRouting
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+    using System.IO;
+
     public class Startup
     {
         public void Configuration(IAppBuilder builder)
         {
             // routes can be added for each path prefix that should be
             // mapped to owin
-            RouteTable.Routes.AddOwinRoute("hello");
-            RouteTable.Routes.AddOwinRoute("world");
+            RouteTable.Routes.MapOwinRoute("hello");
+            RouteTable.Routes.MapOwinRoute("world");
 
             // the routes above will be map onto whatever is added to
             // the IAppBuilder builder that was passed into this method
@@ -30,15 +33,15 @@ namespace Samples.ViaRouting
 
             // a route may also be added for a given builder method.
             // this can also be done from global.asax
-            RouteTable.Routes.AddOwinRoute("wilson-async", builder, x => x.UseShowExceptions().UseContentType("text/plain").Run(WilsonAsync.App()));
+            RouteTable.Routes.MapOwinRoute("wilson-async", x => x.UseShowExceptions().UseContentType("text/plain").Run(WilsonAsync.App()));
 
             // a route may also be added for a given builder method.
             // this can also be done from global.asax
-            RouteTable.Routes.AddOwinRoute("wilson", builder, x => x.UseShowExceptions().UseContentType("text/plain").Run(Wilson.App()));
+            RouteTable.Routes.MapOwinRoute("wilson", x => x.UseShowExceptions().UseContentType("text/plain").Run(Wilson.App()));
 
             // a route may also be added for a given app delegate
             // this can also be done from global.asax
-            RouteTable.Routes.AddOwinRoute("raw", Raw);
+            RouteTable.Routes.MapOwinRoute<AppFunc>("raw", Raw);
         }
 
         void ConfigWilson(IAppBuilder builder)
@@ -46,19 +49,15 @@ namespace Samples.ViaRouting
             builder.UseShowExceptions().Run(Wilson.App());
         }
 
-        Task<ResultParameters> Raw(CallParameters call)
+        Task Raw(IDictionary<string, object> env)
         {
-            ResultParameters result = new ResultParameters();
-            result.Status = 200;
-            result.Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase) { { "Content-Type", new[] { "text/plain" } } };
-            result.Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            result.Body = stream =>
-                {
-                    byte[] body = Encoding.UTF8.GetBytes("Hello from lowest-level code");
-                    stream.Write(body, 0, body.Length);
-                    return TaskHelpers.Completed();
-                };
-            return TaskHelpers.FromResult(result);
+            env[OwinConstants.ResponseStatusCode] = 200;
+            var headers = (IDictionary<string, string[]>)env[OwinConstants.ResponseHeaders];
+            headers.Add("Content-Type", new string[] { "text/plain" });
+            byte[] body = Encoding.UTF8.GetBytes("Hello from lowest-level code");
+            var output = (Stream)env[OwinConstants.ResponseBody];
+            output.Write(body, 0, body.Length);            
+            return TaskHelpers.Completed();
         }
     }
 }

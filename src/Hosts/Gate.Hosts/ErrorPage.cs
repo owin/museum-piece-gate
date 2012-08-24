@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Owin;
 using System.Threading.Tasks;
 
 namespace Gate.Hosts
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     static class ErrorPage
     {
         static readonly ArraySegment<byte> Body = new ArraySegment<byte>(Encoding.UTF8.GetBytes(
@@ -20,76 +21,40 @@ namespace Gate.Hosts
 </body></html>
 "));
 
-        public static AppDelegate Middleware(AppDelegate app)
+        public static AppFunc Middleware(AppFunc app)
         {
             return Middleware(app, ex => { });
         }
 
-        public static AppDelegate Middleware(AppDelegate app, Action<Exception> logError)
+        public static AppFunc Middleware(AppFunc app, Action<Exception> logError)
         {
-            return call =>
+            return env =>
             {
                 try
                 {
-                    return app(call)
-                        .Then(result =>
-                        {
-                            if (result.Body != null)
-                            {
-                                var nestedBody = result.Body;
-                                result.Body = stream =>
-                                {
-                                    try
-                                    {
-                                        return nestedBody(stream)
-                                            .Catch(errorInfo =>
-                                            {
-                                                logError(errorInfo.Exception);
-                                                return errorInfo.Handled();
-                                            });
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        logError(ex);
-                                        return TaskHelpers.Completed();
-                                    }
-                                };
-                            }
-
-                            return result;
-                        })
+                    return app(env)
                         .Catch(errorInfo =>
                         {
-                            return errorInfo.Handled(CreateErrorResponse());
+                            SetErrorResponse(env);
+                            return errorInfo.Handled();
                         });
                 }
                 catch (Exception ex)
                 {
                     logError(ex);
-                    return TaskHelpers.FromResult(CreateErrorResponse());
+                    SetErrorResponse(env);
+                    return TaskHelpers.Completed();
                 }
             };
         }
 
-        private static ResultParameters CreateErrorResponse()
+        private static void SetErrorResponse(IDictionary<string, object> env)
         {
-            return new ResultParameters()
-            {
-                Status = 500,
-                Properties = new Dictionary<string, object>()
-                {
-                    { "owin.ReasonPhrase", "Internal Server Error" }
-                },
-                Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
-                {
-                     { "Content-Type", new[] { "text/html" } }
-                },
-                Body = stream =>
-                {
-                    stream.Write(Body.Array, Body.Offset, Body.Count);
-                    return TaskHelpers.Completed();
-                },
-            };
+            Response response = new Response(env);
+            response.StatusCode = 500;
+            response.ReasonPhrase = "Internal Server Error";
+            response.ContentType = "text/html";
+            response.Write(Body);
         }
     }
 }

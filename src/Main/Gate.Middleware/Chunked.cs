@@ -7,41 +7,80 @@ using Gate.Middleware.Utils;
 using Owin;
 using System.Text;
 using Gate.Utils;
+using Gate.Middleware;
 
-namespace Gate.Middleware
+namespace Owin
 {
-    public static class Chunked
+    public static class ChunkedExtensions
     {
         public static IAppBuilder UseChunked(this IAppBuilder builder)
         {
-            return builder.UseFunc<AppDelegate>(Middleware);
+            return builder.UseType<Chunked>();
+        }
+    }
+}
+
+namespace Gate.Middleware
+{
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
+    // This middleware implements chunked response body encoding as the default encoding 
+    // if the application does not specify Content-Length or Transfer-Encoding.
+    public class Chunked
+    {
+        private readonly AppFunc nextApp;
+
+        public Chunked(AppFunc nextApp)
+        {
+            this.nextApp = nextApp;
         }
 
         static readonly ArraySegment<byte> EndOfChunk = new ArraySegment<byte>(Encoding.ASCII.GetBytes("\r\n"));
         static readonly ArraySegment<byte> FinalChunk = new ArraySegment<byte>(Encoding.ASCII.GetBytes("0\r\n\r\n"));
         static readonly byte[] Hex = Encoding.ASCII.GetBytes("0123456789abcdef\r\n");
 
-        public static AppDelegate Middleware(AppDelegate app)
+        public Task Invoke(IDictionary<string, object> env)
         {
-            return call => app(call).Then(result =>
+            Response response = new Response(env);
+            Stream orriginalStream = response.OutputStream;
+            TriggerStream triggerStream = new TriggerStream(orriginalStream);
+            response.OutputStream = triggerStream;
+            FilterStream filterStream = null;
+            triggerStream.OnFirstWrite = () =>
             {
-                if (!IsStatusWithNoNoEntityBody(result.Status) &&
-                    !result.Headers.ContainsKey("Content-Length") &&
-                    !result.Headers.ContainsKey("Transfer-Encoding"))
+                if (IsStatusWithNoNoEntityBody(response.StatusCode)
+                    || response.Headers.ContainsKey("Content-Length")
+                    || response.Headers.ContainsKey("Transfer-Encoding"))
                 {
-                    result.Headers.AddHeader("Transfer-Encoding", "chunked");
-                    result.Body = WrapOutputStream(result.Body);
+                    return;
                 }
-                return result;
-            });
-        }
 
-        public static Func<Stream, Task> WrapOutputStream(Func<Stream, Task> body)
-        {
-            return output =>
-                body(new StreamWrapper(output, OnWriteFilter))
-                    .Then(() =>
-                        output.WriteAsync(FinalChunk.Array, FinalChunk.Offset, FinalChunk.Count));
+                // Buffer
+                response.Headers.SetHeader("Transfer-Encoding", "chunked");
+                filterStream = new FilterStream(orriginalStream, OnWriteFilter);
+                triggerStream.InnerStream = filterStream;
+            };
+
+            env[OwinConstants.ResponseBody] = triggerStream;
+
+            return nextApp(env).Then(() =>
+            {
+                if (filterStream != null)
+                {
+                    // Write the chunked terminator
+                    return orriginalStream.WriteAsync(FinalChunk.Array, FinalChunk.Offset, FinalChunk.Count);
+                }
+                else if (!IsStatusWithNoNoEntityBody(response.StatusCode)
+                    && !response.Headers.ContainsKey("Content-Length")
+                    && !response.Headers.ContainsKey("Transfer-Encoding"))
+                {
+                    // There were no Writes.
+                    response.Headers.SetHeader("Transfer-Encoding", "chunked");
+                    return orriginalStream.WriteAsync(FinalChunk.Array, FinalChunk.Offset, FinalChunk.Count);
+                }
+                
+                return TaskHelpers.Completed();
+            });
         }
 
         public static ArraySegment<byte>[] OnWriteFilter(ArraySegment<byte> data)

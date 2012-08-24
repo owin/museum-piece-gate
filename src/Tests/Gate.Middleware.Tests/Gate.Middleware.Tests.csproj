@@ -40,16 +40,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\NUnit.2.5.10.11092\lib\nunit.mocks.dll</HintPath>
     </Reference>
-    <Reference Include="Owin, Version=0.14.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
+    <Reference Include="Owin.Builder, Version=0.4.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Owin.0.14\lib\net40\Owin.dll</HintPath>
+      <HintPath>..\..\..\packages\Owin.Builder.0.4\lib\net40\Owin.Builder.dll</HintPath>
     </Reference>
-    <Reference Include="Owin.Builder">
-      <HintPath>..\..\..\packages\Owin.Builder.0.3\lib\net40\Owin.Builder.dll</HintPath>
-    </Reference>
-    <Reference Include="Owin.Startup, Version=0.3.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
+    <Reference Include="Owin.Startup, Version=0.4.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Owin.Startup.0.3\lib\net40\Owin.Startup.dll</HintPath>
+      <HintPath>..\..\..\packages\Owin.Startup.0.4\lib\net40\Owin.Startup.dll</HintPath>
     </Reference>
     <Reference Include="pnunit.framework, Version=1.0.4109.34242, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -71,24 +68,26 @@
       <Project>{BE3CCA19-0795-4477-A4D4-ABF45474ACBF}</Project>
       <Name>Gate</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Gate.TestHelpers\Gate.TestHelpers.csproj">
-      <Project>{E4256EDF-0B54-4715-8E66-8D4D4887E15F}</Project>
-      <Name>Gate.TestHelpers</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Main\Gate\DictionaryExtensions.cs">
+      <Link>DictionaryExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\..\Main\Gate\OwinConstants.cs">
       <Link>OwinConstants.cs</Link>
     </Compile>
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
     <Compile Include="ContentLengthTests.cs" />
+    <Compile Include="PassiveValidatorTests.cs" />
+    <Compile Include="RequestTracerTests.cs" />
+    <Compile Include="RequestLoggerTests.cs" />
     <Compile Include="StaticFiles\FileServerTests.cs" />
     <Compile Include="MethodOverrideTests.cs" />
     <Compile Include="StaticFiles\RangeHeaderTests.cs" />
     <Compile Include="StaticTests.cs" />
     <Compile Include="ChunkedTests.cs" />
-    <Compile Include="CascadeTests.cs" />
+    <None Include="CascadeTests.cs" />
     <Compile Include="ContentTypeTests.cs" />
     <Compile Include="ShowExceptionsTests.cs" />
   </ItemGroup>

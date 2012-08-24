@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Gate.Middleware.Utils
 {
+    // Used by FileServer to select subsections of a file as indicated in the HTTP Range header.
     public class RangeHeader
     {
         const string ValuePrefix = "bytes=";

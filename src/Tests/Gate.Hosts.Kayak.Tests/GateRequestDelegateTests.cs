@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Kayak;
 using Kayak.Http;
 using NUnit.Framework;
-using Owin;
 
 namespace Gate.Hosts.Kayak.Tests
 {
@@ -124,16 +123,16 @@ namespace Gate.Hosts.Kayak.Tests
         Response response;
 
         public Action OnRequest;
-        public CallParameters Call;
+        public IDictionary<string, object> Env;
 
         public StaticApp(Response response)
         {
             this.response = response;
         }
 
-        public Task<ResultParameters> Invoke(CallParameters call)
+        public Task Invoke(IDictionary<string, object> env)
         {
-            Call = call;
+            Env = env;
             if (OnRequest != null)
                 OnRequest();
 
@@ -156,16 +155,19 @@ namespace Gate.Hosts.Kayak.Tests
         [Ignore] // TODO: Implement the response body stream
         public void Adds_connection_close_response_header_if_no_length_or_encoding()
         {
-            Response expectedResponse = new Response(200);
+            Request request = new Request();
+            Response expectedResponse = new Response(request.Environment);
+            expectedResponse.OutputStream = new MemoryStream();
             expectedResponse.Write("12345");
             expectedResponse.Write("67890");
+            expectedResponse.OutputStream.Seek(0, SeekOrigin.Begin);
             var app = new StaticApp(expectedResponse);
 
             var requestDelegate = new GateRequestDelegate(app.Invoke, new Dictionary<string, object>());
 
             requestDelegate.OnRequest(new HttpRequestHead() { }, null, mockResponseDelegate);
 
-            Assert.That(app.Call.Body, Is.Null);
+            Assert.That(app.Env.Get<Stream>(OwinConstants.RequestBody), Is.EqualTo(Stream.Null));
             Assert.That(mockResponseDelegate.Head.Headers.Keys, Contains.Item("Connection"));
             Assert.That(mockResponseDelegate.Head.Headers["Connection"], Is.EqualTo("close"));
 
@@ -179,17 +181,20 @@ namespace Gate.Hosts.Kayak.Tests
         [Ignore] // TODO: Implement the response body stream
         public void Does_not_add_content_length_response_header_if_transfer_encoding_chunked()
         {
-            Response expectedResponse = new Response(200);
+            Request request = new Request();
+            Response expectedResponse = new Response(request.Environment);
+            expectedResponse.OutputStream = new MemoryStream();
             expectedResponse.Headers.SetHeader("Transfer-Encoding", "chunked");
             expectedResponse.Write("12345");
             expectedResponse.Write("67890");
+            expectedResponse.OutputStream.Seek(0, SeekOrigin.Begin);
             var app = new StaticApp(expectedResponse);
 
             var requestDelegate = new GateRequestDelegate(app.Invoke, new Dictionary<string, object>());
 
             requestDelegate.OnRequest(new HttpRequestHead() { }, null, mockResponseDelegate);
 
-            Assert.That(app.Call.Body, Is.Null);
+            Assert.That(app.Env.Get<Stream>(OwinConstants.RequestBody), Is.EqualTo(Stream.Null));
             Assert.IsFalse(mockResponseDelegate.Head.Headers.Keys.Contains("Content-Length"), "should not contain Content-Length");
             // chunks are not chunked-encoded at this level. eventually kayak will do this automatically.
             Assert.That(mockResponseDelegate.Body, Is.Not.Null);
@@ -202,7 +207,9 @@ namespace Gate.Hosts.Kayak.Tests
         [Ignore] // TODO: Implement the request body stream
         public void Request_body_is_passed_through()
         {
-            var app = new StaticApp(new Response(200));
+            Request request = new Request();
+            Response expectedResponse = new Response(request.Environment);
+            var app = new StaticApp(expectedResponse);
 
             var requestDelegate = new GateRequestDelegate(app.Invoke, new Dictionary<string, object>());
 
@@ -214,7 +221,7 @@ namespace Gate.Hosts.Kayak.Tests
                 return () => { };
             }), mockResponseDelegate);
 
-            var bodyStream = app.Call.Body;
+            var bodyStream = app.Env.Get<Stream>(OwinConstants.RequestBody);
             Assert.That(bodyStream, Is.Not.Null);
             var body = bodyStream.Consume();
             Assert.That(body.Buffer.GetString(), Is.EqualTo("1234567890"));
@@ -229,14 +236,16 @@ namespace Gate.Hosts.Kayak.Tests
                 { "Key", "Value" }
             };
 
-            var app = new StaticApp(new Response(200));
+            Request request = new Request();
+            Response expectedResponse = new Response(request.Environment);
+            var app = new StaticApp(expectedResponse);
 
             IDictionary<string, object> appContext = null;
 
             app.OnRequest = () =>
             {
-                app.Call.Environment["OtherKey"] = "OtherValue";
-                appContext = app.Call.Environment;
+                app.Env["OtherKey"] = "OtherValue";
+                appContext = app.Env;
             };
 
             var requestDelegate = new GateRequestDelegate(app.Invoke, context);
@@ -255,28 +264,30 @@ namespace Gate.Hosts.Kayak.Tests
         [Test]
         public void Environment_items_conform_to_spec_by_default()
         {
-            var app = new StaticApp(new Response(200));
+            Request request = new Request();
+            Response expectedResponse = new Response(request.Environment);
+            var app = new StaticApp(expectedResponse);
 
-            CallParameters call = default(CallParameters);
+            IDictionary<string, object> env = null;
 
             app.OnRequest = () =>
             {
-                call = app.Call;
+                env = app.Env;
             };
 
             var requestDelegate = new GateRequestDelegate(app.Invoke, null);
             requestDelegate.OnRequest(new HttpRequestHead() { }, null, mockResponseDelegate);
 
-            var env = new Request(call);
+            var req = new Request(env);
 
-            Assert.That(call.Body, Is.Null);
-            Assert.That(env.Headers, Is.Not.Null);
-            Assert.That(env.Method, Is.Not.Null);
-            Assert.That(env.Path, Is.Not.Null);
-            Assert.That(env.PathBase, Is.Not.Null);
-            Assert.That(env.QueryString, Is.Not.Null);
-            Assert.That(env.Scheme, Is.EqualTo("http"));
-            Assert.That(env.Version, Is.EqualTo("1.0"));
+            Assert.That(req.Body, Is.EqualTo(Stream.Null));
+            Assert.That(req.Headers, Is.Not.Null);
+            Assert.That(req.Method, Is.Not.Null);
+            Assert.That(req.Path, Is.Not.Null);
+            Assert.That(req.PathBase, Is.Not.Null);
+            Assert.That(req.QueryString, Is.Not.Null);
+            Assert.That(req.Scheme, Is.EqualTo("http"));
+            Assert.That(req.Version, Is.EqualTo("1.0"));
         }
     }
 }

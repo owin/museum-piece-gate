@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Owin;
 using Kayak;
 
 // TODO: This whole component may be redundant now that Tasks are used.

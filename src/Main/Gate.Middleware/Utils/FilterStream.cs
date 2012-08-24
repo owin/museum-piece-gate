@@ -5,12 +5,13 @@ using System.Threading;
 
 namespace Gate.Middleware.Utils
 {
-    public class StreamWrapper : Stream
+    // Used by the chunked middleware to modify the output inline.
+    public class FilterStream : Stream
     {
         readonly Stream _inner;
         readonly Func<ArraySegment<byte>, ArraySegment<byte>[]> _writeFilter;
 
-        public StreamWrapper(Stream inner, Func<ArraySegment<byte>, ArraySegment<byte>[]> writeFilter)
+        public FilterStream(Stream inner, Func<ArraySegment<byte>, ArraySegment<byte>[]> writeFilter)
         {
             _inner = inner;
             _writeFilter = writeFilter;

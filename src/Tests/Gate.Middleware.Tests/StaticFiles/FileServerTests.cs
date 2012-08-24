@@ -7,29 +7,33 @@ using Gate.Middleware.StaticFiles;
 using Gate.Middleware.Utils;
 using NUnit.Framework;
 using Owin;
+using System.Collections.Generic;
 
 namespace Gate.Middleware.Tests.StaticFiles
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     [TestFixture]
     public class FileServerTests
     {
         string root;
         FileServer fileServer;
 
-        private ResultParameters GetFile(string path)
+        private Response GetFile(string path)
         {
             Request request = new Request();
+            Response response = new Response(request.Environment);
+            response.OutputStream = new MemoryStream();
             request.Path = path;
-            return fileServer.Invoke(request.Call).Result;
+            fileServer.Invoke(request.Environment).Wait();
+            return response;
         }
 
-        private String ReadBody(Func<Stream, Task> body)
+        private string ReadBody(Stream body)
         {
-            using (MemoryStream buffer = new MemoryStream())
-            {
-                body(buffer).Wait();
-                return Encoding.ASCII.GetString(buffer.ToArray());
-            }
+            MemoryStream buffer = (MemoryStream)body;
+            body.Seek(0, SeekOrigin.Begin);
+            return Encoding.ASCII.GetString(buffer.ToArray());
         }
 
         [SetUp]
@@ -42,13 +46,13 @@ namespace Gate.Middleware.Tests.StaticFiles
         [Test]
         public void FileServer_serves_files()
         {
-            Assert.That(GetFile("/kayak.png").Status, Is.EqualTo(200));
+            Assert.That(GetFile("/kayak.png").StatusCode, Is.EqualTo(200));
         }
 
         [Test]
         public void FileServer_returns_404_on_missing_file()
         {
-            Assert.That(GetFile("/scripts/horses.js").Status, Is.EqualTo(404));
+            Assert.That(GetFile("/scripts/horses.js").StatusCode, Is.EqualTo(404));
         }
 
         [Test]
@@ -63,13 +67,13 @@ namespace Gate.Middleware.Tests.StaticFiles
         public void FileServer_does_not_decode_request_path()
         {
             // kayak.png, url encoded
-            Assert.That(GetFile("/%6B%61%79%61%6B%2E%70%6E%67").Status, Is.EqualTo(404));
+            Assert.That(GetFile("/%6B%61%79%61%6B%2E%70%6E%67").StatusCode, Is.EqualTo(404));
         }
 
         [Test]
         public void FileServer_returns_403_on_directory_traversal_attempt()
         {
-            Assert.That(GetFile("/../ccinfo.txt").Status, Is.EqualTo(403));
+            Assert.That(GetFile("/../ccinfo.txt").StatusCode, Is.EqualTo(403));
         }
 
         [Test]
@@ -78,12 +82,14 @@ namespace Gate.Middleware.Tests.StaticFiles
             Request request = new Request();
             request.Path = "/test.txt";
             request.Headers.SetHeader("Range", "bytes=22-33");
-            var result = fileServer.Invoke(request.Call).Result;
+            Response response = new Response(request.Environment);
+            response.OutputStream = new MemoryStream();
+            fileServer.Invoke(request.Environment).Wait();
 
-            Assert.That(result.Status, Is.EqualTo(206)); // Partial content
-            Assert.That(result.Headers.GetHeader("Content-Length"), Is.EqualTo("12"));
-            Assert.That(result.Headers.GetHeader("Content-Range"), Is.EqualTo("bytes 22-33/193"));
-            Assert.That(ReadBody(result.Body), Is.EqualTo("-*- test -*-"));
+            Assert.That(response.StatusCode, Is.EqualTo(206)); // Partial content
+            Assert.That(response.Headers.GetHeader("Content-Length"), Is.EqualTo("12"));
+            Assert.That(response.Headers.GetHeader("Content-Range"), Is.EqualTo("bytes 22-33/193"));
+            Assert.That(ReadBody(response.OutputStream), Is.EqualTo("-*- test -*-"));
         }
 
         [Test]
@@ -92,10 +98,12 @@ namespace Gate.Middleware.Tests.StaticFiles
             Request request = new Request();
             request.Path = "/test.txt";
             request.Headers.SetHeader("Range", "bytes=1234-5678");
-            var result = fileServer.Invoke(request.Call).Result;
+            Response response = new Response(request.Environment);
+            response.OutputStream = new MemoryStream();
+            fileServer.Invoke(request.Environment).Wait();
 
-            Assert.That(result.Status, Is.EqualTo(416)); //  Requested Range Not Satisfiable
-            Assert.That(result.Headers.GetHeader("Content-Range"), Is.EqualTo("bytes */193"));
+            Assert.That(response.StatusCode, Is.EqualTo(416)); //  Requested Range Not Satisfiable
+            Assert.That(response.Headers.GetHeader("Content-Range"), Is.EqualTo("bytes */193"));
         }
     }
 }

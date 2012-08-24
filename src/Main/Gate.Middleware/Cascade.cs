@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace Gate.Middleware
 {
+    // This middleware helps an application create a forked pipeline. Each request is submitted to
+    // a list of AppDelegates in order.  These apps either return a 404 response if they cannot
+    // fulfill the request.  The cascade continues until an app returns a non-404 response, or the
+    // the list of apps is exhausted.
     public static class Cascade
     {
         public static void RunCascade(this IAppBuilder builder, params AppDelegate[] apps)

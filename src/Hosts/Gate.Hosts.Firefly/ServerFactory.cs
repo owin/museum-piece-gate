@@ -9,7 +9,7 @@ namespace Gate.Hosts.Firefly
     {
         public static IDisposable Create(AppDelegate app, int port)
         {
-            app = ExecutionContextPerRequest.Middleware(app);
+            // TODO: Re-enable after Firefly is updated. app = ExecutionContextPerRequest.Middleware(app);
             var serverFactory = new global::Firefly.Http.ServerFactory();
             return serverFactory.Create(app, port);
         }
