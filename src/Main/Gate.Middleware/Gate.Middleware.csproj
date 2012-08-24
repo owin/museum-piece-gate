@@ -53,8 +53,8 @@
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="NotFound.cs" />
     <None Include="PassiveValidator.cs" />
-    <None Include="RequestLogger.cs" />
-    <None Include="RequestTracer.cs" />
+    <Compile Include="RequestLogger.cs" />
+    <Compile Include="RequestTracer.cs" />
     <Compile Include="StaticFiles\FileBody.cs" />
     <Compile Include="StaticFiles\FileServer.cs" />
     <Compile Include="MethodOverride.cs" />
@@ -77,9 +77,9 @@
     <Compile Include="Utils\FilterStream.cs" />
     <Compile Include="Utils\TriggerStream.cs" />
     <Compile Include="WebSockets\BinaryStream.cs" />
-    <None Include="WebSockets\OpaqueToWebSocket.cs" />
+    <Compile Include="WebSockets\OpaqueToWebSocket.cs" />
     <Compile Include="WebSockets\WebSocketLayer.cs" />
-    <None Include="WebSockets\WebSocketToBinaryStream.cs" />
+    <Compile Include="WebSockets\WebSocketToBinaryStream.cs" />
     <Compile Include="Wilson.cs" />
   </ItemGroup>
   <ItemGroup>

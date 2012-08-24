@@ -6,6 +6,7 @@ using Owin;
 using System.Threading.Tasks;
 using Gate.Middleware;
 using System.IO;
+using Gate;
 
 namespace Owin
 {
@@ -21,77 +22,64 @@ namespace Owin
 
 namespace Gate.Middleware
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     // This middleware logs incoming and outgoing environment and properties variables, headers, etc.
     public class RequestLogger
     {
-        private readonly AppDelegate nextApp;
+        private readonly AppFunc nextApp;
         private TextWriter logger;
 
-        public RequestLogger(AppDelegate next)
+        public RequestLogger(AppFunc next)
         {
             nextApp = next;
         }
 
-        public RequestLogger(AppDelegate next, TextWriter logger)
+        public RequestLogger(AppFunc next, TextWriter logger)
         {
             nextApp = next;
             this.logger = logger;
         }
 
-        public Task<ResultParameters> Invoke(CallParameters call)
+        public Task Invoke(IDictionary<string, object> env)
         {
             // The TextWriter is assumed to be the same across all requests.
-            logger = logger ?? call.Environment.Get<TextWriter>(OwinConstants.TraceOutput);
+            logger = logger ?? env.Get<TextWriter>(OwinConstants.TraceOutput);
 
             if (logger == null)
             {
-                return nextApp(call);
+                return nextApp(env);
             }
 
-            LogCall(call);
-            return nextApp(call).Then(result =>
+            LogCall(env);
+            return nextApp(env).Then(() =>
             {
-                LogResult(result);
-                return result;
+                LogResult(env);
             });
         }
 
-        private void LogCall(CallParameters call)
+        private void LogCall(IDictionary<string, object> env)
         {
-            logger.WriteLine("{0} - Request: Environment#{1}, Headers#{2}, Body={3};", 
-                DateTime.Now, call.Environment.Count, call.Headers.Count, 
-                (call.Body == null ? "(null)" : call.Body.GetType().FullName));
+            logger.WriteLine("{0} - Request: Environment#{1}", DateTime.Now, env.Count);
 
-            if (call.Environment.Count > 0)
-            {
-                logger.WriteLine("Environment: ");
-                LogDictionary(call.Environment);
-            }
+            logger.WriteLine("Environment: ");
+            LogDictionary(env);
 
-            if (call.Headers.Count > 0)
-            {
-                logger.WriteLine("Headers: ");
-                LogHeaders(call.Headers);
-            }
+            logger.WriteLine("Headers: ");
+            LogHeaders(env.Get<IDictionary<string, string[]>>(OwinConstants.RequestHeaders));
         }
 
-        private void LogResult(ResultParameters result)
+        private void LogResult(IDictionary<string, object> env)
         {
-            logger.WriteLine("{0} - Response: Status#{1}, Properties#{2}, Headers#{3}, Body={4};",
-                DateTime.Now, result.Status, result.Properties.Count, result.Headers.Count,
-                (result.Body == null ? "(null)" : result.Body.GetType().FullName));
+            int statusCode = env.Get<int>(OwinConstants.ResponseStatusCode);
 
-            if (result.Properties.Count > 0)
-            {
-                logger.WriteLine("Properties: ");
-                LogDictionary(result.Properties);
-            }
+            logger.WriteLine("{0} - Response: Environment#{1}", DateTime.Now, env.Count);
 
-            if (result.Headers.Count > 0)
-            {
-                logger.WriteLine("Headers: ");
-                LogHeaders(result.Headers);
-            }
+            logger.WriteLine("Environment: ");
+            LogDictionary(env);
+
+            logger.WriteLine("Headers: ");
+            LogHeaders(env.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders));
         }
 
         private void LogDictionary(IDictionary<string, object> dictionary)

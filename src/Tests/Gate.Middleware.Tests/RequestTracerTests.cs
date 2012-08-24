@@ -6,16 +6,17 @@ using NUnit.Framework;
 using Owin;
 using System.IO;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Gate.Middleware.Tests
 {
     [TestFixture]
-    public class RequestLoggerTests
+    public class RequestTracerTests
     {
         [Test]
         public void NoLogger_PassThrough()
         {
-            RequestLogger middleware = new RequestLogger(env =>
+            RequestTracer middleware = new RequestTracer(env =>
             {
                 return TaskHelpers.Completed();
             });
@@ -26,15 +27,19 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Logger_Logged()
         {
-            RequestLogger middleware = new RequestLogger(env =>
+            RequestTracer middleware = new RequestTracer(env =>
             {
                 return TaskHelpers.Completed();
             });
 
             StringWriter writer = new StringWriter();
+            TextWriterTraceListener textListener = new TextWriterTraceListener(writer, "TestTracer");
+            TraceSource traceSource = new TraceSource("TestSource");
+            traceSource.Listeners.Add(textListener);
+
             Request request = new Request();
-            request.TraceOutput = writer;
-            middleware.Invoke(new Request().Environment).Wait();
+            request.Environment["host.TraceSource"] = traceSource;
+            middleware.Invoke(request.Environment).Wait();
             Assert.That(writer.GetStringBuilder().ToString(), Is.Not.EqualTo(string.Empty));
         }
     }

@@ -21,40 +21,41 @@ namespace Owin
 
 namespace Gate.Middleware
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     // This middleware traces incoming and outgoing environment and properties variables, headers, etc.
     public class RequestTracer
     {
-        private readonly AppDelegate nextApp;
+        private readonly AppFunc nextApp;
         private TraceSource traceSource;
 
-        public RequestTracer(AppDelegate next)
+        public RequestTracer(AppFunc next)
         {
             nextApp = next;
         }
 
-        public RequestTracer(AppDelegate next, TraceSource source)
+        public RequestTracer(AppFunc next, TraceSource source)
         {
             nextApp = next;
             traceSource = source;
         }
-
-        public Task<ResultParameters> Invoke(CallParameters call)
+        
+        public Task Invoke(IDictionary<string, object> env)
         {
             // The TraceSource is assumed to be the same across all requests.
-            traceSource = traceSource ?? call.Environment.Get<TraceSource>("host.TraceSource");
+            traceSource = traceSource ?? env.Get<TraceSource>("host.TraceSource");
 
             if (traceSource == null)
             {
-                return nextApp(call);
+                return nextApp(env);
             }
 
             try
             {
-                TraceCall(call);
-                return nextApp(call).Then(result =>
+                TraceCall(env);
+                return nextApp(env).Then(() =>
                 {
-                    TraceResult(result);
-                    return result;
+                    TraceResult(env);
                 })
                 .Catch(errorInfo =>
                 {
@@ -69,42 +70,26 @@ namespace Gate.Middleware
             }
         }
 
-        private void TraceCall(CallParameters call)
+        private void TraceCall(IDictionary<string, object> env)
         {
-            traceSource.TraceEvent(TraceEventType.Start, 0, "Request: Environment#{0}, Headers#{1}, Body={2};", 
-                call.Environment.Count, call.Headers.Count, 
-                (call.Body == null ? "(null)" : call.Body.GetType().FullName));
+            traceSource.TraceEvent(TraceEventType.Start, 0, "Request: Environment#{0}", env.Count);
 
-            if (call.Environment.Count > 0)
-            {
-                traceSource.TraceInformation("Environment: ");
-                TraceDictionary(call.Environment);
-            }
+            traceSource.TraceInformation("Environment: ");
+            TraceDictionary(env);
 
-            if (call.Headers.Count > 0)
-            {
-                traceSource.TraceInformation("Headers: ");
-                TraceHeaders(call.Headers);
-            }
+            traceSource.TraceInformation("Headers: ");
+            TraceHeaders(env.Get<IDictionary<string, string[]>>(OwinConstants.RequestHeaders));
         }
 
-        private void TraceResult(ResultParameters result)
+        private void TraceResult(IDictionary<string, object> env)
         {
-            traceSource.TraceEvent(TraceEventType.Stop, 0, "Response: Status#{0}, Properties#{1}, Headers#{2}, Body={3};",
-                result.Status, result.Properties.Count, result.Headers.Count,
-                (result.Body == null ? "(null)" : result.Body.GetType().FullName));
+            traceSource.TraceEvent(TraceEventType.Stop, 0, "Request: Environment#{0}", env.Count);
 
-            if (result.Properties.Count > 0)
-            {
-                traceSource.TraceInformation("Properties: ");
-                TraceDictionary(result.Properties);
-            }
+            traceSource.TraceInformation("Environment: ");
+            TraceDictionary(env);
 
-            if (result.Headers.Count > 0)
-            {
-                traceSource.TraceInformation("Headers: ");
-                TraceHeaders(result.Headers);
-            }
+            traceSource.TraceInformation("Headers: ");
+            TraceHeaders(env.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders));
         }
 
         private void TraceDictionary(IDictionary<string, object> dictionary)
