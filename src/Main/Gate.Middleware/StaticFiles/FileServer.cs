@@ -22,11 +22,6 @@ namespace Gate.Middleware.StaticFiles
         private const int RequestedRangeNotSatisfiable = 416;
 
         private readonly string root;
-        private string pathInfo;
-        private Tuple<long, long> range;
-
-        // Note: Path should be exposed when implementing Sendfile middleware.
-        private string path;
 
         public FileServer(string root)
         {
@@ -35,7 +30,7 @@ namespace Gate.Middleware.StaticFiles
 
         public Task Invoke(IDictionary<string, object> env)
         {
-            pathInfo = env.Get<string>(OwinConstants.RequestPath);
+            string pathInfo = env.Get<string>(OwinConstants.RequestPath);
 
             if (pathInfo.StartsWith("/"))
             {
@@ -47,7 +42,7 @@ namespace Gate.Middleware.StaticFiles
                 return Fail(Forbidden, "Forbidden").Invoke(env);
             }
 
-            path = Path.Combine(root ?? string.Empty, pathInfo);
+            string path = Path.Combine(root ?? string.Empty, pathInfo);
 
             if (!File.Exists(path))
             {
@@ -56,7 +51,7 @@ namespace Gate.Middleware.StaticFiles
 
             try
             {
-                return Serve(env);
+                return Serve(env, path);
             }
             catch (UnauthorizedAccessException)
             {
@@ -85,13 +80,14 @@ namespace Gate.Middleware.StaticFiles
                 };
         }
 
-        private Task Serve(IDictionary<string, object> env)
+        private Task Serve(IDictionary<string, object> env, string path)
         {
             Request request = new Request(env);
             Response response = new Response(env);
 
             var fileInfo = new FileInfo(path);
             var size = fileInfo.Length;
+            Tuple<long, long> range;
 
             if (!RangeHeader.IsValid(request.Headers))
             {
