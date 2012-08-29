@@ -45,10 +45,10 @@ namespace Gate
             set { Environment.Set<Stream>(OwinConstants.RequestBody, value); }
         }
 
-        public Task Completed
+        public CancellationToken CancellationToken
         {
-            get { return Environment.Get<Task>(OwinConstants.CallCompleted); }
-            set { Environment.Set<Task>(OwinConstants.CallCompleted, value); }
+            get { return Environment.Get<CancellationToken>(OwinConstants.CallCancelled); }
+            set { Environment.Set<CancellationToken>(OwinConstants.CallCancelled, value); }
         }
 
         /// <summary>
