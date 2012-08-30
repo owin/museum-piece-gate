@@ -44,7 +44,7 @@ namespace Gate.Adapters.Nancy
                 var owinRequestQueryString = Get<string>(env, OwinConstants.RequestQueryString);
                 var owinRequestBody = Get<Stream>(env, OwinConstants.RequestBody);
                 var serverClientIp = Get<string>(env, OwinConstants.RemoteIpAddress);
-                var callCompleted = Get<Task>(env, OwinConstants.CallCompleted);
+                var callCompleted = Get<Task>(env, OwinConstants.CallCancelled);
 
                 var owinResponseHeaders = Get<IDictionary<string, string[]>>(env, OwinConstants.ResponseHeaders);
                 var owinResponseBody = Get<Stream>(env, OwinConstants.ResponseBody);

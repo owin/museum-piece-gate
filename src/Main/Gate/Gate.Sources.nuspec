@@ -11,9 +11,8 @@
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
     <tags></tags>
     <dependencies>
-      <dependency id="Owin" version="0.14"/>
-      <dependency id="Owin.Startup" version="0.3"/>
-      <dependency id="TaskHelpers.Sources" version="[0.1]"/>
+      <dependency id="Owin.Startup" version="0.4"/>
+      <dependency id="TaskHelpers.Sources" version="0.1"/>
     </dependencies>
   </metadata>
   <files>
