@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -206,7 +207,7 @@ namespace Gate
                 return delimiterPos < 0 ? contentType : contentType.Substring(0, delimiterPos);
             }
         }
-        
+
         public Task CopyToStreamAsync(Stream stream)
         {
             if (Body == null)
@@ -333,6 +334,79 @@ namespace Gate
         }
 
 
+
+        bool TryParseHostHeader(out IPAddress address, out string host, out int port)
+        {
+            address = null;
+            host = null;
+            port = 0;
+
+            var hostHeader = Headers.GetHeader("Host");
+            if (string.IsNullOrWhiteSpace(hostHeader))
+            {
+                return false;
+            }
+
+            if (hostHeader.StartsWith("[", StringComparison.Ordinal))
+            {
+                var portIndex = hostHeader.LastIndexOf("]:", StringComparison.Ordinal);
+                if (portIndex != -1 && int.TryParse(hostHeader.Substring(portIndex + 2), out port))
+                {
+                    if (IPAddress.TryParse(hostHeader.Substring(1, portIndex - 1), out address))
+                    {
+                        host = null;
+                        return true;
+                    }
+                    host = hostHeader.Substring(0, portIndex + 1);
+                    return true;
+                }
+                if (hostHeader.EndsWith("]", StringComparison.Ordinal))
+                {
+                    if (IPAddress.TryParse(hostHeader.Substring(1, hostHeader.Length - 2), out address))
+                    {
+                        host = null;
+                        port = 0;
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                if (IPAddress.TryParse(hostHeader, out address))
+                {
+                    host = null;
+                    port = 0;
+                    return true;
+                }
+
+                var portIndex = hostHeader.LastIndexOf(':');
+                if (portIndex != -1 && int.TryParse(hostHeader.Substring(portIndex + 1), out port))
+                {
+                    host = hostHeader.Substring(0, portIndex);
+                    return true;
+                }
+            }
+
+            host = hostHeader;
+            return true;
+        }
+
+        void AssignHostHeader(
+           string host,
+           int port)
+        {
+            IPAddress address;
+            if (IPAddress.TryParse(host, out address))
+            {
+                Headers.SetHeader("Host", new IPEndPoint(address, port).ToString());
+            }
+            else
+            {
+                Headers.SetHeader("Host", host + ":" + port);
+            }
+        }
+
+
         public string HostWithPort
         {
             get
@@ -343,37 +417,27 @@ namespace Gate
                     return hostHeader;
                 }
 
-                return string.Empty;
-            }
-            set
-            {
-                Headers.SetHeader("Host", value);
-            }
-        }
-
-        public string Host
-        {
-            get
-            {
-                var hostHeader = Headers.GetHeader("Host");
-                if (!string.IsNullOrWhiteSpace(hostHeader))
+                var localIpAddressString = Environment.Get<string>(OwinConstants.LocalIpAddress);
+                IPAddress localIpAddress;
+                if (!IPAddress.TryParse(localIpAddressString, out localIpAddress))
                 {
-                    var delimiter = hostHeader.IndexOf(':');
-                    return delimiter < 0 ? hostHeader : hostHeader.Substring(0, delimiter);
+                    localIpAddress = IPAddress.Loopback;
                 }
 
-                return string.Empty;
+                var localPortString = Environment.Get<string>(OwinConstants.LocalPort);
+                int localPort;
+                if (!int.TryParse(localPortString, out localPort))
+                {
+                    localPort = string.Equals(Scheme, "https", StringComparison.OrdinalIgnoreCase) ? 443 : 80;
+                }
+
+                return new IPEndPoint(localIpAddress, localPort).ToString();
             }
             set
             {
-                string port = Port;
                 if (string.IsNullOrWhiteSpace(value))
                 {
                     Headers.Remove("Host");
-                }
-                else if (!string.IsNullOrWhiteSpace(port))
-                {
-                    Headers.SetHeader("Host", value + ":" + port);
                 }
                 else
                 {
@@ -382,29 +446,59 @@ namespace Gate
             }
         }
 
-        public string Port
+        public string Host
         {
             get
             {
-                var hostHeader = Headers.GetHeader("Host");
-                if (!string.IsNullOrWhiteSpace(hostHeader))
+                IPAddress address;
+                string host;
+                int port;
+                if (TryParseHostHeader(out address, out host, out port))
                 {
-                    var delimiter = hostHeader.IndexOf(':');
-                    return delimiter < 0 ? string.Empty : hostHeader.Substring(delimiter + 1);
+                    return host ?? address.ToString();
                 }
-
-                return string.Empty;
+                return Environment.Get<string>(OwinConstants.LocalIpAddress) ?? IPAddress.Loopback.ToString();
             }
             set
             {
-                string host = Host;
-                if (string.IsNullOrWhiteSpace(value))
+                var host = value;
+                var port = Port;
+
+                AssignHostHeader(host, port);
+            }
+        }
+
+        public int Port
+        {
+            get
+            {
+                IPAddress address;
+                string host;
+                int port;
+                if (TryParseHostHeader(out address, out host, out port) && port != 0)
                 {
-                    Host = host; // Truncate port
+                    return port;
+                }
+                var portString = Environment.Get<string>(OwinConstants.LocalPort);
+                if (int.TryParse(portString, out port) && port != 0)
+                {
+                    return port;
+                }
+                return string.Equals(Scheme, "https", StringComparison.OrdinalIgnoreCase) ? 443 : 80;
+            }
+            set
+            {
+                var host = Host;
+                var port = value;
+
+                if (port == 0)
+                {
+                    HostWithPort = host;
+
                 }
                 else
                 {
-                    Headers.SetHeader("Host", host + ":" + value);
+                    AssignHostHeader(host, port);
                 }
             }
         }

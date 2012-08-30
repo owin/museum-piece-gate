@@ -15,10 +15,7 @@ var BUILD_PROJECTS='${Files.Include(
     SRC + "/**/Gate.Middleware.csproj",
     SRC + "/**/Gate.Hosts.Kayak.csproj",
     SRC + "/**/Gate.Hosts.Firefly.csproj",
-    SRC + "/**/Gate.Adapters.Nancy.csproj",
-    SRC + "/**/Sample.HelloWorld.csproj",
-    SRC + "/**/Sample.Nancy.csproj",
-    SRC + "/**/Samples.ViaRouting.csproj")}'
+    SRC + "/**/Gate.Adapters.Nancy.csproj")}'
 
 var TEST_PROJECTS='${Files.Include(
     SRC + "/**/Gate.Tests.csproj",
