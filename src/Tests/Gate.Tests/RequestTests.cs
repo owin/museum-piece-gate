@@ -80,12 +80,12 @@ namespace Gate.Tests
         }
 
         [Test]
-        public void Port_will_remove_port_from_request_header_if_needed()
+        public void Port_will_take_port_from_request_header_if_needed()
         {
             var env = CreateEmptyEnvironment();
             env.Get<IDictionary<string, string[]>>("owin.RequestHeaders").SetHeader("Host", "Beta:8080");
             var request = new Request(env);
-            Assert.That(request.Port, Is.EqualTo("8080"));
+            Assert.That(request.Port, Is.EqualTo(8080));
         }
 
         [Test]
@@ -95,7 +95,7 @@ namespace Gate.Tests
                 e => e.Set("server.LocalPort", "55"),
                 h => h.SetHeader("Host", "Beta"));
             var request = new Request(env);
-            Assert.That(request.Port, Is.EqualTo("55"));
+            Assert.That(request.Port, Is.EqualTo(55));
         }
         [Test]
         public void Port_is_based_on_scheme_if_there_is_no_local_port()
@@ -104,7 +104,7 @@ namespace Gate.Tests
                 e => e.Set("owin.RequestScheme", "https"),
                 h => h.SetHeader("Host", "Beta"));
             var request = new Request(env);
-            Assert.That(request.Port, Is.EqualTo("443"));
+            Assert.That(request.Port, Is.EqualTo(443));
         }
         [Test]
         public void Port_default_to_80()
@@ -113,7 +113,7 @@ namespace Gate.Tests
                 e => { },
                 h => h.SetHeader("Host", "Beta"));
             var request = new Request(env);
-            Assert.That(request.Port, Is.EqualTo("80"));
+            Assert.That(request.Port, Is.EqualTo(80));
         }
 
 
@@ -214,6 +214,239 @@ namespace Gate.Tests
             var req = new Request { QueryString = "foo=hello+world&the+bar=quux" };
             Assert.That(req.Query["foo"], Is.EqualTo("hello world"));
             Assert.That(req.Query["the bar"], Is.EqualTo("quux"));
+        }
+
+        [Test]
+        public void EverythingWillFallbackToLoopback80()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => { },
+                h => { }));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("127.0.0.1:80"));
+            Assert.That(req.Host, Is.EqualTo("127.0.0.1"));
+            Assert.That(req.Port, Is.EqualTo(80));
+        }
+        [Test]
+        public void HostHeaderMayBeIpv4()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => { },
+                h => h.SetHeader("Host", "1.2.3.4:5678")));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("1.2.3.4:5678"));
+            Assert.That(req.Host, Is.EqualTo("1.2.3.4"));
+            Assert.That(req.Port, Is.EqualTo(5678));
+        }
+        [Test]
+        public void HostHeaderMayBeIpv4WithoutPort()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => { },
+                h => h.SetHeader("Host", "1.2.3.4")));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("1.2.3.4"));
+            Assert.That(req.Host, Is.EqualTo("1.2.3.4"));
+            Assert.That(req.Port, Is.EqualTo(80));
+        }
+        [Test]
+        public void HostHeaderMayBeIpv6()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => { },
+                h => h.SetHeader("Host", "[::1234]:5678")));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("[::1234]:5678"));
+            Assert.That(req.Host, Is.EqualTo("::1234"));
+            Assert.That(req.Port, Is.EqualTo(5678));
+        }
+        [Test]
+        public void HostHeaderMayBeIpv6WithoutPort()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => { },
+                h => h.SetHeader("Host", "[::1]")));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("[::1]"));
+            Assert.That(req.Host, Is.EqualTo("::1"));
+            Assert.That(req.Port, Is.EqualTo(80));
+        }
+        [Test]
+        public void HostHeaderMayBeIpv6WithoutBraces()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => { },
+                h => h.SetHeader("Host", "2001:0db8:0000:0000:0000:ff00:0042:8329")));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("2001:0db8:0000:0000:0000:ff00:0042:8329"));
+            Assert.That(req.Host, Is.EqualTo("2001:db8::ff00:42:8329"));
+            Assert.That(req.Port, Is.EqualTo(80));
+        }
+        [Test]
+        public void HostHeaderMayBeDns()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => { },
+                h => h.SetHeader("Host", "www.example.com:5678")));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("www.example.com:5678"));
+            Assert.That(req.Host, Is.EqualTo("www.example.com"));
+            Assert.That(req.Port, Is.EqualTo(5678));
+        }
+        [Test]
+        public void HostHeaderMayBeDnsWithoutPort()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => { },
+                h => h.SetHeader("Host", "www.example.com")));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("www.example.com"));
+            Assert.That(req.Host, Is.EqualTo("www.example.com"));
+            Assert.That(req.Port, Is.EqualTo(80));
+        }
+        [Test]
+        public void PortShouldFallbackToLocalPortFirst()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => e.Set("owin.RequestScheme", "https").Set("server.LocalPort", "54321"),
+                h => h.SetHeader("Host", "www.example.com")));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("www.example.com"));
+            Assert.That(req.Host, Is.EqualTo("www.example.com"));
+            Assert.That(req.Port, Is.EqualTo(54321));
+        }
+        [Test]
+        public void PortShouldFallbackToSchemePortSecond()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => e.Set("owin.RequestScheme", "https"),
+                h => h.SetHeader("Host", "www.example.com")));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("www.example.com"));
+            Assert.That(req.Host, Is.EqualTo("www.example.com"));
+            Assert.That(req.Port, Is.EqualTo(443));
+        }
+        [Test]
+        public void PortWithoutHeaderShouldFallbackToLocalPortFirst()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => e.Set("owin.RequestScheme", "https")
+                    .Set("server.LocalPort", "54321"),
+                h => { }));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("127.0.0.1:54321"));
+            Assert.That(req.Host, Is.EqualTo("127.0.0.1"));
+            Assert.That(req.Port, Is.EqualTo(54321));
+        }
+        [Test]
+        public void PortWithoutHeaderShouldFallbackToSchemePortSecond()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => e.Set("owin.RequestScheme", "https"),
+                h => { }));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("127.0.0.1:443"));
+            Assert.That(req.Host, Is.EqualTo("127.0.0.1"));
+            Assert.That(req.Port, Is.EqualTo(443));
+        }
+
+        [Test]
+        public void HostShouldFallbackLocalIpv4Address()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => e.Set("owin.RequestScheme", "https")
+                    .Set("server.LocalIpAddress", "1.2.3.4"),
+                h => { }));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("1.2.3.4:443"));
+            Assert.That(req.Host, Is.EqualTo("1.2.3.4"));
+            Assert.That(req.Port, Is.EqualTo(443));
+        }
+        [Test]
+        public void HostShouldFallbackLocalIpv6Address()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => e.Set("owin.RequestScheme", "https")
+                    .Set("server.LocalIpAddress", "2001:db8::ff00:42:8329"),
+                h => { }));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("[2001:db8::ff00:42:8329]:443"));
+            Assert.That(req.Host, Is.EqualTo("2001:db8::ff00:42:8329"));
+            Assert.That(req.Port, Is.EqualTo(443));
+        }
+        [Test]
+        public void HostShouldFallbackLocalIpv4AddressWithLocalPort()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => e.Set("owin.RequestScheme", "https")
+                    .Set("server.LocalIpAddress", "1.2.3.4")
+                    .Set("server.LocalPort", "54321"),
+                h => { }));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("1.2.3.4:54321"));
+            Assert.That(req.Host, Is.EqualTo("1.2.3.4"));
+            Assert.That(req.Port, Is.EqualTo(54321));
+        }
+        [Test]
+        public void HostShouldFallbackLocalIpv6AddressWithLocalPort()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => e.Set("owin.RequestScheme", "https")
+                    .Set("server.LocalIpAddress", "2001:db8::ff00:42:8329")
+                    .Set("server.LocalPort", "54321"),
+                h => { }));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("[2001:db8::ff00:42:8329]:54321"));
+            Assert.That(req.Host, Is.EqualTo("2001:db8::ff00:42:8329"));
+            Assert.That(req.Port, Is.EqualTo(54321));
+        }
+
+        [Test]
+        public void PortShouldBeAssignable()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => e.Set("owin.RequestScheme", "https")
+                    .Set("server.LocalIpAddress", "2001:db8::ff00:42:8329")
+                    .Set("server.LocalPort", "54321"),
+                h => { }));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("[2001:db8::ff00:42:8329]:54321"));
+            Assert.That(req.Host, Is.EqualTo("2001:db8::ff00:42:8329"));
+            Assert.That(req.Port, Is.EqualTo(54321));
+
+            req.Port = 86;
+            Assert.That(req.HostWithPort, Is.EqualTo("[2001:db8::ff00:42:8329]:86"));
+            Assert.That(req.Host, Is.EqualTo("2001:db8::ff00:42:8329"));
+            Assert.That(req.Port, Is.EqualTo(86));
+        }
+
+        [Test]
+        public void HostShouldBeAssignable()
+        {
+            var req = new Request(CreateEmptyEnvironment(
+                e => e.Set("owin.RequestScheme", "https")
+                    .Set("server.LocalIpAddress", "2001:db8::ff00:42:8329")
+                    .Set("server.LocalPort", "54321"),
+                h => { }));
+
+            Assert.That(req.HostWithPort, Is.EqualTo("[2001:db8::ff00:42:8329]:54321"));
+            Assert.That(req.Host, Is.EqualTo("2001:db8::ff00:42:8329"));
+            Assert.That(req.Port, Is.EqualTo(54321));
+
+            req.Host = "localhost";
+            Assert.That(req.HostWithPort, Is.EqualTo("localhost:54321"));
+            Assert.That(req.Host, Is.EqualTo("localhost"));
+            Assert.That(req.Port, Is.EqualTo(54321));
+
+            req.Host = "1.2.3.4";
+            Assert.That(req.HostWithPort, Is.EqualTo("1.2.3.4:54321"));
+            Assert.That(req.Host, Is.EqualTo("1.2.3.4"));
+            Assert.That(req.Port, Is.EqualTo(54321));
+
+            req.Host = "2001:db8::ff00:42:8329";
+            Assert.That(req.HostWithPort, Is.EqualTo("[2001:db8::ff00:42:8329]:54321"));
+            Assert.That(req.Host, Is.EqualTo("2001:db8::ff00:42:8329"));
+            Assert.That(req.Port, Is.EqualTo(54321));
         }
     }
 }
