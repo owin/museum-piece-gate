@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 namespace Gate.Middleware.Tests
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
+    using System.Threading;
 
     [TestFixture]
     public class PassiveValidatorTests
@@ -32,7 +33,7 @@ namespace Gate.Middleware.Tests
                 }).Invoke;
 
             Request request = new Request();
-            request.Completed = new TaskCompletionSource<object>().Task;
+            request.CancellationToken = new CancellationTokenSource().Token;
             request.Body = Stream.Null;
             request.Method = "GET";
             request.Path = "/foo";

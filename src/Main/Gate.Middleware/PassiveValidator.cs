@@ -21,10 +21,12 @@ namespace Owin
 namespace Gate.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
+    using Gate.Middleware.Utils;
+    using System.Threading;
 
     // This middleware does a passive validation of all requests and responses. If any requirements from the OWIN 
     // standard are violated, an 500 error or a warning header are returned to the client.
-    // This is implemented using version 0.14.0 of the OWIN standard.
+    // This is implemented using version 0.15.0 of the OWIN standard.
     public class PassiveValidator
     {
         private readonly AppFunc nextApp;
@@ -42,33 +44,50 @@ namespace Gate.Middleware
                 return TaskHelpers.Completed();
             }
 
+            Stream orriginalStream = env.Get<Stream>("owin.ResponseStream");
+            TriggerStream triggerStream = new TriggerStream(orriginalStream);
+            env["owin.ResponseStream"] = triggerStream;
+
+            // Validate response headers and values on first write.
+            bool responseValidated = false;
+            Action responseValidation = () =>
+            {
+                if (responseValidated)
+                {
+                    return;
+                }
+
+                responseValidated = true;
+
+                if (!TryValidateResult(env, warnings))
+                {
+                    return;
+                }
+
+                if (warnings.Count > 0)
+                {
+                    var headers = env.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders);
+                    headers["X-OwinValidatorWarning"] = warnings.ToArray();
+                }
+            };
+            triggerStream.OnFirstWrite = responseValidation;
+
             try
             {
                 return nextApp(env)
-                    .Then(() =>
-                    {
-                        if (!TryValidateResult(env, warnings))
-                        {
-                            return;
-                        }
-
-                        if (warnings.Count > 0)
-                        {
-                            var headers = env.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders);
-                            headers["X-OwinValidatorWarning"] = warnings.ToArray();
-                        }
-                    })
+                    // Run response validation explicitly in case there was no response data written.
+                    .Then(responseValidation)
                     .Catch(errorInfo =>
                     {
-                        SetFatalResult(env, "6.1", "An asynchronous exception was thrown from the AppDelegate: \r\n"
-                            + errorInfo.Exception.ToString());
+                        SetFatalResult(env, "6.1", "An asynchronous exception was thrown from the AppFunc: <br>"
+                            + errorInfo.Exception.ToString().Replace(Environment.NewLine, "<br>"));
                         return errorInfo.Handled();
                     });
             }
             catch (Exception ex)
             {
-                SetFatalResult(env, "6.1", "A synchronous exception was thrown from the AppDelegate: \r\n"
-                            + ex.ToString());
+                SetFatalResult(env, "6.1", "A synchronous exception was thrown from the AppFunc: <br>"
+                            + ex.ToString().Replace(Environment.NewLine, "<br>"));
                 return TaskHelpers.Completed();
             }
         }
@@ -93,14 +112,14 @@ namespace Gate.Middleware
                 string output = env.Get<string>(key);
                 if (output == null || output != input)
                 {
-                    SetFatalResult(env, "3.3", "CallParameters.Environment is not fully mutable.");
+                    SetFatalResult(env, "3.2", "Environment is not fully mutable.");
                     return false;
                 }
                 env.Remove(key);
             }
             catch (Exception ex)
             {
-                SetFatalResult(env, "3.3", "CallParameters.Environment is not mutable: \r\n" + ex.ToString());
+                SetFatalResult(env, "3.2", "Environment is not mutable: \r\n" + ex.ToString());
                 return false;
             }
 
@@ -112,7 +131,7 @@ namespace Gate.Middleware
             string[] resultValue = env.Get<string[]>(lowerKey);
             if (resultValue != null)
             {
-                SetFatalResult(env, "3.3", "CallParameters.Environment is not case sensitive.");
+                SetFatalResult(env, "3.2", "Environment is not case sensitive.");
                 return false;
             }
             env.Remove(upperKey);
@@ -130,7 +149,9 @@ namespace Gate.Middleware
         {
             string[] requiredKeys = new string[]
             {
-                "owin.CallCompleted",
+                "owin.Version",
+                "owin.CallCancelled",
+
                 "owin.RequestBody",
                 "owin.RequestHeaders",
                 "owin.RequestMethod",
@@ -142,8 +163,6 @@ namespace Gate.Middleware
 
                 "owin.ResponseHeaders",
                 "owin.ResponseBody",
-
-                "owin.Version"
             };
 
             object temp;
@@ -151,13 +170,13 @@ namespace Gate.Middleware
             {
                 if (!env.TryGetValue(key, out temp))
                 {
-                    SetFatalResult(env, "3.3", "Missing required Environment key: " + key);
+                    SetFatalResult(env, "3.2", "Missing required Environment key: " + key);
                     return false;
                 }
 
                 if (temp == null)
                 {
-                    SetFatalResult(env, "3.3", "Required Environment value is null: " + key);
+                    SetFatalResult(env, "3.2", "Required Environment value is null: " + key);
                     return false;
                 }
             }
@@ -199,45 +218,65 @@ namespace Gate.Middleware
             {
                 if (!(env[key] is string))
                 {
-                    SetFatalResult(env, "3.3", key + " value is not of type string: " + env[key].GetType().FullName);
+                    SetFatalResult(env, "3.2", key + " value is not of type string: " + env[key].GetType().FullName);
                     return false;
                 }
             }
 
-            if (!(env["owin.CallCompleted"] is Task))
+            if (!(env["owin.CallCancelled"] is CancellationToken))
             {
-                SetFatalResult(env, "3.3", "owin.CallCompleted is not of type Task: " + env["owin.CallCompleted"].GetType().FullName);
+                SetFatalResult(env, "3.2.3", "owin.CallCancelled is not of type CancellationToken: " + env["owin.CallCancelled"].GetType().FullName);
                 return false;
             }
 
-            if (env.Get<Task>("owin.CallCompleted").IsCompleted)
+            if (env.Get<CancellationToken>("owin.CallCancelled").IsCancellationRequested)
             {
-                warnings.Add(CreateWarning("3.9", "The owin.CallCompleted Task was complete before processing the request."));
+                warnings.Add(CreateWarning("3.6", "The owin.CallCancelled CancellationToken was cancelled before processing the request."));
             }
 
             if (string.IsNullOrWhiteSpace(env.Get<string>("owin.RequestMethod")))
             {
-                SetFatalResult(env, "3.3", "owin.RequestMethod is empty.");
+                SetFatalResult(env, "3.2.1", "owin.RequestMethod is empty.");
                 return false;
             }
 
-            if (!env.Get<string>("owin.RequestPath").StartsWith("/"))
+            string pathBase = env.Get<string>("owin.RequestPathBase");
+            if (pathBase.EndsWith("/"))
             {
-                SetFatalResult(env, "5.3", "owin.RequestPath does not start with a slash.");
+                SetFatalResult(env, "5.3", "owin.RequestBasePath ends with a slash: " + pathBase);
                 return false;
             }
 
-            if (env.Get<string>("owin.RequestPathBase").EndsWith("/"))
+
+            if (!(pathBase.StartsWith("/") || pathBase.Equals(string.Empty)))
             {
-                SetFatalResult(env, "5.3", "owin.RequestBasePath ends with a slash.");
+                SetFatalResult(env, "5.3", "owin.RequestBasePath is not empty and does not start with a slash: " + pathBase);
                 return false;
+            }
+
+            string path = env.Get<string>("owin.RequestPath");
+            if (!path.StartsWith("/"))
+            {
+                if (path.Equals(string.Empty))
+                {
+                    if (pathBase.Equals(string.Empty))
+                    {
+                        SetFatalResult(env, "5.3", "owin.RequestPathBase and owin.RequestPath are both empty.");
+                        return false;
+                    }
+                }
+                else
+                {
+                    SetFatalResult(env, "5.3", "owin.RequestPath does not start with a slash.");
+                    return false;
+                }
             }
             
             string protocol = env.Get<string>("owin.RequestProtocol");
             if (!protocol.Equals("HTTP/1.1", StringComparison.OrdinalIgnoreCase)
                 && !protocol.Equals("HTTP/1.0", StringComparison.OrdinalIgnoreCase))
             {
-                warnings.Add(CreateWarning("3.3", "Unrecognized request protocol: " + protocol));
+                warnings.Add(CreateWarning("3.2.1", "Unrecognized request protocol: " + protocol));
             }
 
             // No query string validation.
@@ -265,8 +304,90 @@ namespace Gate.Middleware
             return true;
         }
 
+        #endregion Call Rules
+
+        #region Result Rules
+
+        private static bool TryValidateResult(IDictionary<string, object> env, IList<string> warnings)
+        {
+            IDictionary<string, string[]> responseHeaders = env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders");
+
+            // Headers
+            if (!TryValidateHeaderCollection(env, responseHeaders, "Response", warnings))
+            {
+                return false;
+            }
+
+            // Status code
+            object temp;
+            if (env.TryGetValue("owin.ResponseStatusCode", out temp))
+            {
+                if (temp == null)
+                {
+                    SetFatalResult(env, "3.2.2", "The response status code value is null");
+                    return false;
+                }
+
+                if (!(temp is int))
+                {
+                    SetFatalResult(env, "3.2.2", "Status code is not an int: " + temp.GetType().FullName);
+                    return false;
+                }
+
+                int statusCode = (int)temp;
+                if (statusCode <= 100 || statusCode >= 1000)
+                {
+                    SetFatalResult(env, "3.2.2", "Invalid status code value: " + statusCode);
+                    return false;
+                }
+            }
+
+            // Reason phrase
+            if (env.TryGetValue("owin.ResponseReasonPhrase", out temp))
+            {
+                if (temp == null)
+                {
+                    SetFatalResult(env, "3.2.2", "The reason phrase value is null");
+                    return false;
+                }
+
+                if (!(temp is string))
+                {
+                    SetFatalResult(env, "3.2.2", "The reason phrase is not a string: " + temp.GetType().FullName);
+                    return false;
+                }
+            }
+
+            // Protocol
+            if (env.TryGetValue("owin.ResponseProtocol", out temp))
+            {
+                if (temp == null)
+                {
+                    SetFatalResult(env, "3.2.2", "The response protocol value is null");
+                    return false;
+                }
+
+                if (!(temp is string))
+                {
+                    SetFatalResult(env, "3.2.2", "The response protocol is not a string: " + temp.GetType().FullName);
+                    return false;
+                }
+
+                string protocol = (string)temp;
+                if (!protocol.Equals("HTTP/1.1", StringComparison.OrdinalIgnoreCase)
+                    && !protocol.Equals("HTTP/1.0", StringComparison.OrdinalIgnoreCase))
+                {
+                    warnings.Add(CreateWarning("3.2.2", "Unrecognized response protocol: " + protocol));
+                }
+            }
+
+            return true;
+        }
+
+        #endregion Result Rules
+
         // Shared code for validating that the request and response header collections adhere to some basic requirements like mutability and casing.
-        private static bool TryValidateHeaderCollection(IDictionary<string, object> env, IDictionary<string, string[]> headers, 
+        private static bool TryValidateHeaderCollection(IDictionary<string, object> env, IDictionary<string, string[]> headers,
             string headerId, IList<string> warnings)
         {
             // Must be mutable
@@ -278,14 +399,14 @@ namespace Gate.Middleware
                 string[] output = headers[key];
                 if (output == null || output.Length != input.Length || output[0] != input[0])
                 {
-                    SetFatalResult(env, "3.7", headerId + " headers are not fully mutable.");
+                    SetFatalResult(env, "3.3", headerId + " headers are not fully mutable.");
                     return false;
                 }
                 headers.Remove(key);
             }
             catch (Exception ex)
             {
-                SetFatalResult(env, "3.7", headerId + " headers are not mutable: \r\n" + ex.ToString());
+                SetFatalResult(env, "3.3", headerId + " headers are not mutable: \r\n" + ex.ToString());
                 return false;
             }
 
@@ -297,7 +418,7 @@ namespace Gate.Middleware
             string[] resultValue = null;
             if (!headers.TryGetValue(lowerKey, out resultValue) || resultValue.Length != caseValue.Length || resultValue[0] != caseValue[0])
             {
-                SetFatalResult(env, "3.7", headerId + " headers are case sensitive.");
+                SetFatalResult(env, "3.3", headerId + " headers are case sensitive.");
                 return false;
             }
             headers.Remove(upperKey);
@@ -306,7 +427,7 @@ namespace Gate.Middleware
             {
                 if (pair.Value == null)
                 {
-                    warnings.Add(CreateWarning("3.7", headerId + " header " + pair.Key + " has a null string[]."));
+                    warnings.Add(CreateWarning("3.3", headerId + " header " + pair.Key + " has a null string[]."));
                 }
                 else
                 {
@@ -314,7 +435,7 @@ namespace Gate.Middleware
                     {
                         if (pair.Value[i] == null)
                         {
-                            warnings.Add(CreateWarning("3.7", headerId + " header " + pair.Key + " has a null value at index " + i));
+                            warnings.Add(CreateWarning("3.3", headerId + " header " + pair.Key + " has a null value at index " + i));
                         }
                     }
                 }
@@ -323,36 +444,18 @@ namespace Gate.Middleware
             return true;
         }
 
-        #endregion Call Rules
-
-        #region Result Rules
-
-        private static bool TryValidateResult(IDictionary<string, object> env, IList<string> warnings)
-        {
-            IDictionary<string, string[]> responseHeaders = env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders");
-
-            if (!TryValidateHeaderCollection(env, responseHeaders, "Response", warnings))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        #endregion Result Rules
-
         private static void SetFatalResult(IDictionary<string, object> env, string standardSection, string message)
         {
             Response response = new Response(env);
             response.StatusCode = 500;
             response.ReasonPhrase = "Internal Server Error";
-            response.Write("OWIN v0.14.0 validation failure: Section#{0}, {1}", standardSection, message);
+            response.Write("OWIN v0.15.0 validation failure: Section#{0}, {1}", standardSection, message);
             response.End();
         }
 
         private static string CreateWarning(string standardSection, string message)
         {
-            return string.Format("OWIN v0.14.0 validation warning: Section#{0}, {1}", standardSection, message);
+            return string.Format("OWIN v0.15.0 validation warning: Section#{0}, {1}", standardSection, message);
         }
     }
 }

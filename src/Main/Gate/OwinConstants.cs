@@ -13,7 +13,7 @@
         public const string RequestQueryString = "owin.RequestQueryString";
         public const string RequestProtocol = "owin.RequestProtocol";
 
-        public const string CallCompleted = "owin.CallCompleted";
+        public const string CallCancelled = "owin.CallCancelled";
 
         public const string ResponseStatusCode = "owin.ResponseStatusCode";
         public const string ResponseReasonPhrase = "owin.ResponseReasonPhrase";
@@ -21,6 +21,10 @@
         public const string ResponseBody = "owin.ResponseBody";
 
         public const string TraceOutput = "host.TraceOutput";
+
         public const string RemoteIpAddress = "server.RemoteIpAddress";
+        public const string RemotePort = "server.RemotePort";
+        public const string LocalIpAddress = "server.LocalIpAddress";
+        public const string LocalPort = "server.LocalPort";
     }
 }
