@@ -31,7 +31,7 @@ namespace Gate.Middleware.Tests
         {
             var responseHeaders = Call(b => b
                 .UseContentType()
-                .UseDirect((request, response) => response.EndAsync()));
+                .UseGate((request, response) => { }));
             Assert.That(responseHeaders.GetHeader("Content-Type"), Is.EqualTo("text/html"));
         }
 
@@ -40,7 +40,7 @@ namespace Gate.Middleware.Tests
         {
             var responseHeaders = Call(b => b
                 .UseContentType("application/octet-stream")
-                .UseDirect((request, response) => response.EndAsync()));
+                .UseGate((request, response) => { }));
 
             Assert.That(responseHeaders.GetHeader("Content-Type"), Is.EqualTo("application/octet-stream"));
         }
@@ -50,10 +50,9 @@ namespace Gate.Middleware.Tests
         {
             var responseHeaders = Call(b => b
                 .UseContentType()
-                .UseDirect((request, response) =>
+                .UseGate((request, response) =>
                 {
                     response.SetHeader("CONTENT-Type", "foo/bar");
-                    return response.EndAsync();
                 }));
 
             Assert.That(responseHeaders.GetHeader("Content-Type"), Is.EqualTo("foo/bar"));
@@ -64,10 +63,9 @@ namespace Gate.Middleware.Tests
         {
             var responseHeaders = Call(b => b
                 .UseContentType()
-                .UseDirect((request, response) =>
+                .UseGate((request, response) =>
                 {
                     response.SetHeader("CONTENT-Type", "foo/bar");
-                    return response.EndAsync();
                 }));
 
             Assert.That(responseHeaders.GetHeader("CONTENT-Type"), Is.EqualTo("foo/bar"));

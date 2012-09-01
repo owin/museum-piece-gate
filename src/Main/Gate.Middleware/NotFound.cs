@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Gate.Utils;
 using Owin;
 
 namespace Gate.Middleware
@@ -28,12 +29,12 @@ namespace Gate.Middleware
 
         public static Task Call(IDictionary<string, object> env)
         {
-            Response response = new Response(env);
-            response.StatusCode = 404;
-            response.ReasonPhrase = "Not Found";
-            response.Headers.SetHeader("Content-Type", new[] {"text/html"});
-            response.OutputStream.Write(body, 0, body.Length);
-            return response.EndAsync();
+            return new Response(env)
+            {
+                StatusCode = 404, 
+                ReasonPhrase = "Not Found", 
+                ContentType = "text/html"
+            }.WriteAsync(body);
         }
     }
 }
