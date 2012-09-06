@@ -4,122 +4,137 @@ using System.Linq;
 using System.Threading;
 using Owin;
 using System.Threading.Tasks;
+using Gate.Middleware;
+using System.IO;
+using Gate.Middleware.Utils;
+
+namespace Owin
+{
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
+    public static class CascadeExtensions
+    {        
+        public static IAppBuilder UseCascade(this IAppBuilder builder, params AppFunc[] apps)
+        {
+            return builder.UseType<Cascade>(apps.AsEnumerable<AppFunc>());
+        }
+        
+        public static IAppBuilder UseCascade(this IAppBuilder builder, params Action<IAppBuilder>[] apps)
+        {
+            return builder.UseType<Cascade>(apps.Select(cfg => builder.BuildNew<AppFunc>(x => cfg(x))));
+        }
+    }
+}
 
 namespace Gate.Middleware
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     // This middleware helps an application create a forked pipeline. Each request is submitted to
-    // a list of AppDelegates in order.  These apps either return a 404 response if they cannot
+    // a list of AppFuncs in order.  These apps either return a 404 response if they cannot
     // fulfill the request.  The cascade continues until an app returns a non-404 response, or the
     // the list of apps is exhausted.
-    public static class Cascade
+    public class Cascade
     {
-        public static void RunCascade(this IAppBuilder builder, params AppDelegate[] apps)
+        private IEnumerable<AppFunc> apps;
+        private AppFunc fallbackApp;
+        
+        public Cascade(AppFunc fallback, IEnumerable<AppFunc> apps)
         {
-            builder.Run(App(apps));
+            this.apps = apps;
+            this.fallbackApp = fallback;
         }
 
-        public static void RunCascade(this IAppBuilder builder, params Action<IAppBuilder>[] apps)
+        public Task Invoke(IDictionary<string, object> env)
         {
-            builder.Run(App(apps.Select(cfg => builder.BuildNew<AppDelegate>(x => cfg(x)))));
-        }
-
-        public static IAppBuilder UseCascade(this IAppBuilder builder, params AppDelegate[] apps)
-        {
-            return builder.UseFunc<AppDelegate>(app => Middleware(app, apps));
-        }
-
-        public static IAppBuilder UseCascade(this IAppBuilder builder, params Action<IAppBuilder>[] apps)
-        {
-            return builder.UseFunc<AppDelegate>(app => Middleware(app, apps.Select(cfg => builder.BuildNew<AppDelegate>(x => cfg(x)))));
-        }
-
-
-        public static AppDelegate App(IEnumerable<AppDelegate> apps)
-        {
-            return Middleware(null, apps);
-        }
-        public static AppDelegate App(AppDelegate app0)
-        {
-            return Middleware(null, new[] { app0 });
-        }
-        public static AppDelegate App(AppDelegate app0, AppDelegate app1)
-        {
-            return Middleware(null, new[] { app0, app1 });
-        }
-        public static AppDelegate App(AppDelegate app0, AppDelegate app1, AppDelegate app2)
-        {
-            return Middleware(null, new[] { app0, app1, app2 });
-        }
-
-        public static AppDelegate Middleware(AppDelegate app, AppDelegate app0)
-        {
-            return Middleware(app, new[] { app0 });
-        }
-        public static AppDelegate Middleware(AppDelegate app, AppDelegate app0, AppDelegate app1)
-        {
-            return Middleware(app, new[] { app0, app1 });
-        }
-        public static AppDelegate Middleware(AppDelegate app, AppDelegate app0, AppDelegate app1, AppDelegate app2)
-        {
-            return Middleware(app, new[] { app0, app1, app2 });
-        }
-
-        public static AppDelegate Middleware(AppDelegate app, IEnumerable<AppDelegate> apps)
-        {
-            // sequence to attempt is {apps[0], apps[n], app}
-            // or {apps[0], apps[n]} if app is null
-            apps = (apps ?? new AppDelegate[0]).Concat(new[] { app ?? NotFound.Call }).ToArray();
-
             // the first non-404 result will the the one to take effect
             // any subsequent apps are not called
-            return call =>
+
+            var iter = apps.GetEnumerator();            
+
+            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+            Stream outputStream = env.Get<Stream>(OwinConstants.ResponseBody);
+
+            Action fallback = () => { };
+            fallback = () =>
             {
-                var iter = apps.GetEnumerator();
-                iter.MoveNext();
-
-                TaskCompletionSource<ResultParameters> tcs = new TaskCompletionSource<ResultParameters>();
-
-                Action loop = () => { };
-                loop = () =>
-                {
-                    var threadId = Thread.CurrentThread.ManagedThreadId;
-                    for (var hot = true; hot; )
+                fallbackApp(env)
+                    .Then(() => tcs.TrySetResult(null))
+                    .Catch(errorInfo =>
                     {
-                        hot = false;
-                        iter.Current.Invoke(call)
-                            .Then(result =>
+                        tcs.TrySetException(errorInfo.Exception);
+                        return errorInfo.Handled();
+                    });
+            };
+
+            // Empty list
+            if (!iter.MoveNext())
+            {
+                fallback();
+                return tcs.Task;
+            }
+
+            Action loop = () => { };
+            loop = () =>
+            {
+                var threadId = Thread.CurrentThread.ManagedThreadId;
+                for (var tryAgainOnSameThread = true; tryAgainOnSameThread; )
+                {
+                    TriggerStream triggerStream = new TriggerStream(outputStream);
+                    triggerStream.OnFirstWrite = () =>
+                    {
+                        if (env.Get<int>(OwinConstants.ResponseStatusCode) == 404)
+                        {
+                            triggerStream.InnerStream = Stream.Null;
+                        }
+                    };
+
+                    env[OwinConstants.ResponseBody] = triggerStream;
+
+                    tryAgainOnSameThread = false;
+                    iter.Current.Invoke(env)
+                        .Then(() =>
+                        {
+                            if (env.Get<int>(OwinConstants.ResponseStatusCode) != 404)
                             {
-                                if (result.Status == 404 && iter.MoveNext())
+                                tcs.TrySetResult(null);
+                                return;
+                            }
+
+                            // Cleanup and try the next one.
+                            env.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders).Clear();
+                            env[OwinConstants.ResponseBody] = outputStream;
+
+                            if (iter.MoveNext())
+                            {
+                                // ReSharper disable AccessToModifiedClosure
+                                if (threadId == Thread.CurrentThread.ManagedThreadId)
                                 {
-                                    // ReSharper disable AccessToModifiedClosure
-                                    if (threadId == Thread.CurrentThread.ManagedThreadId)
-                                    {
-                                        hot = true;
-                                    }
-                                    else
-                                    {
-                                        loop();
-                                    }
-                                    // ReSharper restore AccessToModifiedClosure
+                                    tryAgainOnSameThread = true;
                                 }
                                 else
                                 {
-                                    tcs.TrySetResult(result);
+                                    loop();
                                 }
-                            })
-                            .Catch(errorInfo =>
+                                // ReSharper restore AccessToModifiedClosure
+                            }
+                            else
                             {
-                                tcs.TrySetException(errorInfo.Exception);
-                                return errorInfo.Handled();
-                            });
-                    }
-                    threadId = 0;
-                };
-
-                loop();
-
-                return tcs.Task;
+                                fallback();
+                            }
+                        })
+                        .Catch(errorInfo =>
+                        {
+                            tcs.TrySetException(errorInfo.Exception);
+                            return errorInfo.Handled();
+                        });
+                }
+                threadId = 0;
             };
+
+            loop();
+
+            return tcs.Task;
         }
     }
 }
