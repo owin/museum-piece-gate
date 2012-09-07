@@ -64,7 +64,7 @@
     <Compile Include="StaticFiles\TextBody.cs" />
     <Compile Include="ContentLength.cs" />
     <Compile Include="Chunked.cs" />
-    <None Include="Cascade.cs" />
+    <Compile Include="Cascade.cs" />
     <Compile Include="ContentType.cs" />
     <Compile Include="ShowExceptions.cs" />
     <Compile Include="ShowExceptions.View.cs">
