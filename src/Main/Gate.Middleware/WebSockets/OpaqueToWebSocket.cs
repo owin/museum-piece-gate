@@ -11,48 +11,59 @@ namespace Gate.Middleware.WebSockets
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
-    #pragma warning disable 811
     using WebSocketFunc =
         Func
         <
-        // SendAsync
-            Func
-            <
-                ArraySegment<byte> /* data */,
-                int /* messageType */,
-                bool /* endOfMessage */,
-                CancellationToken /* cancel */,
-                Task
-            >,
-        // ReceiveAsync
-            Func
-            <
-                ArraySegment<byte> /* data */,
-                CancellationToken /* cancel */,
-                Task
-                <
-                    Tuple
-                    <
-                        int /* messageType */,
-                        bool /* endOfMessage */,
-                        int? /* count */,
-                        int? /* closeStatus */,
-                        string /* closeStatusDescription */
-                    >
-                >
-            >,
-        // CloseAsync
-            Func
-            <
-                int /* closeStatus */,
-                string /* closeDescription */,
-                CancellationToken /* cancel */,
-                Task
-            >,
-        // Complete
+            IDictionary<string, object>, // WebSocket environment
+            Task // Complete
+        >;
+
+    using WebSocketSendAsync =
+        Func
+        <
+            ArraySegment<byte> /* data */,
+            int /* messageType */,
+            bool /* endOfMessage */,
+            CancellationToken /* cancel */,
             Task
         >;
-    #pragma warning restore 811
+
+    using WebSocketReceiveAsync =
+        Func
+        <
+            ArraySegment<byte> /* data */,
+            CancellationToken /* cancel */,
+            Task
+            <
+                Tuple
+                <
+                    int /* messageType */,
+                    bool /* endOfMessage */,
+                    int? /* count */,
+                    int? /* closeStatus */,
+                    string /* closeStatusDescription */
+                >
+            >
+        >;
+
+    using WebSocketReceiveTuple =
+        Tuple
+        <
+            int /* messageType */,
+            bool /* endOfMessage */,
+            int? /* count */,
+            int? /* closeStatus */,
+            string /* closeStatusDescription */
+        >;
+
+    using WebSocketCloseAsync =
+        Func
+        <
+            int /* closeStatus */,
+            string /* closeDescription */,
+            CancellationToken /* cancel */,
+            Task
+        >;
 
     using OpaqueStreamFunc =
         Func
@@ -63,7 +74,7 @@ namespace Gate.Middleware.WebSockets
         >;
 
     // This class demonstrates how to support WebSockets on a server that only supports opaque streams.
-    // WebSocket Extension v0.2 is currently implemented.
+    // WebSocket Extension v0.3 is currently implemented.
     public static class OpaqueToWebSocket
     {
         public static IAppBuilder UseWebSockets(this IAppBuilder builder)
@@ -95,7 +106,7 @@ namespace Gate.Middleware.WebSockets
                             OpaqueStreamFunc opaqueBody = (incoming, outgoing) =>
                             {
                                 WebSocketLayer webSocket = new WebSocketLayer(incoming, outgoing);
-                                return wsBody(webSocket.SendAsync, webSocket.ReceiveAsync, webSocket.CloseAsync)
+                                return wsBody(webSocket.Environment)
                                     .Then(() => webSocket.CleanupAsync());
                             };
 
