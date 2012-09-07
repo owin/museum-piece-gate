@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Owin;
 using Nancy;
@@ -44,7 +45,6 @@ namespace Gate.Adapters.Nancy
                 var owinRequestQueryString = Get<string>(env, OwinConstants.RequestQueryString);
                 var owinRequestBody = Get<Stream>(env, OwinConstants.RequestBody);
                 var serverClientIp = Get<string>(env, OwinConstants.RemoteIpAddress);
-                var callCompleted = Get<Task>(env, OwinConstants.CallCancelled);
 
                 var owinResponseHeaders = Get<IDictionary<string, string[]>>(env, OwinConstants.ResponseHeaders);
                 var owinResponseBody = Get<Stream>(env, OwinConstants.ResponseBody);
@@ -73,8 +73,6 @@ namespace Gate.Adapters.Nancy
                     nancyRequest,
                     context =>
                     {
-                        callCompleted.Finally(context.Dispose);
-
                         var nancyResponse = context.Response;
                         foreach (var header in nancyResponse.Headers)
                         {
@@ -92,6 +90,7 @@ namespace Gate.Adapters.Nancy
 
                         env[OwinConstants.ResponseStatusCode] = (int)nancyResponse.StatusCode;
                         nancyResponse.Contents(owinResponseBody);
+                        context.Dispose();
                         tcs.TrySetResult(null);
                     },
                     tcs.SetException);
