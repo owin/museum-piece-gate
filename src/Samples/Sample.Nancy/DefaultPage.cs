@@ -29,13 +29,12 @@ namespace Sample.Nancy
                 response.Write("<p><a href='{0}/wilsonasync/'>Wilson (async)</a></p>", request.PathBase);
                 response.Write("<p><a href='{0}/nancy/'>Nancy</a></p>", request.PathBase);
                 response.Write("<p><a href='{0}/fileupload'>File Upload</a></p>", request.PathBase);
-                return response.EndAsync();
             }
             else
             {
                 response.StatusCode = 404;
-                return response.EndAsync();
             }
+            return TaskHelpers.Completed();
         }
     }
 }

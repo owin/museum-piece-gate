@@ -40,11 +40,10 @@ namespace Gate.Middleware.Tests
 
             Call(b => b
                 .UseMethodOverride()
-                .UseDirect(
+                .UseGate(
                     (appRequest, appResponse) => 
                     {
                         appResponse.Write(appRequest.Method);
-                        return appResponse.EndAsync();
                     }),
                 request);
 
@@ -61,11 +60,10 @@ namespace Gate.Middleware.Tests
 
             Call(b => b
                 .UseMethodOverride()
-                .UseDirect(
+                .UseGate(
                     (appRequest, appResponse) =>
                     {
                         appResponse.Write(appRequest.Method);
-                        return appResponse.EndAsync();
                     }),
                 request);
 

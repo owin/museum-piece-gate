@@ -75,8 +75,7 @@ namespace Gate.Middleware.StaticFiles
                         response.Headers.SetHeader(headerName, headerValue);
                     }
 
-                    response.Write(body);
-                    return response.EndAsync();
+                    return response.WriteAsync(body);
                 };
         }
 
