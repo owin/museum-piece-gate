@@ -446,11 +446,11 @@ namespace Gate.Middleware
 
         private static void SetFatalResult(IDictionary<string, object> env, string standardSection, string message)
         {
-            Response response = new Response(env);
-            response.StatusCode = 500;
-            response.ReasonPhrase = "Internal Server Error";
-            response.Write("OWIN v0.15.0 validation failure: Section#{0}, {1}", standardSection, message);
-            response.End();
+            new Response(env)
+            {
+                StatusCode = 500, 
+                ReasonPhrase = "Internal Server Error"
+            }.Write("OWIN v0.15.0 validation failure: Section#{0}, {1}", standardSection, message);
         }
 
         private static string CreateWarning(string standardSection, string message)

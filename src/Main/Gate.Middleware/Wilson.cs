@@ -49,7 +49,7 @@ namespace Gate.Middleware
             response.Write("<p><a href='" + href + "'>flip!</a></p>");
             response.Write("<p><a href='?flip=crash'>crash!</a></p>");
 
-            return response.EndAsync();
+            return TaskHelpers.Completed();
         }        
     }
 
@@ -78,7 +78,7 @@ namespace Gate.Middleware
                 href = "?flip=right";
             }
 
-            TimerLoop(350, 
+            return TimerLoop(350, 
                 () => response.Write("<title>Hutchtastic</title>"),
                 () => response.Write("<pre>"), 
                 () => response.Write(wilson), 
@@ -91,15 +91,7 @@ namespace Gate.Middleware
                     }
                 }, 
                 () => response.Write("<p><a href='" + href + "'>flip!</a></p>"),
-                () => response.Write("<p><a href='?flip=crash'>crash!</a></p>"), 
-                () => response.End())
-            .Catch(errorInfo =>
-            {
-                response.End(errorInfo.Exception);
-                return errorInfo.Handled();
-            });
-
-            return response.Task;
+                () => response.Write("<p><a href='?flip=crash'>crash!</a></p>"));
         }
 
         static Task TimerLoop(double interval, params Action[] steps)

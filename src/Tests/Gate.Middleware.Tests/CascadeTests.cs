@@ -35,10 +35,19 @@ namespace Gate.Middleware.Tests
             Assert.That(response.StatusCode, Is.EqualTo(404));
         }
 
+        AppFunc SetStatusApp(int statusCode)
+        {
+            return env =>
+            {
+                var resp = new Response(env) {StatusCode = statusCode};
+                return TaskHelpers.Completed();
+            };
+        }
+
         [Test]
         public void Cascade_with_app_calls_through()
         {
-            var cascade = Build(b => b.UseCascade((AppFunc)(env => new Response(env) { StatusCode = 200 }.EndAsync())));
+            var cascade = Build(b => b.UseCascade(SetStatusApp(200)));
 
             Request request = new Request();
             Response response = new Response(request.Environment);
@@ -50,8 +59,8 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Cascade_will_pass_along_to_first_non_404_app()
         {
-            AppFunc app1 = env => new Response(env) { StatusCode = 404 }.EndAsync();
-            AppFunc app2 = env => new Response(env) { StatusCode = 200 }.EndAsync();
+            AppFunc app1 = SetStatusApp(404);
+            AppFunc app2 = SetStatusApp(200);
             AppFunc app3 = env => TaskHelpers.FromError<object>(
                 new ApplicationException("This should not have been invoked"));
 
