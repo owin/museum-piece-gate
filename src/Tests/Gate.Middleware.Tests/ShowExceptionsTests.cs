@@ -39,7 +39,7 @@ namespace Gate.Middleware.Tests
                     appResult.Headers.SetHeader("Content-Type", "text/plain");
                     appResult.Headers.SetHeader("Content-Length", "5");
                     appResult.Write("Hello");
-                    return appResult.EndAsync();
+                    return TaskHelpers.Completed();
                 }));
 
             Request request = new Request();

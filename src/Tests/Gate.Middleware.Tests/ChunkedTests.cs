@@ -69,13 +69,12 @@ namespace Gate.Middleware.Tests
         {
             var response = Call(b => b
                 .UseChunked()
-                .UseDirect((req, resp) =>
+                .UseGate((req, resp) =>
                 {
                     resp.SetHeader("Content-Length", "12");
                     resp.SetHeader("Content-Type", "text/plain");
                     resp.Write("hello ");
-                    resp.Write("world.");                                        
-                    return resp.EndAsync();
+                    resp.Write("world.");
                 }));
 
             Assert.That(response.Headers.ContainsKey("transfer-encoding"), Is.False);
@@ -87,13 +86,12 @@ namespace Gate.Middleware.Tests
         {
             var response = Call(b => b
                 .UseChunked()
-                .UseDirect((req, resp) =>
+                .UseGate((req, resp) =>
                 {
                     resp.SetHeader("transfer-encoding", "girl");
                     resp.SetHeader("Content-Type", "text/plain");
                     resp.Write("hello ");
                     resp.Write("world.");
-                    return resp.EndAsync();
                 }));
 
             Assert.That(response.Headers.GetHeader("Transfer-Encoding"), Is.EqualTo("girl"));
@@ -105,12 +103,11 @@ namespace Gate.Middleware.Tests
         {
             var response = Call(b => b
                 .UseChunked()
-                .UseDirect((req, resp) =>
+                .UseGate((req, resp) =>
                 {
                     resp.SetHeader("Content-Type", "text/plain");
                     resp.Write("hello ");
                     resp.Write("world.");
-                    return resp.EndAsync();
                 }));
 
             Assert.That(response.Headers.GetHeader("Transfer-Encoding"), Is.EqualTo("chunked"));

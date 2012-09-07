@@ -41,7 +41,7 @@ namespace Gate.Middleware
                 {
                     var response = new Response(env) { Status = "500 Internal Server Error", ContentType = "text/html" };
                     showErrorMessage(ex, response.Write);
-                    return response.EndAsync();
+                    return TaskHelpers.Completed();
                 };
 
                 // Don't try to modify the headers after the first write has occurred.

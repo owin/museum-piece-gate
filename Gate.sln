@@ -12,7 +12,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{4E00A931
 	ProjectSection(SolutionItems) = preProject
 		build = build
 		build.cmd = build.cmd
-		src\CommonAssemblyInfo.cs = src\CommonAssemblyInfo.cs
 		Sakefile.shade = Sakefile.shade
 	EndProjectSection
 EndProject

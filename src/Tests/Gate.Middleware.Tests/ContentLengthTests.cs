@@ -30,7 +30,7 @@ namespace Gate.Middleware.Tests
         {
             var result = CallPipe(b => b
                 .UseContentLength()
-                .UseDirect((request, response) => response.EndAsync()));
+                .UseGate((request, response) => { }));
 
             Assert.That(result.GetHeader("content-length"), Is.EqualTo("0"));
         }
@@ -40,12 +40,11 @@ namespace Gate.Middleware.Tests
         {
             var result = CallPipe(b => b
                 .UseContentLength()
-                .UseDirect(
+                .UseGate(
                     (request, response) => 
                     {
                         response.Write("hello ");
                         response.Write("world.");
-                        return response.EndAsync();
                     }));
 
             Assert.That(result.GetHeader("content-length"), Is.EqualTo("12"));
@@ -56,11 +55,10 @@ namespace Gate.Middleware.Tests
         {
             var result = CallPipe(b => b
                 .UseContentLength()
-                .UseDirect(
+                .UseGate(
                     (request, response) => 
                     {
                         response.Headers.SetHeader("content-length", "69");
-                        return response.EndAsync();
                     }));
 
             Assert.That(result.GetHeader("content-length"), Is.EqualTo("69"));
@@ -71,11 +69,10 @@ namespace Gate.Middleware.Tests
         {
             var result = CallPipe(b => b
                 .UseContentLength()
-                .UseDirect(
+                .UseGate(
                     (request, response) => 
                     {
                         response.Headers.SetHeader("transfer-encoding", "chunked");
-                        return response.EndAsync();
                     }));
 
             Assert.That(result.ContainsKey("content-length"), Is.False);
@@ -96,11 +93,10 @@ namespace Gate.Middleware.Tests
         {
             var result = CallPipe(b => b
                 .UseContentLength()
-                .UseDirect(
+                .UseGate(
                     (request, response) => 
                     {
                         response.Status = status;
-                        return response.EndAsync();
                     }));
 
             Assert.That(result.ContainsKey("content-length"), Is.False);

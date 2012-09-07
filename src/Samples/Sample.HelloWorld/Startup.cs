@@ -10,7 +10,7 @@ namespace Sample.HelloWorld
     {
         public void Configuration(IAppBuilder builder)
         {
-            builder.UseDirect((req, resp) =>
+            builder.UseGate((req, resp) =>
             {
                 resp.Status = "200 OK";
                 resp.ContentType = "text/html";
@@ -59,7 +59,6 @@ namespace Sample.HelloWorld
                 resp.Write("</ul>");
                 resp.Write("</body>");
                 resp.Write("</html>");
-                return resp.Task;
             });
         }
     }

@@ -65,7 +65,11 @@ namespace Gate.Middleware.Tests
         public void Static_calls_down_the_chain_if_URL_root_is_unknown()
         {
             var result = Call(b => b.UseStatic().UseFunc<AppFunc>(
-                _=> env => new Response(env) { StatusCode = 301 }.EndAsync()), "/johnson/and/johnson");
+                _ => env =>
+                {
+                    new Response(env) { StatusCode = 301 }; 
+                    return TaskHelpers.Completed();
+                }), "/johnson/and/johnson");
 
             Assert.That(result, Is.EqualTo(301));
         }

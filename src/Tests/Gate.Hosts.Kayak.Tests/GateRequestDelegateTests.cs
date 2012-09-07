@@ -136,7 +136,7 @@ namespace Gate.Hosts.Kayak.Tests
             if (OnRequest != null)
                 OnRequest();
 
-            return response.EndAsync();
+            return TaskHelpers.Completed();
         }
     }
 

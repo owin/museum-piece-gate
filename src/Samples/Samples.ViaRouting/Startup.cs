@@ -24,11 +24,10 @@ namespace Samples.ViaRouting
 
             // the routes above will be map onto whatever is added to
             // the IAppBuilder builder that was passed into this method
-            builder.UseDirect((req, res) =>
+            builder.UseGate((req, res) =>
             {
                 res.ContentType = "text/plain";
                 res.Write("Hello from " + req.PathBase + req.Path);
-                return res.EndAsync();
             });
 
             // a route may also be added for a given builder method.
@@ -56,7 +55,7 @@ namespace Samples.ViaRouting
             headers.Add("Content-Type", new string[] { "text/plain" });
             byte[] body = Encoding.UTF8.GetBytes("Hello from lowest-level code");
             var output = (Stream)env[OwinConstants.ResponseBody];
-            output.Write(body, 0, body.Length);            
+            output.Write(body, 0, body.Length);
             return TaskHelpers.Completed();
         }
     }
