@@ -63,6 +63,7 @@ namespace Gate.Middleware.StaticFiles
         {
             return env =>
                 {
+                    Request request = new Request(env);
                     Response response = new Response(env);
                     response.StatusCode = status;
                     response.Headers
@@ -73,6 +74,11 @@ namespace Gate.Middleware.StaticFiles
                     if (headerName != null && headerValue != null)
                     {
                         response.Headers.SetHeader(headerName, headerValue);
+                    }
+
+                    if ("HEAD".Equals(request.Method, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return TaskHelpers.Completed();
                     }
 
                     return response.WriteAsync(body);
@@ -127,6 +133,12 @@ namespace Gate.Middleware.StaticFiles
                 .SetHeader("Last-Modified", fileInfo.LastWriteTimeUtc.ToHttpDateString())
                 .SetHeader("Content-Type", Mime.MimeType(fileInfo.Extension, "text/plain"))
                 .SetHeader("Content-Length", size.ToString(CultureInfo.InvariantCulture));
+
+            if ("HEAD".Equals(request.Method, StringComparison.OrdinalIgnoreCase))
+            {
+                // Suppress the body.
+                return TaskHelpers.Completed();
+            }
 
             return new FileBody(path, range).Start(response.OutputStream);
         }

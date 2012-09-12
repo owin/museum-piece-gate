@@ -29,12 +29,20 @@ namespace Gate.Middleware
 
         public static Task Call(IDictionary<string, object> env)
         {
-            return new Response(env)
+            Response response = new Response(env)
             {
                 StatusCode = 404, 
                 ReasonPhrase = "Not Found", 
-                ContentType = "text/html"
-            }.WriteAsync(body);
+                ContentType = "text/html",
+                ContentLength = body.Length,
+            };
+
+            if ("HEAD".Equals(new Request(env).Method, StringComparison.OrdinalIgnoreCase))
+            {
+                return TaskHelpers.Completed();
+            }
+
+            return response.WriteAsync(body);
         }
     }
 }
