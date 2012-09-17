@@ -73,6 +73,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ShowExceptions.View.tt</DependentUpon>
     </Compile>
+    <Compile Include="Trace.cs" />
     <Compile Include="Utils\HttpFormatExtensions.cs" />
     <Compile Include="Utils\RangeHeader.cs" />
     <Compile Include="Utils\FilterStream.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="WebSockets\WebSocketLayer.cs" />
     <Compile Include="WebSockets\WebSocketToBinaryStream.cs" />
     <Compile Include="Wilson.cs" />
+    <Compile Include="XSendFile.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gate\Gate.csproj">
