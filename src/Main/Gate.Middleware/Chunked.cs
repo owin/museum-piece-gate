@@ -23,6 +23,7 @@ namespace Owin
 namespace Gate.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
+    using SendFileFunc = Func<string, long, long, Task>;
 
     // This middleware implements chunked response body encoding as the default encoding 
     // if the application does not specify Content-Length or Transfer-Encoding.
@@ -47,11 +48,11 @@ namespace Gate.Middleware
             TriggerStream triggerStream = new TriggerStream(orriginalStream);
             response.OutputStream = triggerStream;
             FilterStream filterStream = null;
-            bool onFirstWriteExecuted = false;
+            bool finalizeHeadersExecuted = false;
 
-            triggerStream.OnFirstWrite = () =>
+            Action finalizeHeaders = () =>
             {
-                onFirstWriteExecuted = true;
+                finalizeHeadersExecuted = true;
                 if (IsStatusWithNoNoEntityBody(response.StatusCode)
                     || response.Headers.ContainsKey("Content-Length")
                     || response.Headers.ContainsKey("Transfer-Encoding"))
@@ -74,13 +75,42 @@ namespace Gate.Middleware
                 }
             };
 
+            // Hook first write
+            triggerStream.OnFirstWrite = finalizeHeaders;
             env[OwinConstants.ResponseBody] = triggerStream;
+
+            // Hook SendFileFunc
+            SendFileFunc sendFile = env.Get<SendFileFunc>("sendfile.Func");
+            if (sendFile != null)
+            {
+                SendFileFunc sendFileChunked = (name, offset, count) =>
+                {
+                    if (!finalizeHeadersExecuted)
+                    {
+                        finalizeHeaders();
+                    }
+
+                    if (filterStream == null)
+                    {
+                        // Due to headers we are not doing chunked, just pass through.
+                        return sendFile(name, offset, count);
+                    }
+
+                    // Insert chunking around the file body
+                    ArraySegment<byte> prefix = ChunkPrefix((uint)count);
+                    return orriginalStream.WriteAsync(prefix.Array, prefix.Offset, prefix.Count)
+                        .Then(() => orriginalStream.FlushAsync()) // Flush to ensure the data hits the wire before sendFile.
+                        .Then(() => sendFile(name, offset, count))
+                        .Then(() => orriginalStream.WriteAsync(EndOfChunk.Array, EndOfChunk.Offset, EndOfChunk.Count));
+                };
+                env["sendfile.Func"] = sendFileChunked;
+            }
 
             return nextApp(env).Then(() =>
             {
-                if (!onFirstWriteExecuted)
+                if (!finalizeHeadersExecuted)
                 {
-                    triggerStream.OnFirstWrite();
+                    finalizeHeaders();
                 }
 
                 if (filterStream != null)

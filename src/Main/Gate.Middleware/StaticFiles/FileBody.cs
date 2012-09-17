@@ -7,6 +7,8 @@ using Gate.Utils;
 
 namespace Gate.Middleware.StaticFiles
 {
+    using SendFileFunc = Func<string, long, long, Task>;
+
     public class FileBody
     {
         private Stream fileStream;
@@ -22,7 +24,16 @@ namespace Gate.Middleware.StaticFiles
         public Task Start(Stream stream)
         {
             this.OpenFileStream();
-            return this.fileStream.CopyToAsync(stream, (int)(range.Item2 - range.Item1 + 1));
+            try
+            {
+                return this.fileStream.CopyToAsync(stream, (int)(range.Item2 - range.Item1 + 1))
+                    .Finally(() => CloseFileStream());
+            }
+            catch (Exception)
+            {
+                CloseFileStream();
+                throw;
+            }
         }
 
         private void OpenFileStream()
@@ -32,6 +43,19 @@ namespace Gate.Middleware.StaticFiles
                 this.fileStream = File.OpenRead(path);
                 this.fileStream.Seek(range.Item1, SeekOrigin.Begin);
             }
+        }
+
+        private void CloseFileStream()
+        {
+            if (this.fileStream != null)
+            {
+                this.fileStream.Close();
+            }
+        }
+
+        public Task Start(SendFileFunc sendFile)
+        {
+            return sendFile(path, range.Item1, (range.Item2 - range.Item1 + 1));
         }
     }
 }
