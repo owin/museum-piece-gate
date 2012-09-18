@@ -23,7 +23,7 @@ namespace Owin
 namespace Gate.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
-    using SendFileFunc = Func<string, long, long, Task>;
+    using SendFileFunc = Func<string, long, long?, Task>;
 
     // This middleware implements chunked response body encoding as the default encoding 
     // if the application does not specify Content-Length or Transfer-Encoding.
@@ -95,6 +95,8 @@ namespace Gate.Middleware
                         // Due to headers we are not doing chunked, just pass through.
                         return sendFile(name, offset, count);
                     }
+
+                    count = count ?? new FileInfo(name).Length - offset;
 
                     // Insert chunking around the file body
                     ArraySegment<byte> prefix = ChunkPrefix((uint)count);

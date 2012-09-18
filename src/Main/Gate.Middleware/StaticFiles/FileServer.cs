@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Gate.Middleware.StaticFiles
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
-    using SendFileFunc = Func<string, long, long, Task>;
+    using SendFileFunc = Func<string, long, long?, Task>;
 
     // Used by the Static middleware to send static files to the client.
     public class FileServer

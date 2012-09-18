@@ -7,7 +7,7 @@ using Gate.Utils;
 
 namespace Gate.Middleware.StaticFiles
 {
-    using SendFileFunc = Func<string, long, long, Task>;
+    using SendFileFunc = Func<string, long, long?, Task>;
 
     public class FileBody
     {

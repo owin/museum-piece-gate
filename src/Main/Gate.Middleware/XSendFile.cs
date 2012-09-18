@@ -21,7 +21,7 @@ namespace Owin
 namespace Gate.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
-    using SendFileFunc = Func<string, long, long, Task>;
+    using SendFileFunc = Func<string, long, long?, Task>;
 
     // This middleware can be used to enable X-SendFile response header functionality.
     // Applications can set this header if they do not want to or otherwise can't 
@@ -61,7 +61,7 @@ namespace Gate.Middleware
                 SendFileFunc sendFile = env.Get<SendFileFunc>("sendfile.Func");
                 if (sendFile != null)
                 {
-                    return sendFile(file, 0, fileInfo.Length);
+                    return sendFile(file, 0, null);
                 }
 
                 // Fall back to a manual copy
