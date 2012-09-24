@@ -56,7 +56,7 @@ namespace Gate.Middleware.WebSockets
         >;
 
     // This class implements the WebSocket layer on top of an opaque stream.
-    // WebSocket Extension v0.3 is currently implemented.
+    // WebSocket Extension v0.4 is currently implemented.
     public class WebSocketLayer
     {
         private Stream incoming;
@@ -64,17 +64,17 @@ namespace Gate.Middleware.WebSockets
 
         private IDictionary<string, object> environment;
 
-        public WebSocketLayer(Stream incoming, Stream outgoing)
+        public WebSocketLayer(IDictionary<string, object> opaqueEnv)
         {
-            this.incoming = incoming;
-            this.outgoing = outgoing;
-
-            this.environment = new Dictionary<string, object>();
-            this.environment["websocket.SendAsyncFunc"] = new WebSocketSendAsync(SendAsync);
-            this.environment["websocket.ReceiveAsyncFunc"] = new WebSocketReceiveAsync(ReceiveAsync);
-            this.environment["websocket.CloseAsyncFunc"] = new WebSocketCloseAsync(CloseAsync);
-            this.environment["websocket.CallCancelled"] = CancellationToken.None; // TODO:
+            this.environment = opaqueEnv;
+            this.environment["websocket.SendAsync"] = new WebSocketSendAsync(SendAsync);
+            this.environment["websocket.ReceiveAsync"] = new WebSocketReceiveAsync(ReceiveAsync);
+            this.environment["websocket.CloseAsync"] = new WebSocketCloseAsync(CloseAsync);
+            this.environment["websocket.CallCancelled"] = this.environment["opaque.CallCancelled"];
             this.environment["websocket.Version"] = "1.0";
+
+            this.incoming = this.environment.Get<Stream>("opaque.Incoming");
+            this.outgoing = this.environment.Get<Stream>("opaque.Outgoing");
         }
 
         public IDictionary<string, object> Environment
