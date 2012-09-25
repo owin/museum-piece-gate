@@ -78,10 +78,8 @@
     <Compile Include="Utils\RangeHeader.cs" />
     <Compile Include="Utils\FilterStream.cs" />
     <Compile Include="Utils\TriggerStream.cs" />
-    <Compile Include="WebSockets\BinaryStream.cs" />
     <Compile Include="WebSockets\OpaqueToWebSocket.cs" />
     <Compile Include="WebSockets\WebSocketLayer.cs" />
-    <Compile Include="WebSockets\WebSocketToBinaryStream.cs" />
     <Compile Include="Wilson.cs" />
     <Compile Include="XSendFile.cs" />
   </ItemGroup>
