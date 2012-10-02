@@ -98,14 +98,14 @@ namespace Gate
             return this;
         }
 
-        void OnSendingHeaders(Action callback)
+        void OnSendingHeaders(Action<object> callback, object state)
         {
-            var register = Environment.Get<Action<Action>>(OwinConstants.OnSendingHeaders);
+            var register = Environment.Get<Action<Action<object>, object>>(OwinConstants.OnSendingHeaders);
             if (register == null)
             {
                 throw new NotImplementedException("Environment does not contain server.OnSendingHeaders");
             }
-            register(callback);
+            register(callback, state);
         }
 
         public Response SetCookie(string key, string value)
