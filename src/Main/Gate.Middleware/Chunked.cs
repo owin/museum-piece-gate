@@ -23,6 +23,7 @@ namespace Owin
 namespace Gate.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
+    using SendFileFunc = Func<string, long, long?, Task>;
 
     // This middleware implements chunked response body encoding as the default encoding 
     // if the application does not specify Content-Length or Transfer-Encoding.
@@ -41,13 +42,17 @@ namespace Gate.Middleware
 
         public Task Invoke(IDictionary<string, object> env)
         {
+            Request request = new Request(env);
             Response response = new Response(env);
             Stream orriginalStream = response.OutputStream;
             TriggerStream triggerStream = new TriggerStream(orriginalStream);
             response.OutputStream = triggerStream;
             FilterStream filterStream = null;
-            triggerStream.OnFirstWrite = () =>
+            bool finalizeHeadersExecuted = false;
+
+            Action finalizeHeaders = () =>
             {
+                finalizeHeadersExecuted = true;
                 if (IsStatusWithNoNoEntityBody(response.StatusCode)
                     || response.Headers.ContainsKey("Content-Length")
                     || response.Headers.ContainsKey("Transfer-Encoding"))
@@ -57,25 +62,62 @@ namespace Gate.Middleware
 
                 // Buffer
                 response.Headers.SetHeader("Transfer-Encoding", "chunked");
-                filterStream = new FilterStream(orriginalStream, OnWriteFilter);
-                triggerStream.InnerStream = filterStream;
+
+                if ("HEAD".Equals(request.Method, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Someone tried to write a body for a HEAD request. Suppress it.
+                    triggerStream.InnerStream = Stream.Null;
+                }
+                else
+                {
+                    filterStream = new FilterStream(orriginalStream, OnWriteFilter);
+                    triggerStream.InnerStream = filterStream;
+                }
             };
 
+            // Hook first write
+            triggerStream.OnFirstWrite = finalizeHeaders;
             env[OwinConstants.ResponseBody] = triggerStream;
+
+            // Hook SendFileFunc
+            SendFileFunc sendFile = env.Get<SendFileFunc>("sendfile.Func");
+            if (sendFile != null)
+            {
+                SendFileFunc sendFileChunked = (name, offset, count) =>
+                {
+                    if (!finalizeHeadersExecuted)
+                    {
+                        finalizeHeaders();
+                    }
+
+                    if (filterStream == null)
+                    {
+                        // Due to headers we are not doing chunked, just pass through.
+                        return sendFile(name, offset, count);
+                    }
+
+                    count = count ?? new FileInfo(name).Length - offset;
+
+                    // Insert chunking around the file body
+                    ArraySegment<byte> prefix = ChunkPrefix((uint)count);
+                    return orriginalStream.WriteAsync(prefix.Array, prefix.Offset, prefix.Count)
+                        .Then(() => orriginalStream.FlushAsync()) // Flush to ensure the data hits the wire before sendFile.
+                        .Then(() => sendFile(name, offset, count))
+                        .Then(() => orriginalStream.WriteAsync(EndOfChunk.Array, EndOfChunk.Offset, EndOfChunk.Count));
+                };
+                env["sendfile.Func"] = sendFileChunked;
+            }
 
             return nextApp(env).Then(() =>
             {
+                if (!finalizeHeadersExecuted)
+                {
+                    finalizeHeaders();
+                }
+
                 if (filterStream != null)
                 {
                     // Write the chunked terminator
-                    return orriginalStream.WriteAsync(FinalChunk.Array, FinalChunk.Offset, FinalChunk.Count);
-                }
-                else if (!IsStatusWithNoNoEntityBody(response.StatusCode)
-                    && !response.Headers.ContainsKey("Content-Length")
-                    && !response.Headers.ContainsKey("Transfer-Encoding"))
-                {
-                    // There were no Writes.
-                    response.Headers.SetHeader("Transfer-Encoding", "chunked");
                     return orriginalStream.WriteAsync(FinalChunk.Array, FinalChunk.Offset, FinalChunk.Count);
                 }
                 

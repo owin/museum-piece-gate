@@ -32,7 +32,7 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Method_is_overridden_if_override_present()
         {
-            Request request = new Request();
+            Request request = Request.Create();
             request.Method = "POST";
             request.Headers.SetHeader("x-http-method-override", "DELETE");
             Response response = new Response(request.Environment);
@@ -53,7 +53,7 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Method_is_unchanged_if_override_not_present()
         {
-            Request request = new Request();
+            Request request = Request.Create();
             request.Method = "POST";
             Response response = new Response(request.Environment);
             response.OutputStream = new MemoryStream();

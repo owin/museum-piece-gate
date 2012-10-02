@@ -42,7 +42,7 @@ namespace Gate.Middleware.Tests
                     return TaskHelpers.Completed();
                 }));
 
-            Request request = new Request();
+            Request request = Request.Create();
             Response response = new Response(request.Environment);
             MemoryStream buffer = new MemoryStream();
             response.OutputStream = buffer;
@@ -59,7 +59,7 @@ namespace Gate.Middleware.Tests
                 .UseShowExceptions()
                 .UseFunc<AppFunc>(_ => appEnv => { throw new ApplicationException("Kaboom"); }));
 
-            Request request = new Request();
+            Request request = Request.Create();
             Response response = new Response(request.Environment);
             MemoryStream buffer = new MemoryStream();
             response.OutputStream = buffer;
@@ -88,7 +88,7 @@ namespace Gate.Middleware.Tests
                     throw new ApplicationException("failed sending body sync");
                 }));
 
-            Request request = new Request();
+            Request request = Request.Create();
             Response response = new Response(request.Environment);
             MemoryStream buffer = new MemoryStream();
             response.OutputStream = buffer;
@@ -117,7 +117,7 @@ namespace Gate.Middleware.Tests
                     return TaskHelpers.FromError(new ApplicationException("failed sending body async"));
                 }));
 
-            Request request = new Request();
+            Request request = Request.Create();
             Response response = new Response(request.Environment);
             MemoryStream buffer = new MemoryStream();
             response.OutputStream = buffer;

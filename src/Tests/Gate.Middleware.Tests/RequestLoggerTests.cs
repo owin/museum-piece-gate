@@ -20,7 +20,7 @@ namespace Gate.Middleware.Tests
                 return TaskHelpers.Completed();
             });
 
-            middleware.Invoke(new Request().Environment).Wait();
+            middleware.Invoke(Request.Create().Environment).Wait();
         }
 
         [Test]
@@ -32,7 +32,7 @@ namespace Gate.Middleware.Tests
             });
 
             StringWriter writer = new StringWriter();
-            Request request = new Request();
+            Request request = Request.Create();
             request.TraceOutput = writer;
             middleware.Invoke(request.Environment).Wait();
             Assert.That(writer.GetStringBuilder().ToString(), Is.Not.EqualTo(string.Empty));

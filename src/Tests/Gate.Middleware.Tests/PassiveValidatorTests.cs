@@ -32,7 +32,7 @@ namespace Gate.Middleware.Tests
                     return TaskHelpers.Completed();
                 }).Invoke;
 
-            Request request = new Request();
+            Request request = Request.Create();
             request.CancellationToken = new CancellationTokenSource().Token;
             request.Body = Stream.Null;
             request.Method = "GET";

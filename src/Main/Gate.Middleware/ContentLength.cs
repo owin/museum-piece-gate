@@ -36,11 +36,13 @@ namespace Gate.Middleware
 
         public Task Invoke(IDictionary<string, object> env)
         {
+            Request request = new Request(env);
             Response response = new Response(env);
             Stream orriginalStream = response.OutputStream;
             TriggerStream triggerStream = new TriggerStream(orriginalStream);
             response.OutputStream = triggerStream;
             MemoryStream buffer = null;
+
             triggerStream.OnFirstWrite = () =>
             {
                 if (IsStatusWithNoNoEntityBody(response.StatusCode)
@@ -68,8 +70,13 @@ namespace Gate.Middleware
                     else
                     {
                         response.Headers.SetHeader("Content-Length", buffer.Length.ToString(CultureInfo.InvariantCulture));
-                        buffer.Seek(0, SeekOrigin.Begin);
-                        return buffer.CopyToAsync(orriginalStream);
+
+                        // Suppress the body for HEAD requests.
+                        if (!"HEAD".Equals(request.Method, StringComparison.OrdinalIgnoreCase))
+                        {
+                            buffer.Seek(0, SeekOrigin.Begin);
+                            return buffer.CopyToAsync(orriginalStream);
+                        }
                     }
                 }
                 else if (!IsStatusWithNoNoEntityBody(response.StatusCode)

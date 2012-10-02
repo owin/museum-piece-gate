@@ -211,7 +211,8 @@ namespace Gate.Tests
         [Test]
         public void QueryShouldDecodePlusAsSpace()
         {
-            var req = new Request { QueryString = "foo=hello+world&the+bar=quux" };
+            var req = Request.Create();
+            req.QueryString = "foo=hello+world&the+bar=quux";
             Assert.That(req.Query["foo"], Is.EqualTo("hello world"));
             Assert.That(req.Query["the bar"], Is.EqualTo("quux"));
         }

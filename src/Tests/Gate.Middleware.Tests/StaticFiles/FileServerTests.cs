@@ -21,7 +21,8 @@ namespace Gate.Middleware.Tests.StaticFiles
 
         private Response GetFile(string path)
         {
-            Request request = new Request();
+            Request request = Request.Create();
+            request.Method = "GET";
             Response response = new Response(request.Environment);
             response.OutputStream = new MemoryStream();
             request.Path = path;
@@ -79,7 +80,8 @@ namespace Gate.Middleware.Tests.StaticFiles
         [Test]
         public void FileServer_returns_correct_byte_range_in_body()
         {
-            Request request = new Request();
+            Request request = Request.Create();
+            request.Method = "GET";
             request.Path = "/test.txt";
             request.Headers.SetHeader("Range", "bytes=22-33");
             Response response = new Response(request.Environment);
@@ -95,7 +97,8 @@ namespace Gate.Middleware.Tests.StaticFiles
         [Test]
         public void FileServer_returns_error_for_unsatisfiable_byte_range()
         {
-            Request request = new Request();
+            Request request = Request.Create();
+            request.Method = "GET";
             request.Path = "/test.txt";
             request.Headers.SetHeader("Range", "bytes=1234-5678");
             Response response = new Response(request.Environment);

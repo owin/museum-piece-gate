@@ -8,27 +8,78 @@ using System.Threading;
 
 namespace Gate.Middleware.WebSockets
 {
+    using WebSocketSendAsync =
+        Func
+        <
+            ArraySegment<byte> /* data */,
+            int /* messageType */,
+            bool /* endOfMessage */,
+            CancellationToken /* cancel */,
+            Task
+        >;
+
+    using WebSocketReceiveAsync =
+        Func
+        <
+            ArraySegment<byte> /* data */,
+            CancellationToken /* cancel */,
+            Task
+            <
+                Tuple
+                <
+                    int /* messageType */,
+                    bool /* endOfMessage */,
+                    int? /* count */,
+                    int? /* closeStatus */,
+                    string /* closeStatusDescription */
+                >
+            >
+        >;
+
     using WebSocketReceiveTuple =
         Tuple
-            <
-                int /* messageType */,
-                bool /* endOfMessage */,
-                int? /* count */,
-                int? /* closeStatus */,
-                string /* closeStatusDescription */
-            >;
+        <
+            int /* messageType */,
+            bool /* endOfMessage */,
+            int? /* count */,
+            int? /* closeStatus */,
+            string /* closeStatusDescription */
+        >;
+
+    using WebSocketCloseAsync =
+        Func
+        <
+            int /* closeStatus */,
+            string /* closeDescription */,
+            CancellationToken /* cancel */,
+            Task
+        >;
 
     // This class implements the WebSocket layer on top of an opaque stream.
-    // WebSocket Extension v0.2 is currently implemented.
+    // WebSocket Extension v0.4 is currently implemented.
     public class WebSocketLayer
     {
         private Stream incoming;
         private Stream outgoing;
 
-        public WebSocketLayer(Stream incoming, Stream outgoing)
+        private IDictionary<string, object> environment;
+
+        public WebSocketLayer(IDictionary<string, object> opaqueEnv)
         {
-            this.incoming = incoming;
-            this.outgoing = outgoing;
+            this.environment = opaqueEnv;
+            this.environment["websocket.SendAsync"] = new WebSocketSendAsync(SendAsync);
+            this.environment["websocket.ReceiveAsync"] = new WebSocketReceiveAsync(ReceiveAsync);
+            this.environment["websocket.CloseAsync"] = new WebSocketCloseAsync(CloseAsync);
+            this.environment["websocket.CallCancelled"] = this.environment["opaque.CallCancelled"];
+            this.environment["websocket.Version"] = "1.0";
+
+            this.incoming = this.environment.Get<Stream>("opaque.Incoming");
+            this.outgoing = this.environment.Get<Stream>("opaque.Outgoing");
+        }
+
+        public IDictionary<string, object> Environment
+        {
+            get { return environment; }
         }
 
         // Add framing and send the data.  One frame per call to Send.

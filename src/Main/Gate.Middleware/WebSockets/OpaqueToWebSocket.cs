@@ -11,59 +11,91 @@ namespace Gate.Middleware.WebSockets
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
-    #pragma warning disable 811
-    using WebSocketFunc =
-        Func
+    using OpaqueUpgrade =
+        Action
         <
-        // SendAsync
-            Func
+            IDictionary<string, object>, // Opaque Upgrade parameters
+            Func // OpaqueFunc callback
             <
-                ArraySegment<byte> /* data */,
-                int /* messageType */,
-                bool /* endOfMessage */,
-                CancellationToken /* cancel */,
-                Task
-            >,
-        // ReceiveAsync
-            Func
-            <
-                ArraySegment<byte> /* data */,
-                CancellationToken /* cancel */,
-                Task
-                <
-                    Tuple
-                    <
-                        int /* messageType */,
-                        bool /* endOfMessage */,
-                        int? /* count */,
-                        int? /* closeStatus */,
-                        string /* closeStatusDescription */
-                    >
-                >
-            >,
-        // CloseAsync
-            Func
-            <
-                int /* closeStatus */,
-                string /* closeDescription */,
-                CancellationToken /* cancel */,
-                Task
-            >,
-        // Complete
-            Task
+                IDictionary<string, object>, // Opaque environment
+                Task // Complete
+            >
         >;
-    #pragma warning restore 811
 
-    using OpaqueStreamFunc =
+    using OpaqueFunc =
         Func
         <
-            Stream, // Incoming (CanRead)
-            Stream, // Outgoing (CanWrite)            
+            IDictionary<string, object>, // Opaque environment
             Task // Complete
         >;
 
+    using WebSocketAccept =
+        Action
+        <
+            IDictionary<string, object>, // WebSocket Accept parameters
+            Func // WebSocketFunc callback
+            <
+                IDictionary<string, object>, // WebSocket environment
+                Task // Complete
+            >
+        >;
+
+    using WebSocketFunc =
+        Func
+        <
+            IDictionary<string, object>, // WebSocket environment
+            Task // Complete
+        >;
+
+    using WebSocketSendAsync =
+        Func
+        <
+            ArraySegment<byte> /* data */,
+            int /* messageType */,
+            bool /* endOfMessage */,
+            CancellationToken /* cancel */,
+            Task
+        >;
+
+    using WebSocketReceiveAsync =
+        Func
+        <
+            ArraySegment<byte> /* data */,
+            CancellationToken /* cancel */,
+            Task
+            <
+                Tuple
+                <
+                    int /* messageType */,
+                    bool /* endOfMessage */,
+                    int? /* count */,
+                    int? /* closeStatus */,
+                    string /* closeStatusDescription */
+                >
+            >
+        >;
+
+    using WebSocketReceiveTuple =
+        Tuple
+        <
+            int /* messageType */,
+            bool /* endOfMessage */,
+            int? /* count */,
+            int? /* closeStatus */,
+            string /* closeStatusDescription */
+        >;
+
+    using WebSocketCloseAsync =
+        Func
+        <
+            int /* closeStatus */,
+            string /* closeDescription */,
+            CancellationToken /* cancel */,
+            Task
+        >;
+
     // This class demonstrates how to support WebSockets on a server that only supports opaque streams.
-    // WebSocket Extension v0.2 is currently implemented.
+    // WebSocket Extension v0.4 is currently implemented.
     public static class OpaqueToWebSocket
     {
         public static IAppBuilder UseWebSockets(this IAppBuilder builder)
@@ -76,37 +108,54 @@ namespace Gate.Middleware.WebSockets
             return env =>
             {
                 string opaqueSupport = env.Get<string>("opaque.Support");
+                OpaqueUpgrade opaqueUpgrade = env.Get<OpaqueUpgrade>("opaque.Upgrade");
                 string websocketSupport = env.Get<string>("websocket.Support");
-                if (opaqueSupport == "OpaqueStreamFunc" && websocketSupport != "WebSocketFunc" && IsWebSocketRequest(env))
-                {
-                    // Announce websocket support
-                    env["websocket.Support"] = "WebSocketFunc";
+                WebSocketAccept webSocketAccept = env.Get<WebSocketAccept>("websocket.Accept");
 
-                    return app(env).Then(() =>
+                if (opaqueSupport == "opaque.Upgrade" // If we have opaque support
+                    && opaqueUpgrade != null
+                    && websocketSupport != "websocket.Accept" // and no current websocket support
+                    && webSocketAccept == null) // and this request is a websocket request...
+                {
+                    // This middleware is adding support for websockets.
+                    env["websocket.Support"] = "websocket.Accept";
+
+                    if (IsWebSocketRequest(env))
                     {
-                        Response response = new Response(env);
-                        if (response.StatusCode == 101
-                            && env.Get<WebSocketFunc>("websocket.Func") != null)
-                        {
-                            SetWebSocketResponseHeaders(env);
+                        IDictionary<string, object> acceptOptions = null;
+                        WebSocketFunc webSocketFunc = null;
 
-                            WebSocketFunc wsBody = env.Get<WebSocketFunc>("websocket.Func");
-
-                            OpaqueStreamFunc opaqueBody = (incoming, outgoing) =>
+                        // Announce websocket support
+                        env["websocket.Accept"] = new WebSocketAccept(
+                            (options, callback) =>
                             {
-                                WebSocketLayer webSocket = new WebSocketLayer(incoming, outgoing);
-                                return wsBody(webSocket.SendAsync, webSocket.ReceiveAsync, webSocket.CloseAsync)
-                                    .Then(() => webSocket.CleanupAsync());
-                            };
+                                acceptOptions = options;
+                                webSocketFunc = callback;
+                                env[OwinConstants.ResponseStatusCode] = 101;
+                            });
 
-                            env["opaque.Func"] = opaqueBody;
-                        }
-                    });
+
+                        return app(env).Then(() =>
+                        {
+                            Response response = new Response(env);
+                            if (response.StatusCode == 101
+                                && webSocketFunc != null)
+                            {
+                                SetWebSocketResponseHeaders(env, acceptOptions);
+
+                                opaqueUpgrade(acceptOptions, opaqueEnv =>
+                                {
+                                    WebSocketLayer webSocket = new WebSocketLayer(opaqueEnv);
+                                    return webSocketFunc(webSocket.Environment)
+                                        .Then(() => webSocket.CleanupAsync());
+                                });
+                            }
+                        });
+                    }
                 }
-                else
-                {
-                    return app(env);
-                }
+
+                // else
+                return app(env);
             };
         }
 
@@ -119,7 +168,7 @@ namespace Gate.Middleware.WebSockets
 
         // Se the websocket response headers.
         // See RFC 6455 section 4.2.2.
-        private static void SetWebSocketResponseHeaders(IDictionary<string, object> env)
+        private static void SetWebSocketResponseHeaders(IDictionary<string, object> env, IDictionary<string, object> acceptOptions)
         {
             throw new NotImplementedException();
         }

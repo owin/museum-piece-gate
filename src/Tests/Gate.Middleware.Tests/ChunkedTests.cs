@@ -19,7 +19,8 @@ namespace Gate.Middleware.Tests
             var builder = new AppBuilder();
             pipe(builder);
             var app = (AppFunc)builder.Build(typeof(AppFunc));
-            Request request = new Request();
+            Request request = Request.Create();
+            request.Method = "GET";
             Response response = new Response(request.Environment);
             MemoryStream buffer = new MemoryStream();
             response.OutputStream = buffer;

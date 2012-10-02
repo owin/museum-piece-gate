@@ -94,8 +94,11 @@ namespace Gate.Middleware
         public Task Invoke(IDictionary<string, object> env)
         {
             var path = env[OwinConstants.RequestPath].ToString();
+            var method = env[OwinConstants.RequestMethod].ToString();
 
-            if (urls.Any(path.StartsWith))
+            if (("GET".Equals(method, StringComparison.OrdinalIgnoreCase)
+                    || "HEAD".Equals(method, StringComparison.OrdinalIgnoreCase))
+                && urls.Any(path.StartsWith))
             {
                 return fileServer.Invoke(env);
             }

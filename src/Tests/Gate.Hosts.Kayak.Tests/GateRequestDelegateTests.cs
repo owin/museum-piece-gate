@@ -155,7 +155,7 @@ namespace Gate.Hosts.Kayak.Tests
         [Ignore] // TODO: Implement the response body stream
         public void Adds_connection_close_response_header_if_no_length_or_encoding()
         {
-            Request request = new Request();
+            Request request = Request.Create();
             Response expectedResponse = new Response(request.Environment);
             expectedResponse.OutputStream = new MemoryStream();
             expectedResponse.Write("12345");
@@ -181,7 +181,7 @@ namespace Gate.Hosts.Kayak.Tests
         [Ignore] // TODO: Implement the response body stream
         public void Does_not_add_content_length_response_header_if_transfer_encoding_chunked()
         {
-            Request request = new Request();
+            Request request = Request.Create();
             Response expectedResponse = new Response(request.Environment);
             expectedResponse.OutputStream = new MemoryStream();
             expectedResponse.Headers.SetHeader("Transfer-Encoding", "chunked");
@@ -207,7 +207,7 @@ namespace Gate.Hosts.Kayak.Tests
         [Ignore] // TODO: Implement the request body stream
         public void Request_body_is_passed_through()
         {
-            Request request = new Request();
+            Request request = Request.Create();
             Response expectedResponse = new Response(request.Environment);
             var app = new StaticApp(expectedResponse);
 
@@ -236,7 +236,7 @@ namespace Gate.Hosts.Kayak.Tests
                 { "Key", "Value" }
             };
 
-            Request request = new Request();
+            Request request = Request.Create();
             Response expectedResponse = new Response(request.Environment);
             var app = new StaticApp(expectedResponse);
 
@@ -264,7 +264,7 @@ namespace Gate.Hosts.Kayak.Tests
         [Test]
         public void Environment_items_conform_to_spec_by_default()
         {
-            Request request = new Request();
+            Request request = Request.Create();
             Response expectedResponse = new Response(request.Environment);
             var app = new StaticApp(expectedResponse);
 

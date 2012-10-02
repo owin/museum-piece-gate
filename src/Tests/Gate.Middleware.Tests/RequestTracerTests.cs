@@ -21,7 +21,7 @@ namespace Gate.Middleware.Tests
                 return TaskHelpers.Completed();
             });
 
-            middleware.Invoke(new Request().Environment).Wait();
+            middleware.Invoke(Request.Create().Environment).Wait();
         }
 
         [Test]
@@ -37,7 +37,7 @@ namespace Gate.Middleware.Tests
             TraceSource traceSource = new TraceSource("TestSource", SourceLevels.All);
             traceSource.Listeners.Add(textListener);
 
-            Request request = new Request();
+            Request request = Request.Create();
             request.Environment["host.TraceSource"] = traceSource;
             middleware.Invoke(request.Environment).Wait();
             Assert.That(writer.GetStringBuilder().ToString(), Is.Not.EqualTo(string.Empty));

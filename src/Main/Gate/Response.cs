@@ -10,10 +10,11 @@ using System.Threading;
 
 namespace Gate
 {
-    // A helper class for creating, modifying, or consuming response data in the Environment dictionary.
-    public class Response
+    // A helper object for creating, modifying, or consuming response data in the Environment dictionary.
+    public struct Response
     {
         public Response(IDictionary<string, object> environment)
+            : this()
         {
             this.Environment = environment;
             this.Encoding = Encoding.UTF8;
@@ -95,6 +96,16 @@ namespace Gate
             else
                 Headers[name] = new[] { value };
             return this;
+        }
+
+        void OnSendingHeaders(Action<object> callback, object state)
+        {
+            var register = Environment.Get<Action<Action<object>, object>>(OwinConstants.OnSendingHeaders);
+            if (register == null)
+            {
+                throw new NotImplementedException("Environment does not contain server.OnSendingHeaders");
+            }
+            register(callback, state);
         }
 
         public Response SetCookie(string key, string value)

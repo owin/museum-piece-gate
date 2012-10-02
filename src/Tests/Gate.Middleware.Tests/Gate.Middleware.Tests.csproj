@@ -90,6 +90,7 @@
     <Compile Include="CascadeTests.cs" />
     <Compile Include="ContentTypeTests.cs" />
     <Compile Include="ShowExceptionsTests.cs" />
+    <Compile Include="TraceTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="public\kayak.png">

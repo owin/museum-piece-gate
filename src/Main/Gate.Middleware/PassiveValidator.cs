@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using Gate.Middleware;
 using System.Threading.Tasks;
-using Gate;
-using Owin;
 
 namespace Owin
 {
@@ -13,6 +11,22 @@ namespace Owin
     {
         public static IAppBuilder UsePassiveValidator(this IAppBuilder builder)
         {
+            IList<string> warnings = new List<string>();
+            if (!PassiveValidator.TryValidateProperties(builder.Properties, warnings))
+            {
+                throw new InvalidOperationException(warnings.Aggregate("builder.Properties are invalid", (a, b) => a + "\r\n" + b));
+            }
+
+            if (warnings.Count != 0)
+            {
+                var output = builder.Properties.Get<TextWriter>("host.TraceOutput");
+                if (output == null)
+                {
+                    output = Console.Out;
+                }
+                output.WriteLine(warnings.Aggregate("builder.Properties are invalid", (a, b) => a + "\r\n" + b));
+            }
+
             return builder.UseType<PassiveValidator>();
         }
     }
@@ -44,9 +58,9 @@ namespace Gate.Middleware
                 return TaskHelpers.Completed();
             }
 
-            Stream orriginalStream = env.Get<Stream>("owin.ResponseStream");
-            TriggerStream triggerStream = new TriggerStream(orriginalStream);
-            env["owin.ResponseStream"] = triggerStream;
+            Stream originalStream = env.Get<Stream>("owin.ResponseBody");
+            TriggerStream triggerStream = new TriggerStream(originalStream);
+            env["owin.ResponseBody"] = triggerStream;
 
             // Validate response headers and values on first write.
             bool responseValidated = false;
@@ -92,6 +106,61 @@ namespace Gate.Middleware
             }
         }
 
+        #region Startup Rules
+        internal static bool TryValidateProperties(IDictionary<string, object> properties, IList<string> warnings)
+        {
+            if (properties == null)
+            {
+                throw new ArgumentNullException("properties");
+            }
+            return CheckRequiredStartupData(properties, warnings);
+        }
+
+        static bool CheckRequiredStartupData(IDictionary<string, object> properties, IList<string> warnings)
+        {
+            if (!properties.ContainsKey("owin.Version"))
+            {
+                warnings.Add("builder.Properties should contain \"owin.Version\"");
+            }
+            else if (properties.Get<string>("owin.Version") != "1.0")
+            {
+                warnings.Add("builder.Properties[\"owin.Version\"] should be \"1.0\"");
+            }
+
+            if (!properties.ContainsKey("host.TraceOutput"))
+            {
+                warnings.Add("builder.Properties should contain \"host.TraceOutput\"");
+            }
+            else if (properties.Get<TextWriter>("host.TraceOutput") == null)
+            {
+                warnings.Add("builder.Properties[\"host.TraceOutput\"] should be a TextWriter");
+            }
+
+            if (!properties.ContainsKey("server.Name"))
+            {
+                warnings.Add("builder.Properties should contain \"server.Name\"");
+            }
+            else if (properties.Get<string>("server.Name") == null)
+            {
+                warnings.Add("builder.Properties[\"server.Name\"] should be a string");
+            }
+
+            var serverName = properties.Get<string>("server.Name");
+            if (!properties.ContainsKey(serverName + ".Version"))
+            {
+                warnings.Add("builder.Properties should contain \"{server-name}.Version\" where {server-name} is \"server.Name\" value");
+            }
+            else if (!properties.ContainsKey(serverName + ".Version"))
+            {
+                warnings.Add("builder.Properties[\"{server-name}.Version\"] should be a string");
+            }
+
+            return true;
+        }
+
+        #endregion
+
+
         #region Call Rules
 
         // Returns false for fatal errors, along with a resulting message.
@@ -102,7 +171,7 @@ namespace Gate.Middleware
             {
                 throw new ArgumentNullException("env");
             }
-            
+
             // Must be mutable
             try
             {
@@ -135,7 +204,7 @@ namespace Gate.Middleware
                 return false;
             }
             env.Remove(upperKey);
-            
+
             // Check for required owin.* keys and the HOST header.
             if (!CheckRequiredCallData(env, warnings))
             {
@@ -200,7 +269,7 @@ namespace Gate.Middleware
                 SetFatalResult(env, "5.2", "Missing Host header");
                 return false;
             }
-            
+
             // Validate values
 
             string[] stringValueTypes = new string[]
@@ -271,7 +340,7 @@ namespace Gate.Middleware
                     return false;
                 }
             }
-            
+
             string protocol = env.Get<string>("owin.RequestProtocol");
             if (!protocol.Equals("HTTP/1.1", StringComparison.OrdinalIgnoreCase)
                 && !protocol.Equals("HTTP/1.0", StringComparison.OrdinalIgnoreCase))
@@ -300,7 +369,7 @@ namespace Gate.Middleware
             {
                 warnings.Add(CreateWarning("7", "Unrecognized OWIN version: " + version));
             }
-            
+
             return true;
         }
 
@@ -448,7 +517,7 @@ namespace Gate.Middleware
         {
             new Response(env)
             {
-                StatusCode = 500, 
+                StatusCode = 500,
                 ReasonPhrase = "Internal Server Error"
             }.Write("OWIN v0.15.0 validation failure: Section#{0}, {1}", standardSection, message);
         }

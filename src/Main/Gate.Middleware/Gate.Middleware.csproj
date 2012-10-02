@@ -51,6 +51,7 @@
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
     <Compile Include="DictionaryExtensions.cs" />
+    <Compile Include="HeadSuppression.cs" />
     <Compile Include="NotFound.cs" />
     <Compile Include="PassiveValidator.cs" />
     <Compile Include="RequestLogger.cs" />
@@ -72,15 +73,15 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ShowExceptions.View.tt</DependentUpon>
     </Compile>
+    <Compile Include="Trace.cs" />
     <Compile Include="Utils\HttpFormatExtensions.cs" />
     <Compile Include="Utils\RangeHeader.cs" />
     <Compile Include="Utils\FilterStream.cs" />
     <Compile Include="Utils\TriggerStream.cs" />
-    <Compile Include="WebSockets\BinaryStream.cs" />
     <Compile Include="WebSockets\OpaqueToWebSocket.cs" />
     <Compile Include="WebSockets\WebSocketLayer.cs" />
-    <Compile Include="WebSockets\WebSocketToBinaryStream.cs" />
     <Compile Include="Wilson.cs" />
+    <Compile Include="XSendFile.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gate\Gate.csproj">
