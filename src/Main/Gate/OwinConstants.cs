@@ -26,5 +26,6 @@
         public const string RemotePort = "server.RemotePort";
         public const string LocalIpAddress = "server.LocalIpAddress";
         public const string LocalPort = "server.LocalPort";
+        public const string OnSendingHeaders = "server.OnSendingHeaders";
     }
 }
