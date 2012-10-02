@@ -19,7 +19,7 @@ namespace Gate.Middleware.Tests
             var builder = new AppBuilder();
             pipe(builder);
             var app = (AppFunc)builder.Build(typeof(AppFunc));
-            var env = new Request().Environment;
+            var env = Request.Create().Environment;
             var resp = new Response(env);
             resp.OutputStream = new MemoryStream();
             app(env).Wait();

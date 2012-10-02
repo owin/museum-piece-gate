@@ -10,10 +10,11 @@ using System.Threading;
 
 namespace Gate
 {
-    // A helper class for creating, modifying, or consuming response data in the Environment dictionary.
-    public class Response
+    // A helper object for creating, modifying, or consuming response data in the Environment dictionary.
+    public struct Response
     {
         public Response(IDictionary<string, object> environment)
+            : this()
         {
             this.Environment = environment;
             this.Encoding = Encoding.UTF8;

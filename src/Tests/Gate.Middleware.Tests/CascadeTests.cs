@@ -28,7 +28,7 @@ namespace Gate.Middleware.Tests
         {
             var cascade = Build(b => b.UseCascade(new AppFunc[0]));
 
-            Request request = new Request();
+            Request request = Request.Create();
             Response response = new Response(request.Environment);
             cascade(request.Environment).Wait();
 
@@ -49,7 +49,7 @@ namespace Gate.Middleware.Tests
         {
             var cascade = Build(b => b.UseCascade(SetStatusApp(200)));
 
-            Request request = new Request();
+            Request request = Request.Create();
             Response response = new Response(request.Environment);
             cascade(request.Environment).Wait();
 
@@ -66,7 +66,7 @@ namespace Gate.Middleware.Tests
 
             var cascade = Build(b => b.UseCascade(app1, app2, app3));
 
-            Request request = new Request();
+            Request request = Request.Create();
             Response response = new Response(request.Environment);
             cascade(request.Environment).Wait();
 

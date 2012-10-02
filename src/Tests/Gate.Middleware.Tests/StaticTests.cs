@@ -19,7 +19,9 @@ namespace Gate.Middleware.Tests
             pipe(builder);
             var app = builder.Build<AppFunc>();
 
-            Request request = new Request() { Path = path, Method = "GET" };
+            Request request = Request.Create();
+            request.Path = path;
+            request.Method = "GET";
             Response response = new Response(request.Environment);
             response.OutputStream = new MemoryStream();
             app(request.Environment).Wait();

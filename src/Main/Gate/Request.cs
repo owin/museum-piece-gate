@@ -10,17 +10,19 @@ using Owin;
 
 namespace Gate
 {
-    // A helper class for creating, modifying, or consuming request data in an Environment dictionary.
-    public class Request
+    // A helper object for creating, modifying, or consuming request data in an Environment dictionary.
+    public struct Request
     {
         IDictionary<string, object> environment;
         static readonly char[] CommaSemicolon = new[] { ',', ';' };
 
-        public Request()
-            : this(new Dictionary<string, object>())
+        // Primarily for unit tests
+        public static Request Create()
         {
-            Environment.Set(OwinConstants.RequestHeaders, Gate.Headers.New());
-            Environment.Set(OwinConstants.ResponseHeaders, Gate.Headers.New());
+            Request request = new Request(new Dictionary<string, object>());
+            request.Environment.Set(OwinConstants.RequestHeaders, Gate.Headers.New());
+            request.Environment.Set(OwinConstants.ResponseHeaders, Gate.Headers.New());
+            return request;
         }
 
         public Request(IDictionary<string, object> environment)
@@ -249,14 +251,16 @@ namespace Gate
 
             var buffer = new MemoryStream();
 
+            Request thisRequest = this;
+
             //TODO: determine encoding from request content type
             return CopyToStreamAsync(buffer)
                 .Then(() =>
                 {
                     buffer.Seek(0, SeekOrigin.Begin);
                     text = new StreamReader(buffer).ReadToEnd();
-                    Environment["Gate.Request.Text#input"] = thisInput;
-                    Environment["Gate.Request.Text"] = text;
+                    thisRequest.Environment["Gate.Request.Text#input"] = thisInput;
+                    thisRequest.Environment["Gate.Request.Text"] = text;
                     return text;
                 });
         }
@@ -302,11 +306,13 @@ namespace Gate
                 return TaskHelpers.FromResult(form);
             }
 
+            Request thisRequest = this;
+
             return ReadTextAsync().Then(text =>
             {
                 form = ParamDictionary.Parse(text);
-                Environment.Set("Gate.Request.Form#input", thisInput);
-                Environment.Set("Gate.Request.Form", form);
+                thisRequest.Environment.Set("Gate.Request.Form#input", thisInput);
+                thisRequest.Environment.Set("Gate.Request.Form", form);
                 return form;
             });
         }

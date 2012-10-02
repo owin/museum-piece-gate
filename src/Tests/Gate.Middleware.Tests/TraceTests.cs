@@ -31,25 +31,25 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Should_pass_through_GET()
         {
+            Request initialRequest = Request.Create();
+            initialRequest.Method = "GET";
             var responseBody = Call(b => b
                 .UseTrace()
                 .UseGate((request, response) => { response.Write("Hello World"); })
-                , new Request() { Method = "GET" } );
+                , initialRequest);
             Assert.That(responseBody, Is.EqualTo("Hello World"));
         }
 
         [Test]
         public void Should_echo_TRACE()
         {
-            Request request = new Request()
-                { 
-                    Method = "TRACE",
-                    PathBase = "/Base/",
-                    Path = "Path",
-                    QueryString = "Query",
-                    Protocol = "HTTP/1.0",
-                    HostWithPort = "localhost:8080",
-                };
+            Request request = Request.Create();
+            request.Method = "TRACE";
+            request.PathBase = "/Base/";
+            request.Path = "Path";
+            request.QueryString = "Query";
+            request.Protocol = "HTTP/1.0";
+            request.HostWithPort = "localhost:8080";
             request.Headers["Custom-Header"] = new string[] { "v1, v2", "v3" };
 
             var responseBody = Call(b => b
