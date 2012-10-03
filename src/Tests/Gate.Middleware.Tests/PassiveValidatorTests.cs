@@ -17,9 +17,11 @@ namespace Gate.Middleware.Tests
     {
         private string ReadBody(Stream stream)
         {
-            MemoryStream buffer = (MemoryStream)stream;
-            buffer.Seek(0, SeekOrigin.Begin);
-            return Encoding.UTF8.GetString(buffer.ToArray());
+            stream.Seek(0, SeekOrigin.Begin);
+            using (var reader = new StreamReader(stream,Encoding.UTF8))
+            {
+                return reader.ReadToEnd();
+            }
         }
 
         [Test]
