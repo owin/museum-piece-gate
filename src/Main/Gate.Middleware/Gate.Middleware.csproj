@@ -73,7 +73,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ShowExceptions.View.tt</DependentUpon>
     </Compile>
-    <Compile Include="Trace.cs" />
+    <Compile Include="TraceMethod.cs" />
     <Compile Include="Utils\HttpFormatExtensions.cs" />
     <Compile Include="Utils\RangeHeader.cs" />
     <Compile Include="Utils\FilterStream.cs" />
