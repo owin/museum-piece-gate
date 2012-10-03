@@ -54,13 +54,13 @@
       <Private>True</Private>
       <HintPath>..\..\..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
-    <Reference Include="Nancy, Version=0.11.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Nancy, Version=0.12.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Nancy.0.11.0\lib\net40\Nancy.dll</HintPath>
+      <HintPath>..\..\..\packages\Nancy.0.12.1\lib\net40\Nancy.dll</HintPath>
     </Reference>
-    <Reference Include="Nancy.ViewEngines.Spark, Version=0.11.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Nancy.ViewEngines.Spark, Version=0.12.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Nancy.Viewengines.Spark.0.11.0\lib\net40\Nancy.ViewEngines.Spark.dll</HintPath>
+      <HintPath>..\..\..\packages\Nancy.Viewengines.Spark.0.12.1\lib\net40\Nancy.ViewEngines.Spark.dll</HintPath>
     </Reference>
     <Reference Include="Owin.Startup, Version=0.4.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
