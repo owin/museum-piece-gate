@@ -353,7 +353,7 @@ namespace Gate.Middleware
   ");
 
                 var form = request.ReadForm();
-                if (form.Any())
+                if (form.Fields.Any())
                 {
                     write(@"
     <table class=""req"">
@@ -365,7 +365,7 @@ namespace Gate.Middleware
       </thead>
       <tbody>
           ");
-                    foreach (var kv in form.OrderBy(kv => kv.Key))
+                    foreach (var kv in form.Fields.OrderBy(kv => kv.Key))
                     {
                         write(@"
           <tr>

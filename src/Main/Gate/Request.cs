@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Gate.Utils;
-using Owin;
 
 namespace Gate
 {
@@ -189,6 +187,14 @@ namespace Gate
             }
         }
 
+        public bool HasBoundary
+        {
+            get
+            {
+                var ct = ContentType;
+                return ct != null && ContentType.IndexOf("boundary=", System.StringComparison.Ordinal) != -1;
+            }
+        }
 
         public string ContentType
         {
@@ -207,6 +213,22 @@ namespace Gate
                     return null;
                 var delimiterPos = contentType.IndexOfAny(CommaSemicolon);
                 return delimiterPos < 0 ? contentType : contentType.Substring(0, delimiterPos);
+            }
+        }
+
+        public string Boundary
+        {
+            get
+            {
+                var contentType = ContentType;
+                if (contentType == null)
+                    return null;
+                var idx = contentType.IndexOf("boundary=", System.StringComparison.Ordinal);
+                if (idx == -1)
+                    return null;
+                var boundary = contentType.Substring(idx + "boundary=".Length);
+                var delimiterPos = boundary.IndexOfAny(CommaSemicolon);
+                return delimiterPos < 0 ? boundary : boundary.Substring(0, delimiterPos);
             }
         }
 
@@ -291,14 +313,14 @@ namespace Gate
             return text;
         }
 
-        public Task<IDictionary<string, string>> ReadFormAsync()
+        public Task<IForm> ReadFormAsync()
         {
-            if (!HasFormData && !HasParseableData)
+            if (!HasFormData && !HasParseableData && !HasBoundary)
             {
-                return TaskHelpers.FromResult(ParamDictionary.Parse(""));
+                return TaskHelpers.FromResult((IForm) new Form.Form());
             }
 
-            var form = Environment.Get<IDictionary<string, string>>("Gate.Request.Form");
+            var form = Environment.Get<IForm>("Gate.Request.Form");
             var thisInput = Body;
             var lastInput = Environment.Get<object>("Gate.Request.Form#input");
             if (form != null && ReferenceEquals(thisInput, lastInput))
@@ -308,23 +330,31 @@ namespace Gate
 
             Request thisRequest = this;
 
-            return ReadTextAsync().Then(text =>
+            var boundary = Boundary;
+            if (boundary == null)
+                return ReadTextAsync().Then(text =>
+                {
+                    form = new Form.Form(text);
+                    thisRequest.Environment.Set("Gate.Request.Form#input", thisInput);
+                    thisRequest.Environment.Set("Gate.Request.Form", form);
+                    return form;
+                });
+            return TaskHelpers.FromResult(form = new Form.Form(boundary, thisInput)).Then(x =>
             {
-                form = ParamDictionary.Parse(text);
                 thisRequest.Environment.Set("Gate.Request.Form#input", thisInput);
-                thisRequest.Environment.Set("Gate.Request.Form", form);
-                return form;
+                thisRequest.Environment.Set("Gate.Request.Form", x);
+                return x;
             });
         }
 
-        public IDictionary<string, string> ReadForm()
+        public IForm ReadForm()
         {
-            if (!HasFormData && !HasParseableData)
+            if (!HasFormData && !HasParseableData && !HasBoundary)
             {
-                return ParamDictionary.Parse("");
+                return new Form.Form();
             }
 
-            var form = Environment.Get<IDictionary<string, string>>("Gate.Request.Form");
+            var form = Environment.Get<IForm>("Gate.Request.Form");
             var thisInput = Body;
             var lastInput = Environment.Get<object>("Gate.Request.Form#input");
             if (form != null && ReferenceEquals(thisInput, lastInput))
@@ -332,8 +362,16 @@ namespace Gate
                 return form;
             }
 
-            var text = ReadText();
-            form = ParamDictionary.Parse(text);
+            var boundary = Boundary;
+            if (boundary == null)
+            {
+                var text = ReadText();
+                form = new Form.Form(text);
+            }
+            else
+            {
+                form = new Form.Form(boundary, thisInput);
+            }
             Environment.Set("Gate.Request.Form#input", thisInput);
             Environment.Set("Gate.Request.Form", form);
             return form;
