@@ -48,7 +48,11 @@
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
     <Compile Include="DictionaryExtensions.cs" />
+    <Compile Include="Form\FormFile.cs" />
+    <Compile Include="Form\Form.cs" />
     <Compile Include="Headers.cs" />
+    <Compile Include="IForm.cs" />
+    <Compile Include="IFormFile.cs" />
     <Compile Include="Mapping\MapBuilder.cs" />
     <Compile Include="Mapping\UrlMapper.cs" />
     <Compile Include="AppBuilderMapExtensions.cs" />
