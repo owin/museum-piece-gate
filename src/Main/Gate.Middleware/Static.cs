@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Gate.Middleware;
 using Gate.Middleware.StaticFiles;
 using Owin;
 using System.Threading.Tasks;
 
-namespace Gate.Middleware
+namespace Owin
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
@@ -33,6 +34,13 @@ namespace Gate.Middleware
             return builder.UseFunc<AppFunc>(Static.Middleware);
         }
     }
+    
+}
+
+namespace Gate.Middleware
+{
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
 
     public class Static
     {
