@@ -40,11 +40,6 @@ namespace Gate.Mapping
             return _builder.New();
         }
 
-        public IAppBuilder AddSignatureConversion(Delegate conversion)
-        {
-            return _builder.AddSignatureConversion(conversion);
-        }
-
         public IDictionary<string, object> Properties
         {
             get { return _builder.Properties; }
