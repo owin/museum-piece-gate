@@ -13,11 +13,12 @@ namespace Sample.Nancy
 
     public class Startup
     {
+        /*
         public AppFunc Configuration(IDictionary<string,object> props)
         {
             return NancyAdapter.App();
         }
-
+        */
         public void Configuration2(IAppBuilder builder)
         {
             Assembly.Load("Nancy.ViewEngines.Spark");
@@ -58,7 +59,7 @@ namespace Sample.Nancy
                 .UseType<ContentType>()
                 .Map("/wilson", Wilson.App())
                 .Map("/wilsonasync", Wilson.App(true))
-                .Use(NancyAdapter.App());
+                .UseNancy();
             /*
                 .RunCascade(
                     DefaultPage.App(), 

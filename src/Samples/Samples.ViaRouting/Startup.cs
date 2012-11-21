@@ -6,7 +6,7 @@ using Gate;
 using Gate.Middleware;
 using Owin;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Owin;
+using Microsoft.Owin.Host.SystemWeb;
 
 namespace Samples.ViaRouting
 {
