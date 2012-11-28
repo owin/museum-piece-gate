@@ -39,8 +39,8 @@
     <Compile Include="..\Gate.Hosts\ExecutionContextPerRequest.cs">
       <Link>ExecutionContextPerRequest.cs</Link>
     </Compile>
-    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
-    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpers.cs" />
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpersExtensions.cs" />
     <Compile Include="ServerFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

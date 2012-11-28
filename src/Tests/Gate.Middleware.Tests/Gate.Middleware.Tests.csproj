@@ -78,8 +78,8 @@
     <Compile Include="..\..\Main\Gate\OwinConstants.cs">
       <Link>OwinConstants.cs</Link>
     </Compile>
-    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
-    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpers.cs" />
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpersExtensions.cs" />
     <Compile Include="ContentLengthTests.cs" />
     <Compile Include="PassiveValidatorTests.cs" />
     <Compile Include="RequestTracerTests.cs" />

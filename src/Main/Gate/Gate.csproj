@@ -47,8 +47,8 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AppBuilderInlineExtensions.cs" />
-    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
-    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpers.cs" />
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpersExtensions.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="Headers.cs" />
     <Compile Include="Mapping\MapBuilder.cs" />
