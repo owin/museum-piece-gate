@@ -4,14 +4,27 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Owin;
+using Gate.Middleware;
 using System.Threading.Tasks;
+using Gate.Middleware.Utils;
+
+namespace Owin
+{
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
+    public static class ShowExceptionsExtensions
+    {
+        public static IAppBuilder UseShowExceptions(this IAppBuilder builder)
+        {
+            return builder.UseFunc<AppFunc>(ShowExceptions.Middleware);
+        }
+    }
+}
 
 namespace Gate.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
-    using Gate.Middleware.Utils;
-
+    
     // Catches any exceptions throw from the App Delegate or Body Delegate and returns an HTML error page.
     // If possible a full 500 Internal Server Error is returned.  Otherwise error information is written
     // out as part of the existing response body.
@@ -20,11 +33,6 @@ namespace Gate.Middleware
     // internal data to the end user.  It also does not honor content-length restrictions.
     public static partial class ShowExceptions
     {
-        public static IAppBuilder UseShowExceptions(this IAppBuilder builder)
-        {
-            return builder.UseFunc<AppFunc>(Middleware);
-        }
-
         public static AppFunc Middleware(AppFunc app)
         {
             return env =>

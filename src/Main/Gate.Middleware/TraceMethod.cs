@@ -11,7 +11,7 @@ namespace Owin
     {
         public static IAppBuilder UseTrace(this IAppBuilder builder)
         {
-            return builder.UseType<Trace>();
+            return builder.UseType<TraceMethod>();
         }
     }
 }
@@ -23,11 +23,11 @@ namespace Gate.Middleware
     // This middleware implements support for the TRACE method by echoing back the request information as response body.
     // See RFC 2616 Section 9.8.
     // TODO: Is there a standard format for the output?
-    public class Trace
+    public class TraceMethod
     {
         private readonly AppFunc nextApp;
 
-        public Trace(AppFunc nextApp)
+        public TraceMethod(AppFunc nextApp)
         {
             this.nextApp = nextApp;
         }
