@@ -6,6 +6,7 @@ using Owin;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Nancy.Bootstrapper;
 
 namespace Sample.Nancy
 {
@@ -13,12 +14,12 @@ namespace Sample.Nancy
 
     public class Startup
     {
-        /*
+        // Navigate to /Nancy to view this page
         public AppFunc Configuration(IDictionary<string,object> props)
         {
-            return NancyAdapter.App();
+            return new NancyAdapter(null, NancyBootstrapperLocator.Bootstrapper).Invoke;
         }
-        */
+
         public void Configuration2(IAppBuilder builder)
         {
             Assembly.Load("Nancy.ViewEngines.Spark");
