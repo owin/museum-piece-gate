@@ -1,6 +1,6 @@
 
 var PROJECT='Gate'
-var VERSION='0.19'
+var VERSION='0.24'
 var FULL_VERSION='${VERSION}-ctp5'
 var AUTHORS='${PROJECT} contributors'
 

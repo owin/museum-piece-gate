@@ -3,8 +3,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Sample.AspNet")]
 [assembly: AssemblyProduct("Sample.AspNet")]
-[assembly: AssemblyVersion("0.19")]
-[assembly: AssemblyFileVersion("0.19")]
+[assembly: AssemblyVersion("0.24")]
+[assembly: AssemblyFileVersion("0.24")]
 
 [assembly: InternalsVisibleTo("Sample.AspNet.Tests")]
 
