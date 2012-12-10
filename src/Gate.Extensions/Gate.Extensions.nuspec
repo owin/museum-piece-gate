@@ -12,6 +12,7 @@
     <tags></tags>
     <dependencies>
       <dependency id="Owin" version="1.0"/>
+      <dependency id="Gate" version="[$version$]"/>
     </dependencies>
   </metadata>
   <files>
