@@ -1,7 +1,7 @@
 
 var PROJECT='Gate'
 var VERSION='0.24'
-var FULL_VERSION='${VERSION}-ctp5'
+var FULL_VERSION='${VERSION}'
 var AUTHORS='${PROJECT} contributors'
 
 var BASE_DIR='${Directory.GetCurrentDirectory()}'
@@ -12,9 +12,8 @@ var TEST_DIR='${Path.Combine(TARGET_DIR, "test")}'
 var SRC='src'
 var BUILD_PROJECTS='${Files.Include(
     SRC + "/**/Gate.csproj",
+    SRC + "/**/Gate.Extensions.csproj",
     SRC + "/**/Gate.Middleware.csproj",
-    SRC + "/**/Gate.Hosts.Kayak.csproj",
-    SRC + "/**/Gate.Hosts.Firefly.csproj",
     SRC + "/**/Gate.Adapters.Nancy.csproj")}'
 
 var TEST_PROJECTS='${Files.Include(
@@ -54,7 +53,6 @@ use-standard-goals features='nuget,xunit,nunit'
   @{
     // To publish, call `build release deploy`
     NUGET_DEPLOY = '';
-    FULL_VERSION = VERSION;
   }
 
 #sources-package-prepare target='package-prepare'

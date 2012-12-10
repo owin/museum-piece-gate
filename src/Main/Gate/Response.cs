@@ -210,7 +210,7 @@ namespace Gate
             });
         }
 
-        public class Cookie
+        public /* and remains public in sources */ class Cookie
         {
             public Cookie()
             {

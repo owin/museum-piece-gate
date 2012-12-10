@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Gate.Utils;
-using Owin;
+//using Owin;
 
 namespace Gate
 {
