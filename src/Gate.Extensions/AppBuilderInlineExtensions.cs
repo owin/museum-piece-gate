@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Owin;
 using System.Collections.Generic;
+using Gate;
 
-namespace Gate
+namespace Owin
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
