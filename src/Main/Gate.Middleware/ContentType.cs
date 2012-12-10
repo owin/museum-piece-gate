@@ -49,13 +49,14 @@ namespace Gate.Middleware
 
         public Task Invoke(IDictionary<string, object> env)
         {
-            Stream orriginalStream = env.Get<Stream>(OwinConstants.ResponseBody);
+            var resp = new Response(env);
+            Stream orriginalStream = resp.Body;
             TriggerStream triggerStream = new TriggerStream(orriginalStream);
-            env[OwinConstants.ResponseBody] = triggerStream;
+            resp.Body = triggerStream;
 
             triggerStream.OnFirstWrite = () =>
             {
-                var responseHeaders = env.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders);
+                var responseHeaders = resp.Headers;
                 if (!responseHeaders.HasHeader("Content-Type"))
                 {
                     responseHeaders.SetHeader("Content-Type", contentType);

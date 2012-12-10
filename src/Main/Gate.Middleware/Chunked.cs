@@ -23,7 +23,6 @@ namespace Owin
 namespace Gate.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
-    using SendFileFunc = Func<string, long, long?, Task>;
 
     // This middleware implements chunked response body encoding as the default encoding 
     // if the application does not specify Content-Length or Transfer-Encoding.
@@ -77,13 +76,14 @@ namespace Gate.Middleware
 
             // Hook first write
             triggerStream.OnFirstWrite = finalizeHeaders;
-            env[OwinConstants.ResponseBody] = triggerStream;
+            response.Body = triggerStream;
 
             // Hook SendFileFunc
-            SendFileFunc sendFile = env.Get<SendFileFunc>("sendfile.Func");
+
+            var sendFile = response.SendFileAsync;
             if (sendFile != null)
             {
-                SendFileFunc sendFileChunked = (name, offset, count) =>
+                response.SendFileAsync = (name, offset, count, cancel) =>
                 {
                     if (!finalizeHeadersExecuted)
                     {
@@ -93,7 +93,7 @@ namespace Gate.Middleware
                     if (filterStream == null)
                     {
                         // Due to headers we are not doing chunked, just pass through.
-                        return sendFile(name, offset, count);
+                        return sendFile(name, offset, count, cancel);
                     }
 
                     count = count ?? new FileInfo(name).Length - offset;
@@ -102,10 +102,9 @@ namespace Gate.Middleware
                     ArraySegment<byte> prefix = ChunkPrefix((uint)count);
                     return orriginalStream.WriteAsync(prefix.Array, prefix.Offset, prefix.Count)
                         .Then(() => orriginalStream.FlushAsync()) // Flush to ensure the data hits the wire before sendFile.
-                        .Then(() => sendFile(name, offset, count))
+                        .Then(() => sendFile(name, offset, count, cancel))
                         .Then(() => orriginalStream.WriteAsync(EndOfChunk.Array, EndOfChunk.Offset, EndOfChunk.Count));
                 };
-                env["sendfile.Func"] = sendFileChunked;
             }
 
             return nextApp(env).Then(() =>

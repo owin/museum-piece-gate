@@ -65,15 +65,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\Main\Gate\DictionaryExtensions.cs">
-      <Link>DictionaryExtensions.cs</Link>
-    </Compile>
     <Compile Include="..\..\Main\Gate\OwinConstants.cs">
       <Link>OwinConstants.cs</Link>
     </Compile>
     <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpersExtensions.cs" />
     <Compile Include="ContentLengthTests.cs" />
+    <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="PassiveValidatorTests.cs" />
     <Compile Include="RequestTracerTests.cs" />
     <Compile Include="RequestLoggerTests.cs" />

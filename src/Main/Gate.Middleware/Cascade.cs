@@ -53,7 +53,8 @@ namespace Gate.Middleware
             var iter = apps.GetEnumerator();            
 
             TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
-            Stream outputStream = env.Get<Stream>(OwinConstants.ResponseBody);
+            var resp = new Response(env);
+            Stream outputStream = resp.Body;
 
             Action fallback = () => { };
             fallback = () =>
@@ -83,7 +84,7 @@ namespace Gate.Middleware
                     TriggerStream triggerStream = new TriggerStream(outputStream);
                     triggerStream.OnFirstWrite = () =>
                     {
-                        if (env.Get<int>(OwinConstants.ResponseStatusCode) == 404)
+                        if (resp.StatusCode == 404)
                         {
                             triggerStream.InnerStream = Stream.Null;
                         }
@@ -95,15 +96,15 @@ namespace Gate.Middleware
                     iter.Current.Invoke(env)
                         .Then(() =>
                         {
-                            if (env.Get<int>(OwinConstants.ResponseStatusCode) != 404)
+                            if (resp.StatusCode != 404)
                             {
                                 tcs.TrySetResult(null);
                                 return;
                             }
 
                             // Cleanup and try the next one.
-                            env.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders).Clear();
-                            env[OwinConstants.ResponseBody] = outputStream;
+                            resp.Headers.Clear();
+                            resp.Body = outputStream;
 
                             if (iter.MoveNext())
                             {

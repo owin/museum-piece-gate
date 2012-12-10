@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace System.Collections.Generic
+namespace Gate.Tests
 {
     static class DictionaryExtensions
     {
@@ -12,7 +15,7 @@ namespace System.Collections.Generic
         }
 
         // Sets the value if non-null, or removes it otherwise
-        public static IDictionary<string, object> Set<T>(this IDictionary<string, object> dictionary, string key, T value)
+        public static IDictionary<string,object>  Set<T>(this IDictionary<string,object> dictionary, string key, T value)
         {
             if (object.Equals(value, default(T)))
             {
@@ -24,5 +27,6 @@ namespace System.Collections.Generic
             }
             return dictionary;
         }
+
     }
 }
