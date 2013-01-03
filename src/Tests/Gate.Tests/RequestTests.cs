@@ -453,7 +453,7 @@ namespace Gate.Tests
         }
 
         [Test]
-        public void IsSerializable()
+        public void ItShouldBeSerializable()
         {
             var request = new Request(CreateEmptyEnvironment());
             var serializer = new BinaryFormatter();

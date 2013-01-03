@@ -11,6 +11,7 @@ using Gate.Utils;
 namespace Gate
 {
     // A helper object for creating, modifying, or consuming request data in an Environment dictionary.
+    [Serializable]
     public struct Request
     {
         IDictionary<string, object> environment;
