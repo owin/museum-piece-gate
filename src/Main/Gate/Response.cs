@@ -11,6 +11,7 @@ using System.Threading;
 namespace Gate
 {
     // A helper object for creating, modifying, or consuming response data in the Environment dictionary.
+    [Serializable]
     public struct Response
     {
         public Response(IDictionary<string, object> environment)

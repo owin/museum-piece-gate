@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using NUnit.Framework;
 using Owin;
 using System.Threading;
@@ -448,6 +450,14 @@ namespace Gate.Tests
             Assert.That(req.HostWithPort, Is.EqualTo("[2001:db8::ff00:42:8329]:54321"));
             Assert.That(req.Host, Is.EqualTo("2001:db8::ff00:42:8329"));
             Assert.That(req.Port, Is.EqualTo(54321));
+        }
+
+        [Test]
+        public void ItShouldBeSerializable()
+        {
+            var request = new Request(CreateEmptyEnvironment());
+            var serializer = new BinaryFormatter();
+            Assert.DoesNotThrow(() => serializer.Serialize(new MemoryStream(), request));
         }
     }
 }
