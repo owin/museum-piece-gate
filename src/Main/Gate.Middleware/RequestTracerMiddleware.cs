@@ -14,7 +14,7 @@ namespace Owin
         public static IAppBuilder UseRequestTracer(this IAppBuilder builder)
         {
             TraceSource traceSource = builder.Properties.Get<TraceSource>("host.TraceSource");
-            return builder.UseType<RequestTracer>(traceSource);
+            return builder.UseType<RequestTracerMiddleware>(traceSource);
         }
     }
 }
@@ -24,17 +24,17 @@ namespace Gate.Middleware
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     // This middleware traces incoming and outgoing environment and properties variables, headers, etc.
-    public class RequestTracer
+    public class RequestTracerMiddleware
     {
         private readonly AppFunc nextApp;
         private TraceSource traceSource;
 
-        public RequestTracer(AppFunc next)
+        public RequestTracerMiddleware(AppFunc next)
         {
             nextApp = next;
         }
 
-        public RequestTracer(AppFunc next, TraceSource source)
+        public RequestTracerMiddleware(AppFunc next, TraceSource source)
         {
             nextApp = next;
             traceSource = source;

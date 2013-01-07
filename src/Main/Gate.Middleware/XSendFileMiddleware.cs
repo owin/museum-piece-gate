@@ -13,7 +13,7 @@ namespace Owin
     {
         public static IAppBuilder UseXSendFile(this IAppBuilder builder)
         {
-            return builder.UseType<XSendFile>();
+            return builder.UseType<XSendFileMiddleware>();
         }
     }
 }
@@ -26,11 +26,11 @@ namespace Gate.Middleware
     // This middleware can be used to enable X-SendFile response header functionality.
     // Applications can set this header if they do not want to or otherwise can't 
     // efficiently serve the content of a file themselves.
-    public class XSendFile
+    public class XSendFileMiddleware
     {
         private readonly AppFunc nextApp;
 
-        public XSendFile(AppFunc nextApp)
+        public XSendFileMiddleware(AppFunc nextApp)
         {
             this.nextApp = nextApp;
         }

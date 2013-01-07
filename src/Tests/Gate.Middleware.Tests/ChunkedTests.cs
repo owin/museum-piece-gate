@@ -44,20 +44,20 @@ namespace Gate.Middleware.Tests
         [Test]
         public void ChunkPrefixHasCorrectResults()
         {
-            AssertChunkPrefix(Chunked.ChunkPrefix(1), "1\r\n");
-            AssertChunkPrefix(Chunked.ChunkPrefix(15), "f\r\n");
-            AssertChunkPrefix(Chunked.ChunkPrefix(0x10), "10\r\n");
-            AssertChunkPrefix(Chunked.ChunkPrefix(0x80), "80\r\n");
-            AssertChunkPrefix(Chunked.ChunkPrefix(0xff), "ff\r\n");
-            AssertChunkPrefix(Chunked.ChunkPrefix(0x10), "10\r\n");
-            AssertChunkPrefix(Chunked.ChunkPrefix(0x100), "100\r\n");
-            AssertChunkPrefix(Chunked.ChunkPrefix(0x1000), "1000\r\n");
-            AssertChunkPrefix(Chunked.ChunkPrefix(0x10000), "10000\r\n");
-            AssertChunkPrefix(Chunked.ChunkPrefix(0x100000), "100000\r\n");
-            AssertChunkPrefix(Chunked.ChunkPrefix(0x1000000), "1000000\r\n");
-            AssertChunkPrefix(Chunked.ChunkPrefix(0x10000000), "10000000\r\n");
-            AssertChunkPrefix(Chunked.ChunkPrefix(0), "0\r\n");
-            AssertChunkPrefix(Chunked.ChunkPrefix(0xffffffff), "ffffffff\r\n");
+            AssertChunkPrefix(ChunkedMiddleware.ChunkPrefix(1), "1\r\n");
+            AssertChunkPrefix(ChunkedMiddleware.ChunkPrefix(15), "f\r\n");
+            AssertChunkPrefix(ChunkedMiddleware.ChunkPrefix(0x10), "10\r\n");
+            AssertChunkPrefix(ChunkedMiddleware.ChunkPrefix(0x80), "80\r\n");
+            AssertChunkPrefix(ChunkedMiddleware.ChunkPrefix(0xff), "ff\r\n");
+            AssertChunkPrefix(ChunkedMiddleware.ChunkPrefix(0x10), "10\r\n");
+            AssertChunkPrefix(ChunkedMiddleware.ChunkPrefix(0x100), "100\r\n");
+            AssertChunkPrefix(ChunkedMiddleware.ChunkPrefix(0x1000), "1000\r\n");
+            AssertChunkPrefix(ChunkedMiddleware.ChunkPrefix(0x10000), "10000\r\n");
+            AssertChunkPrefix(ChunkedMiddleware.ChunkPrefix(0x100000), "100000\r\n");
+            AssertChunkPrefix(ChunkedMiddleware.ChunkPrefix(0x1000000), "1000000\r\n");
+            AssertChunkPrefix(ChunkedMiddleware.ChunkPrefix(0x10000000), "10000000\r\n");
+            AssertChunkPrefix(ChunkedMiddleware.ChunkPrefix(0), "0\r\n");
+            AssertChunkPrefix(ChunkedMiddleware.ChunkPrefix(0xffffffff), "ffffffff\r\n");
         }
 
         static void AssertChunkPrefix(ArraySegment<byte> data, string expected)

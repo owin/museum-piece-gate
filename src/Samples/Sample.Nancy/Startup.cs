@@ -56,8 +56,8 @@ namespace Sample.Nancy
             Assembly.Load("Nancy.ViewEngines.Spark");
 
             builder
-                .UseFunc<AppFunc>(ShowExceptions.Middleware)
-                .UseType<ContentType>()
+                .UseFunc<AppFunc>(ShowExceptionsMiddleware.Middleware)
+                .UseType<ContentTypeMiddleware>()
                 .Map("/wilson", Wilson.App())
                 .Map("/wilsonasync", Wilson.App(true))
                 .UseNancy();

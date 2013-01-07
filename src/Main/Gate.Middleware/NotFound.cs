@@ -24,10 +24,10 @@ namespace Gate.Middleware
 
         public static AppFunc App()
         {
-            return Call;
+            return Invoke;
         }
 
-        public static Task Call(IDictionary<string, object> env)
+        public static Task Invoke(IDictionary<string, object> env)
         {
             Response response = new Response(env)
             {
