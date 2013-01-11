@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Gate.Middleware;
+using System.Threading;
 using System.Threading.Tasks;
+using Gate;
+using Gate.Middleware;
+using Gate.Middleware.Utils;
 
 namespace Owin
 {
@@ -19,11 +22,8 @@ namespace Owin
 
             if (warnings.Count != 0)
             {
-                var output = builder.Properties.Get<TextWriter>("host.TraceOutput");
-                if (output == null)
-                {
-                    output = Console.Out;
-                }
+                var builderProperties = new BuilderProperties(builder.Properties);
+                var output = builderProperties.TraceOutput ?? Console.Out;
                 output.WriteLine(warnings.Aggregate("builder.Properties are invalid", (a, b) => a + "\r\n" + b));
             }
 
@@ -35,8 +35,6 @@ namespace Owin
 namespace Gate.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
-    using Gate.Middleware.Utils;
-    using System.Threading;
 
     // This middleware does a passive validation of all requests and responses. If any requirements from the OWIN 
     // standard are violated, an 500 error or a warning header are returned to the client.
@@ -58,7 +56,8 @@ namespace Gate.Middleware
                 return TaskHelpers.Completed();
             }
 
-            Stream originalStream = env.Get<Stream>("owin.ResponseBody");
+            Request req = new Request(env);
+            Stream originalStream = req.Body;
             TriggerStream triggerStream = new TriggerStream(originalStream);
             env["owin.ResponseBody"] = triggerStream;
 
@@ -80,8 +79,7 @@ namespace Gate.Middleware
 
                 if (warnings.Count > 0)
                 {
-                    var headers = env.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders);
-                    headers["X-OwinValidatorWarning"] = warnings.ToArray();
+                    req.Headers["X-OwinValidatorWarning"] = warnings.ToArray();
                 }
             };
             triggerStream.OnFirstWrite = responseValidation;
@@ -107,6 +105,7 @@ namespace Gate.Middleware
         }
 
         #region Startup Rules
+
         internal static bool TryValidateProperties(IDictionary<string, object> properties, IList<string> warnings)
         {
             if (properties == null)
@@ -118,49 +117,36 @@ namespace Gate.Middleware
 
         static bool CheckRequiredStartupData(IDictionary<string, object> properties, IList<string> warnings)
         {
-            if (!properties.ContainsKey("owin.Version"))
+            BuilderProperties builderProperties = new BuilderProperties(properties);
+            if (builderProperties.Version == null)
             {
                 warnings.Add("builder.Properties should contain \"owin.Version\"");
             }
-            else if (properties.Get<string>("owin.Version") != "1.0")
+            else if (builderProperties.Version != "1.0")
             {
                 warnings.Add("builder.Properties[\"owin.Version\"] should be \"1.0\"");
             }
 
-            if (!properties.ContainsKey("host.TraceOutput"))
-            {
-                warnings.Add("builder.Properties should contain \"host.TraceOutput\"");
-            }
-            else if (properties.Get<TextWriter>("host.TraceOutput") == null)
+            if (builderProperties.TraceOutput == null)
             {
                 warnings.Add("builder.Properties[\"host.TraceOutput\"] should be a TextWriter");
             }
 
-            if (!properties.ContainsKey("server.Name"))
-            {
-                warnings.Add("builder.Properties should contain \"server.Name\"");
-            }
-            else if (properties.Get<string>("server.Name") == null)
-            {
-                warnings.Add("builder.Properties[\"server.Name\"] should be a string");
-            }
-
-            var serverName = properties.Get<string>("server.Name");
-            if (!properties.ContainsKey(serverName + ".Version"))
-            {
-                warnings.Add("builder.Properties should contain \"{server-name}.Version\" where {server-name} is \"server.Name\" value");
-            }
-            else if (!properties.ContainsKey(serverName + ".Version"))
-            {
-                warnings.Add("builder.Properties[\"{server-name}.Version\"] should be a string");
-            }
+            // TODO: is this still true?
+            //if (!properties.ContainsKey("server.Name"))
+            //{
+            //    warnings.Add("builder.Properties should contain \"server.Name\"");
+            //}
+            //else if (properties.Get<string>("server.Name") == null)
+            //{
+            //    warnings.Add("builder.Properties[\"server.Name\"] should be a string");
+            //}
 
             return true;
         }
 
         #endregion
-
-
+        
         #region Call Rules
 
         // Returns false for fatal errors, along with a resulting message.
@@ -171,6 +157,8 @@ namespace Gate.Middleware
             {
                 throw new ArgumentNullException("env");
             }
+            
+            Request req = new Request(env);
 
             // Must be mutable
             try
@@ -178,13 +166,13 @@ namespace Gate.Middleware
                 string key = "validator.MutableKey";
                 string input = "Mutable Value";
                 env[key] = input;
-                string output = env.Get<string>(key);
+                string output = req.Get<string>(key);
                 if (output == null || output != input)
                 {
                     SetFatalResult(env, "3.2", "Environment is not fully mutable.");
                     return false;
                 }
-                env.Remove(key);
+                req.Set<string>(key, null);
             }
             catch (Exception ex)
             {
@@ -197,7 +185,7 @@ namespace Gate.Middleware
             string lowerKey = "validator.casekey";
             string[] caseValue = new string[] { "Case Value" };
             env[upperKey] = caseValue;
-            string[] resultValue = env.Get<string[]>(lowerKey);
+            string[] resultValue = req.Get<string[]>(lowerKey);
             if (resultValue != null)
             {
                 SetFatalResult(env, "3.2", "Environment is not case sensitive.");
@@ -216,6 +204,7 @@ namespace Gate.Middleware
 
         private static bool CheckRequiredCallData(IDictionary<string, object> env, IList<string> warnings)
         {
+            Request req = new Request(env);
             string[] requiredKeys = new string[]
             {
                 "owin.Version",
@@ -249,9 +238,9 @@ namespace Gate.Middleware
                     return false;
                 }
             }
-
-            IDictionary<string, string[]> requestHeaders = env.Get<IDictionary<string, string[]>>("owin.RequestHeaders");
-            IDictionary<string, string[]> responseHeaders = env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders");
+            
+            IDictionary<string, string[]> requestHeaders = req.Get<IDictionary<string, string[]>>("owin.RequestHeaders");
+            IDictionary<string, string[]> responseHeaders = req.Get<IDictionary<string, string[]>>("owin.ResponseHeaders");
 
             if (!TryValidateHeaderCollection(env, requestHeaders, "Request", warnings))
             {
@@ -298,18 +287,18 @@ namespace Gate.Middleware
                 return false;
             }
 
-            if (env.Get<CancellationToken>("owin.CallCancelled").IsCancellationRequested)
+            if (req.Get<CancellationToken>("owin.CallCancelled").IsCancellationRequested)
             {
                 warnings.Add(CreateWarning("3.6", "The owin.CallCancelled CancellationToken was cancelled before processing the request."));
             }
 
-            if (string.IsNullOrWhiteSpace(env.Get<string>("owin.RequestMethod")))
+            if (string.IsNullOrWhiteSpace(req.Get<string>("owin.RequestMethod")))
             {
                 SetFatalResult(env, "3.2.1", "owin.RequestMethod is empty.");
                 return false;
             }
 
-            string pathBase = env.Get<string>("owin.RequestPathBase");
+            string pathBase = req.Get<string>("owin.RequestPathBase");
             if (pathBase.EndsWith("/"))
             {
                 SetFatalResult(env, "5.3", "owin.RequestBasePath ends with a slash: " + pathBase);
@@ -323,7 +312,7 @@ namespace Gate.Middleware
                 return false;
             }
 
-            string path = env.Get<string>("owin.RequestPath");
+            string path = req.Get<string>("owin.RequestPath");
             if (!path.StartsWith("/"))
             {
                 if (path.Equals(string.Empty))
@@ -341,7 +330,7 @@ namespace Gate.Middleware
                 }
             }
 
-            string protocol = env.Get<string>("owin.RequestProtocol");
+            string protocol = req.Get<string>("owin.RequestProtocol");
             if (!protocol.Equals("HTTP/1.1", StringComparison.OrdinalIgnoreCase)
                 && !protocol.Equals("HTTP/1.0", StringComparison.OrdinalIgnoreCase))
             {
@@ -350,14 +339,14 @@ namespace Gate.Middleware
 
             // No query string validation.
 
-            string scheme = env.Get<string>("owin.RequestScheme");
+            string scheme = req.Get<string>("owin.RequestScheme");
             if (!scheme.Equals("http", StringComparison.OrdinalIgnoreCase)
                 && !scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
             {
                 warnings.Add(CreateWarning("5.1", "Unrecognized request scheme: " + scheme));
             }
 
-            string version = env.Get<string>("owin.Version");
+            string version = req.Get<string>("owin.Version");
             Version parsedVersion;
             if (!Version.TryParse(version, out parsedVersion))
             {
@@ -379,7 +368,8 @@ namespace Gate.Middleware
 
         private static bool TryValidateResult(IDictionary<string, object> env, IList<string> warnings)
         {
-            IDictionary<string, string[]> responseHeaders = env.Get<IDictionary<string, string[]>>("owin.ResponseHeaders");
+            var resp = new Response(env);
+            IDictionary<string, string[]> responseHeaders = resp.Headers;
 
             // Headers
             if (!TryValidateHeaderCollection(env, responseHeaders, "Response", warnings))

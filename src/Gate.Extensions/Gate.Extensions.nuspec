@@ -12,12 +12,9 @@
     <tags></tags>
     <dependencies>
       <dependency id="Owin" version="1.0"/>
-      <dependency id="Owin.Extensions.Sources" version="0.6.4" />
-      <dependency id="TaskHelpers.Sources" version="0.2" />
-      <dependency id="Gate.Sources" version="[$version$]" />
     </dependencies>
   </metadata>
   <files>
-    <file src="**\*.cs" target="content\App_Packages\$id$.$version$" />
+    <file src="Gate.Extensions.dll" target="lib\net40" />
   </files>
 </package>

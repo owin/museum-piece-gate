@@ -22,10 +22,31 @@ namespace Gate
 
         public IDictionary<string, object> Environment { get; set; }
 
+        // Retrieves the value if present, or returns the default (null) otherwise.
+        public T Get<T>(string key)
+        {
+            object value;
+            return Environment.TryGetValue(key, out value) ? (T)value : default(T);
+        }
+
+        // Sets the value if non-null, or removes it otherwise
+        public Response Set<T>(string key, T value)
+        {
+            if (object.Equals(value, default(T)))
+            {
+                Environment.Remove(key);
+            }
+            else
+            {
+                Environment[key] = value;
+            }
+            return this;
+        }
+
         public IDictionary<string, string[]> Headers
         {
-            get { return Environment.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders); }
-            set { Environment.Set<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders, value); }
+            get { return Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders); }
+            set { Set<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders, value); }
         }
 
         public string Status
@@ -50,18 +71,18 @@ namespace Gate
 
         public int StatusCode
         {
-            get { return Environment.Get<int>(OwinConstants.ResponseStatusCode); }
-            set { Environment.Set<int>(OwinConstants.ResponseStatusCode, value); }
+            get { return Get<int>(OwinConstants.ResponseStatusCode); }
+            set { Set<int>(OwinConstants.ResponseStatusCode, value); }
         }
 
         public string ReasonPhrase
         {
             get
             {
-                string reasonPhrase = Environment.Get<string>(OwinConstants.ResponseReasonPhrase);
+                string reasonPhrase = Get<string>(OwinConstants.ResponseReasonPhrase);
                 return string.IsNullOrEmpty(reasonPhrase) ? ReasonPhrases.ToReasonPhrase(StatusCode) : reasonPhrase;
             }
-            set { Environment.Set<string>(OwinConstants.ResponseReasonPhrase, value); }
+            set { Set<string>(OwinConstants.ResponseReasonPhrase, value); }
         }
 
         public string GetHeader(string name)
@@ -100,7 +121,7 @@ namespace Gate
 
         void OnSendingHeaders(Action<object> callback, object state)
         {
-            var register = Environment.Get<Action<Action<object>, object>>(OwinConstants.OnSendingHeaders);
+            var register = Get<Action<Action<object>, object>>(OwinConstants.OnSendingHeaders);
             if (register == null)
             {
                 throw new NotImplementedException("Environment does not contain server.OnSendingHeaders");
@@ -189,7 +210,7 @@ namespace Gate
             });
         }
 
-        public class Cookie
+        public /* and remains public in sources */ class Cookie
         {
             public Cookie()
             {
@@ -222,10 +243,16 @@ namespace Gate
 
         public Encoding Encoding { get; set; }
 
+        public Stream Body
+        {
+            get { return Get<Stream>(OwinConstants.ResponseBody); }
+            set { Set<Stream>(OwinConstants.ResponseBody, value); }
+        }
+
         public Stream OutputStream
         {
-            get { return Environment.Get<Stream>(OwinConstants.ResponseBody); }
-            set { Environment.Set<Stream>(OwinConstants.ResponseBody, value); }
+            get { return Get<Stream>(OwinConstants.ResponseBody); }
+            set { Set<Stream>(OwinConstants.ResponseBody, value); }
         }
 
         public void Write(string text)
@@ -273,6 +300,12 @@ namespace Gate
         public Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken = default(CancellationToken))
         {
             return OutputStream.WriteAsync(data.Array, data.Offset, data.Count, cancellationToken);
+        }
+
+        public Func<string, long, long?, CancellationToken, Task> SendFileAsync
+        {
+            get { return Get<Func<string, long, long?, CancellationToken, Task>>("sendfile.SendAsync"); }
+            set { Set("sendfile.SendAsync", value); }
         }
     }
 }

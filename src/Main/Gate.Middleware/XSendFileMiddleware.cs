@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Gate.Middleware;
 using System.Threading.Tasks;
 using System.IO;
@@ -21,7 +22,7 @@ namespace Owin
 namespace Gate.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
-    using SendFileFunc = Func<string, long, long?, Task>;
+    using SendFileFunc = Func<string, long, long?, CancellationToken, Task>;
 
     // This middleware can be used to enable X-SendFile response header functionality.
     // Applications can set this header if they do not want to or otherwise can't 
@@ -58,15 +59,15 @@ namespace Gate.Middleware
 
                 // TODO: For now the application is required to set content-length or chunked, and content-range.
 
-                SendFileFunc sendFile = env.Get<SendFileFunc>("sendfile.Func");
+                SendFileFunc sendFile = response.SendFileAsync;
                 if (sendFile != null)
                 {
-                    return sendFile(file, 0, null);
+                    return sendFile(file, 0, null, CancellationToken.None);
                 }
 
                 // Fall back to a manual copy
 
-                Stream responseBody = env.Get<Stream>(OwinConstants.ResponseBody);
+                Stream responseBody = response.Body;
 
                 // Let the server send a 500 error
                 Stream fileStream = fileInfo.OpenRead();

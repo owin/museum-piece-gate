@@ -33,7 +33,8 @@ namespace Gate.Middleware
 
         public Task Invoke(IDictionary<string, object> env)
         {
-            if ("HEAD".Equals(env.Get<string>(OwinConstants.RequestMethod), StringComparison.OrdinalIgnoreCase))
+            var req = new Request(env);
+            if ("HEAD".Equals(req.Method, StringComparison.OrdinalIgnoreCase))
             {
                 env[OwinConstants.ResponseBody] = Stream.Null;
             }

@@ -107,10 +107,11 @@ namespace Gate.Middleware.WebSockets
         {
             return env =>
             {
-                string opaqueSupport = env.Get<string>("opaque.Support");
-                OpaqueUpgrade opaqueUpgrade = env.Get<OpaqueUpgrade>("opaque.Upgrade");
-                string websocketSupport = env.Get<string>("websocket.Support");
-                WebSocketAccept webSocketAccept = env.Get<WebSocketAccept>("websocket.Accept");
+                Request request = new Request(env);
+                string opaqueSupport = request.Get<string>("opaque.Support");
+                OpaqueUpgrade opaqueUpgrade = request.Get<OpaqueUpgrade>("opaque.Upgrade");
+                string websocketSupport = request.Get<string>("websocket.Support");
+                WebSocketAccept webSocketAccept = request.Get<WebSocketAccept>("websocket.Accept");
 
                 if (opaqueSupport == "opaque.Upgrade" // If we have opaque support
                     && opaqueUpgrade != null

@@ -14,8 +14,7 @@ namespace Owin
     {
         public static IAppBuilder UseRequestLogger(this IAppBuilder builder)
         {
-            TextWriter logger = builder.Properties.Get<TextWriter>(OwinConstants.TraceOutput);
-            return builder.UseType<RequestLoggerMiddleware>(logger);
+            return builder.UseType<RequestLoggerMiddleware>();
         }
     }
 }
@@ -28,59 +27,63 @@ namespace Gate.Middleware
     public class RequestLoggerMiddleware
     {
         private readonly AppFunc nextApp;
-        private TextWriter logger;
+        private TextWriter loggerOverride;
 
         public RequestLoggerMiddleware(AppFunc next)
         {
             nextApp = next;
         }
 
-        public RequestLoggerMiddleware(AppFunc next, TextWriter logger)
+        public RequestLoggerMiddleware(AppFunc next, TextWriter loggerOverride)
         {
             nextApp = next;
-            this.logger = logger;
+            this.loggerOverride = loggerOverride;
         }
 
         public Task Invoke(IDictionary<string, object> env)
         {
-            // The TextWriter is assumed to be the same across all requests.
-            logger = logger ?? env.Get<TextWriter>(OwinConstants.TraceOutput);
+            var req = new Request(env);
+            var logger = loggerOverride ?? req.TraceOutput;
 
             if (logger == null)
             {
                 return nextApp(env);
             }
 
-            LogCall(env);
+            LogCall(logger, env);
             return nextApp(env).Then(() =>
             {
-                LogResult(env);
+                LogResult(logger, env);
             });
         }
 
-        private void LogCall(IDictionary<string, object> env)
+        private void LogCall(TextWriter logger, IDictionary<string, object> env)
         {
+            var req = new Request(env);
+
             logger.WriteLine("{0} - Request: Environment#{1}", DateTime.Now, env.Count);
 
             logger.WriteLine("Environment: ");
-            LogDictionary(env);
+            LogDictionary(logger, env);
 
             logger.WriteLine("Headers: ");
-            LogHeaders(env.Get<IDictionary<string, string[]>>(OwinConstants.RequestHeaders));
+            LogHeaders(logger, req.Headers);
         }
 
-        private void LogResult(IDictionary<string, object> env)
+        private void LogResult(TextWriter logger, IDictionary<string, object> env)
         {
+            var resp = new Response(env);
+
             logger.WriteLine("{0} - Response: Environment#{1}", DateTime.Now, env.Count);
 
             logger.WriteLine("Environment: ");
-            LogDictionary(env);
+            LogDictionary(logger, env);
 
             logger.WriteLine("Headers: ");
-            LogHeaders(env.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders));
+            LogHeaders(logger, resp.Headers);
         }
 
-        private void LogDictionary(IDictionary<string, object> dictionary)
+        private void LogDictionary(TextWriter logger, IDictionary<string, object> dictionary)
         {
             foreach (KeyValuePair<string, object> pair in dictionary)
             {
@@ -90,7 +93,7 @@ namespace Gate.Middleware
             }
         }
 
-        private void LogHeaders(IDictionary<string, string[]> headers)
+        private void LogHeaders(TextWriter logger, IDictionary<string, string[]> headers)
         {
             foreach (KeyValuePair<string, string[]> header in headers)
             {

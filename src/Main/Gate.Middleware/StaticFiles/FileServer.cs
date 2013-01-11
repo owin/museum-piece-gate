@@ -31,7 +31,8 @@ namespace Gate.Middleware.StaticFiles
 
         public Task Invoke(IDictionary<string, object> env)
         {
-            string pathInfo = env.Get<string>(OwinConstants.RequestPath);
+            var req = new Request(env);
+            string pathInfo = req.Path;
 
             if (pathInfo.StartsWith("/"))
             {
@@ -143,11 +144,13 @@ namespace Gate.Middleware.StaticFiles
 
             FileBody body = new FileBody(path, range);
 
-            SendFileFunc sendFile = env.Get<SendFileFunc>("sendfile.Func");
-            if (sendFile != null)
-            {
-                return body.Start(sendFile);
-            }
+            //TODO: update for current send file spec
+            //var req = new Request(env);
+            //SendFileFunc sendFile = env.Get<SendFileFunc>("sendfile.Func");
+            //if (sendFile != null)
+            //{
+            //    return body.Start(sendFile);
+            //}
 
             return body.Start(response.OutputStream);
         }

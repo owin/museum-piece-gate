@@ -73,8 +73,8 @@ namespace Gate.Middleware.WebSockets
             this.environment["websocket.CallCancelled"] = this.environment["opaque.CallCancelled"];
             this.environment["websocket.Version"] = "1.0";
 
-            this.incoming = this.environment.Get<Stream>("opaque.Incoming");
-            this.outgoing = this.environment.Get<Stream>("opaque.Outgoing");
+            this.incoming = (Stream)this.environment["opaque.Incoming"];
+            this.outgoing = (Stream)this.environment["opaque.Outgoing"];
         }
 
         public IDictionary<string, object> Environment

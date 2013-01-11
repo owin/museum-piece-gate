@@ -44,16 +44,18 @@ namespace Gate.Middleware
                             var data = Encoding.ASCII.GetBytes(text);
                             write(data, 0, data.Length);
                         });
-
+                
+                Response response = new Response(env);
                 Func<Exception, Task> showErrorPage = ex =>
                 {
-                    var response = new Response(env) { Status = "500 Internal Server Error", ContentType = "text/html" };
+                    response.Status = "500 Internal Server Error";
+                    response.ContentType = "text/html";
                     showErrorMessage(ex, response.Write);
                     return TaskHelpers.Completed();
                 };
 
                 // Don't try to modify the headers after the first write has occurred.
-                TriggerStream triggerStream = new TriggerStream(env.Get<Stream>(OwinConstants.ResponseBody));
+                TriggerStream triggerStream = new TriggerStream(response.Body);
                 env[OwinConstants.ResponseBody] = triggerStream;
 
                 bool bodyHasStarted = false;

@@ -57,6 +57,10 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Gate.Extensions\Gate.Extensions.csproj">
+      <Project>{3db0583e-5022-4b37-a0f7-4e9802bd4736}</Project>
+      <Name>Gate.Extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Main\Gate.Middleware\Gate.Middleware.csproj">
       <Project>{60c36d8f-be53-4733-bd92-cfa103d46020}</Project>
       <Name>Gate.Middleware</Name>

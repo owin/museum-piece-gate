@@ -33,13 +33,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Owin">
-      <HintPath>..\..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="Owin.Extensions, Version=0.6.4.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Owin.Extensions.0.6.4\lib\net40\Owin.Extensions.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
@@ -47,14 +40,10 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AppBuilderInlineExtensions.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpersExtensions.cs" />
-    <Compile Include="DictionaryExtensions.cs" />
+    <Compile Include="BuilderProperties.cs" />
     <Compile Include="Headers.cs" />
-    <Compile Include="Mapping\MapBuilder.cs" />
-    <Compile Include="Mapping\UrlMapper.cs" />
-    <Compile Include="AppBuilderMapExtensions.cs" />
     <Compile Include="OwinConstants.cs" />
     <Compile Include="Utils\Net40Extensions.cs" />
     <Compile Include="Utils\ParamDictionary.cs" />

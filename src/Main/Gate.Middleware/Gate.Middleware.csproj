@@ -35,10 +35,6 @@
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Owin.Extensions, Version=0.6.4.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\Owin.Extensions.0.6.4\lib\net40\Owin.Extensions.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
@@ -51,15 +47,20 @@
     <Compile Include="..\Gate\OwinConstants.cs">
       <Link>OwinConstants.cs</Link>
     </Compile>
+    <Compile Include="App_Packages\Owin.Extensions.Sources.0.6.4\StartupExtensions.cs" />
+    <Compile Include="App_Packages\Owin.Extensions.Sources.0.6.4\StartupExtensions.Func.cs" />
+    <Compile Include="App_Packages\Owin.Extensions.Sources.0.6.4\StartupExtensions.Type.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpersExtensions.cs" />
     <Compile Include="CascadeMiddleware.cs" />
     <Compile Include="ChunkedMiddleware.cs" />
     <Compile Include="ContentLengthMiddleware.cs" />
     <Compile Include="ContentTypeMiddleware.cs" />
-    <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="HeadSuppressionMiddleware.cs" />
     <Compile Include="MethodOverrideMiddleware.cs" />
+    <Compile Include="Mapping\AppBuilderMapExtensions.cs" />
+    <Compile Include="Mapping\MapBuilder.cs" />
+    <Compile Include="Mapping\UrlMapper.cs" />
     <Compile Include="NotFound.cs" />
     <Compile Include="PassiveValidatorMiddleware.cs" />
     <Compile Include="RequestLoggerMiddleware.cs" />

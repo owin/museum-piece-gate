@@ -55,6 +55,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Gate.Extensions\Gate.Extensions.csproj">
+      <Project>{3db0583e-5022-4b37-a0f7-4e9802bd4736}</Project>
+      <Name>Gate.Extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Main\Gate.Middleware\Gate.Middleware.csproj">
       <Project>{60C36D8F-BE53-4733-BD92-CFA103D46020}</Project>
       <Name>Gate.Middleware</Name>
@@ -65,15 +69,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\Main\Gate\DictionaryExtensions.cs">
-      <Link>DictionaryExtensions.cs</Link>
-    </Compile>
     <Compile Include="..\..\Main\Gate\OwinConstants.cs">
       <Link>OwinConstants.cs</Link>
     </Compile>
     <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpersExtensions.cs" />
     <Compile Include="ContentLengthTests.cs" />
+    <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="PassiveValidatorTests.cs" />
     <Compile Include="RequestTracerTests.cs" />
     <Compile Include="RequestLoggerTests.cs" />
@@ -86,6 +88,7 @@
     <Compile Include="ContentTypeTests.cs" />
     <Compile Include="ShowExceptionsTests.cs" />
     <Compile Include="TraceTests.cs" />
+    <Compile Include="UrlMapperTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="public\kayak.png">

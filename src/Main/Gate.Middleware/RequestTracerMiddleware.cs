@@ -6,6 +6,7 @@ using Gate.Middleware;
 using Owin;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using Gate;
 
 namespace Owin
 {
@@ -13,7 +14,8 @@ namespace Owin
     {
         public static IAppBuilder UseRequestTracer(this IAppBuilder builder)
         {
-            TraceSource traceSource = builder.Properties.Get<TraceSource>("host.TraceSource");
+            BuilderProperties builderProperties = new BuilderProperties(builder.Properties);
+            TraceSource traceSource = builderProperties.Get<TraceSource>("host.TraceSource");
             return builder.UseType<RequestTracerMiddleware>(traceSource);
         }
     }
@@ -43,7 +45,8 @@ namespace Gate.Middleware
         public Task Invoke(IDictionary<string, object> env)
         {
             // The TraceSource is assumed to be the same across all requests.
-            traceSource = traceSource ?? env.Get<TraceSource>("host.TraceSource");
+
+            traceSource = traceSource ?? new Request(env).Get<TraceSource>("host.TraceSource");
 
             if (traceSource == null)
             {
@@ -72,24 +75,26 @@ namespace Gate.Middleware
 
         private void TraceCall(IDictionary<string, object> env)
         {
+            var req = new Request(env);
             traceSource.TraceEvent(TraceEventType.Start, 0, "Request: Environment#{0}", env.Count);
 
             traceSource.TraceInformation("Environment: ");
             TraceDictionary(env);
 
             traceSource.TraceInformation("Headers: ");
-            TraceHeaders(env.Get<IDictionary<string, string[]>>(OwinConstants.RequestHeaders));
+            TraceHeaders(req.Headers);
         }
 
         private void TraceResult(IDictionary<string, object> env)
         {
+            var resp = new Response(env);
             traceSource.TraceEvent(TraceEventType.Stop, 0, "Request: Environment#{0}", env.Count);
 
             traceSource.TraceInformation("Environment: ");
             TraceDictionary(env);
 
             traceSource.TraceInformation("Headers: ");
-            TraceHeaders(env.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders));
+            TraceHeaders(resp.Headers);
         }
 
         private void TraceDictionary(IDictionary<string, object> dictionary)
