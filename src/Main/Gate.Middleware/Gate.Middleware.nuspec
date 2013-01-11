@@ -11,6 +11,7 @@
     <licenseUrl>https://github.com/owin/gate/blob/master/LICENSE.txt</licenseUrl>
     <tags></tags>
     <dependencies>
+      <dependency id="Owin" version="1.0"/>
       <dependency id="Gate" version="[$version$]"/>
     </dependencies>
   </metadata>
