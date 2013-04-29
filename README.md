@@ -1,1 +1,1 @@
-This project is deprecated. Parts of it have been migrated to [Owin](https://github.com/owin/owin) and the [KatanaProject](https://katanaproject.codeplex.com/).
+This project is deprecated. Parts of it have been migrated to [Owin-Hosting](https://github.com/owin/owin-hosting) and the [KatanaProject](https://katanaproject.codeplex.com/).
