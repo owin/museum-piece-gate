@@ -27,7 +27,7 @@ namespace Gate.Middleware.Tests
         [Test]
         public void NormalPassThrough_Success()
         {
-            AppFunc middleware = new PassiveValidator(
+            AppFunc middleware = new PassiveValidatorMiddleware(
                 env =>
                 {
                     env[OwinConstants.ResponseStatusCode] = 200;

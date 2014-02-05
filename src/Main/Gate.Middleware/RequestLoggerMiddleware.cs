@@ -14,7 +14,7 @@ namespace Owin
     {
         public static IAppBuilder UseRequestLogger(this IAppBuilder builder)
         {
-            return builder.UseType<RequestLogger>();
+            return builder.UseType<RequestLoggerMiddleware>();
         }
     }
 }
@@ -24,17 +24,17 @@ namespace Gate.Middleware
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     // This middleware logs incoming and outgoing environment and properties variables, headers, etc.
-    public class RequestLogger
+    public class RequestLoggerMiddleware
     {
         private readonly AppFunc nextApp;
         private TextWriter loggerOverride;
 
-        public RequestLogger(AppFunc next)
+        public RequestLoggerMiddleware(AppFunc next)
         {
             nextApp = next;
         }
 
-        public RequestLogger(AppFunc next, TextWriter loggerOverride)
+        public RequestLoggerMiddleware(AppFunc next, TextWriter loggerOverride)
         {
             nextApp = next;
             this.loggerOverride = loggerOverride;

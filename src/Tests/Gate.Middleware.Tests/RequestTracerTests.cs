@@ -16,7 +16,7 @@ namespace Gate.Middleware.Tests
         [Test]
         public void NoTracer_PassThrough()
         {
-            RequestTracer middleware = new RequestTracer(env =>
+            RequestTracerMiddleware middleware = new RequestTracerMiddleware(env =>
             {
                 return TaskHelpers.Completed();
             });
@@ -27,7 +27,7 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Tracer_Traced()
         {
-            RequestTracer middleware = new RequestTracer(env =>
+            RequestTracerMiddleware middleware = new RequestTracerMiddleware(env =>
             {
                 return TaskHelpers.Completed();
             });

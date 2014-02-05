@@ -52,40 +52,40 @@
     <Compile Include="App_Packages\Owin.Extensions.Sources.0.6.4\StartupExtensions.Type.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpersExtensions.cs" />
-    <Compile Include="HeadSuppression.cs" />
+    <Compile Include="CascadeMiddleware.cs" />
+    <Compile Include="ChunkedMiddleware.cs" />
+    <Compile Include="ContentLengthMiddleware.cs" />
+    <Compile Include="ContentTypeMiddleware.cs" />
+    <Compile Include="HeadSuppressionMiddleware.cs" />
+    <Compile Include="MethodOverrideMiddleware.cs" />
     <Compile Include="Mapping\AppBuilderMapExtensions.cs" />
     <Compile Include="Mapping\MapBuilder.cs" />
     <Compile Include="Mapping\UrlMapper.cs" />
     <Compile Include="NotFound.cs" />
-    <Compile Include="PassiveValidator.cs" />
-    <Compile Include="RequestLogger.cs" />
-    <Compile Include="RequestTracer.cs" />
+    <Compile Include="PassiveValidatorMiddleware.cs" />
+    <Compile Include="RequestLoggerMiddleware.cs" />
+    <Compile Include="RequestTracerMiddleware.cs" />
+    <Compile Include="ShowExceptionsMiddleware.cs" />
     <Compile Include="StaticFiles\FileBody.cs" />
     <Compile Include="StaticFiles\FileServer.cs" />
-    <Compile Include="MethodOverride.cs" />
     <Compile Include="StaticFiles\Mime.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Static.cs" />
     <Compile Include="StaticFiles\TextBody.cs" />
-    <Compile Include="ContentLength.cs" />
-    <Compile Include="Chunked.cs" />
-    <Compile Include="Cascade.cs" />
-    <Compile Include="ContentType.cs" />
-    <Compile Include="ShowExceptions.cs" />
-    <Compile Include="ShowExceptions.View.cs">
+    <Compile Include="ShowExceptionsMiddleware.View.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>ShowExceptions.View.tt</DependentUpon>
+      <DependentUpon>ShowExceptionsMiddleware.View.tt</DependentUpon>
     </Compile>
-    <Compile Include="TraceMethod.cs" />
+    <Compile Include="StaticMiddleware.cs" />
+    <Compile Include="TraceMethodMiddleware.cs" />
     <Compile Include="Utils\HttpFormatExtensions.cs" />
     <Compile Include="Utils\RangeHeader.cs" />
     <Compile Include="Utils\FilterStream.cs" />
     <Compile Include="Utils\TriggerStream.cs" />
-    <Compile Include="WebSockets\OpaqueToWebSocket.cs" />
     <Compile Include="WebSockets\WebSocketLayer.cs" />
+    <Compile Include="WebSockets\WebSocketMiddleware.cs" />
     <Compile Include="Wilson.cs" />
-    <Compile Include="XSendFile.cs" />
+    <Compile Include="XSendFileMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gate\Gate.csproj">
@@ -97,9 +97,9 @@
     <None Include="Gate.Middleware.Sources.nuspec" />
     <None Include="Gate.Middleware.nuspec" />
     <None Include="packages.config" />
-    <None Include="ShowExceptions.View.tt">
+    <None Include="ShowExceptionsMiddleware.View.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>ShowExceptions.View.cs</LastGenOutput>
+      <LastGenOutput>ShowExceptionsMiddleware.View.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>

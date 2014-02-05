@@ -12,7 +12,7 @@ namespace Owin
     {
         public static IAppBuilder UseHeadSuppression(this IAppBuilder builder)
         {
-            return builder.UseType<HeadSuppression>();
+            return builder.UseType<HeadSuppressionMiddleware>();
         }
     }
 }
@@ -22,11 +22,11 @@ namespace Gate.Middleware
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     // This middleware can be used to suppress output incorrectly written by other middleware or applications for HEAD requests.
-    public class HeadSuppression
+    public class HeadSuppressionMiddleware
     {
         private AppFunc nextApp;
 
-        public HeadSuppression(AppFunc nextApp)
+        public HeadSuppressionMiddleware(AppFunc nextApp)
         {
             this.nextApp = nextApp;
         }

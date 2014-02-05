@@ -15,7 +15,7 @@ namespace Gate.Middleware.Tests
         [Test]
         public void NoLogger_PassThrough()
         {
-            RequestLogger middleware = new RequestLogger(env =>
+            RequestLoggerMiddleware middleware = new RequestLoggerMiddleware(env =>
             {
                 return TaskHelpers.Completed();
             });
@@ -26,7 +26,7 @@ namespace Gate.Middleware.Tests
         [Test]
         public void Logger_Logged()
         {
-            RequestLogger middleware = new RequestLogger(env =>
+            RequestLoggerMiddleware middleware = new RequestLoggerMiddleware(env =>
             {
                 return TaskHelpers.Completed();
             });
